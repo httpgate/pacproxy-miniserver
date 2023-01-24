@@ -1,5 +1,5 @@
-# pacproxy-mobile
-pacproxy service runs in a mobile nodejs container
+# pacproxy-miniserver
+pacproxy server runs in a mobile device
 
 手机当服务器用的优点是，他功耗低，性能高，而且平时他也不关机在等电话短信，闲着也是闲着，做做服务器也很好。
 
