@@ -1,0 +1,28 @@
+{
+  "name": "pacproxy-miniserver",
+  "version": "1.0.0",
+  "description": "pacproxy server runs in a mobile device",
+  "main": "mini.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/httpgate/pacproxy-miniserver.git"
+  },
+  "keywords": [
+    "pacproxy",
+    "websocket",
+    "server",
+    "https"
+  ],
+  "author": "xinjingjie.us@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/httpgate/pacproxy-miniserver/issues"
+  },
+  "homepage": "https://github.com/httpgate/pacproxy-miniserver#readme",
+  "dependencies": {
+    "pacproxy-https-server": "^1.1.8"
+  }
+}
