@@ -11,6 +11,8 @@ var configs =
 	iphours : 2	,
     //管理员email,数字证书到期会受到email通知
 	email : '',
+    //如果数字证书过期了，需要续数字证书时，需要把forcert改成true, 重启服务器，访问网站等数字证书更新后再改回来重启网站
+	forcert : false
 
 };
 
