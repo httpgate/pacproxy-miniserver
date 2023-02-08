@@ -3,6 +3,8 @@ pacproxy server runs in a mobile device
 
 手机当服务器用的优点是，他功耗低，性能高，而且平时他也不关机在等电话短信，闲着也是闲着，做做服务器也很好。
 
+关于pacproxy参见[pacproxy.js](https://github.com/httpgate/pacproxy.js)
+
 # 安装
 
 * Android手机安装nodejs容器APP：d/node.js , 这相当于android上一个nodejs的docker容器
