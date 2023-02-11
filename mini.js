@@ -9,7 +9,9 @@ var configs =
 	website :  'https://en.minghui.com',
 	//停止上网后几小时后还可以继续访问代理，超时的话可以关闭重新打开浏览器，或者关闭wifi后重新连接wifi来重启计时
 	iphours : 2	,
-    //管理员email,数字证书到期会受到email通知
+	//绑定用户名密码的pac链接, 默认是空[], 数据格式是:['paclink', 'username', 'password'], 上网是会提示输入用户密码
+	pacpass : [],  //数据格式：['/1111111111111111', 'proxyuser', 'proxypass'],	
+    //管理员email,数字证书到期会受到email通知	
 	email : '',
     //如果数字证书过期了，需要续数字证书时，需要把forcert改成true, 重启服务器，访问网站等数字证书更新后再改回来重启网站
 	forcert : false

@@ -1,6 +1,6 @@
 {
   "name": "pacproxy-miniserver",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "pacproxy server runs in a mobile device",
   "main": "mini.js",
   "scripts": {
@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/httpgate/pacproxy-miniserver#readme",
   "dependencies": {
-    "pacproxy-https-server": "^1.1.9"
+    "pacproxy-https-server": "^1.2.3"
   }
 }
