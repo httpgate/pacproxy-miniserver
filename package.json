@@ -1,6 +1,6 @@
 {
   "name": "pacproxy-miniserver",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "pacproxy server runs in a mobile device",
   "main": "mini.js",
   "scripts": {
