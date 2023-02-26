@@ -5,6 +5,16 @@ pacproxy server runs in a mobile device
 
 关于pacproxy参见[pacproxy.js](https://github.com/httpgate/pacproxy.js)
 
+
+## 推荐
+
+推荐用prcproxy安全的访问以下网站：
+* 明慧网：https://www.minghui.org
+* 干净世界：https://www.ganjing.com
+* 神韵作品: https://shenyunzuopin.com
+* 大法经书: https://www.falundafa.org
+
+
 # 安装
 
 * Android手机安装nodejs容器APP：d/node.js , 这相当于android上一个nodejs的docker容器
@@ -12,6 +22,7 @@ pacproxy server runs in a mobile device
 * 在app右下角选 + Add File , 选 Download\pacproxy-miniserver\mini.js , 就会出现一个任务栏， 可以运行，停止，编辑
 * 技术人员帮助设置并保存好  \lib\pacpservice.js ，这是相关的网络设置，也可以就用默认设置。
 * 在app左上角可以设置 开机自动运行，锁定休眠，锁定wifi连接 等
+
 
 # 运行
 
