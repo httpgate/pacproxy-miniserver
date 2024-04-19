@@ -23,6 +23,6 @@
   },
   "homepage": "https://github.com/httpgate/pacproxy-miniserver#readme",
   "dependencies": {
-    "pacproxy-https-server": "^1.2.7"
+    "pacproxy-https-server": "^1.3.4"
   }
 }
