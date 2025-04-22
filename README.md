@@ -17,7 +17,7 @@ pacproxy server runs in a mobile device
 
 # 安装
 
-* Android手机安装nodejs容器APP：d/node.js , 这相当于android上一个nodejs的docker容器
+* Android手机安装nodejs容器APP：[dory-node.js](https://play.google.com/store/apps/details?id=io.tempage.dorynode), 这相当于android上一个nodejs的docker容器
 * 在app右上角选 git clone , 输入: https://github.com/httpgate/pacproxy-miniserver , 文件夹选择 Download , 以避免权限冲突
 * 在app右下角选 + Add File , 选 Download\pacproxy-miniserver\mini.js , 就会出现一个任务栏， 可以运行，停止，编辑
 * 技术人员帮助设置并保存好  \lib\pacpservice.js ，这是相关的网络设置，也可以就用默认设置。
