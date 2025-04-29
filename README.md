@@ -1,7 +1,7 @@
 # pacproxy-miniserver
 pacproxy server runs in a mobile device
 
-手机当服务器用的优点是，他功耗低，性能高，而且平时他也不关机在等电话短信，闲着也是闲着，做做服务器也很好。
+手机当服务器用的优点是，功耗低，性能高，而且平时也不关机在等电话短信，闲着也是闲着，做做服务器也很好。
 
 关于pacproxy参见[pacproxy.js](https://github.com/httpgate/pacproxy.js)
 
@@ -27,7 +27,7 @@ pacproxy server runs in a mobile device
 # 运行
 
 * 首先需要申请一个域名， 并指向用户家的IP, 可以从网站 https://whatismyipaddress.com/ 查到自己的IP
-* 设置好路由器端口映射，将外网443端口映射到设置的port(8443)端口, 80映射到设置的httpport(8080)端口
-* 运行软件，第一次访问网站会自动获取数字证书，如果因为不能连到自己路由器80端口报错，可以把手机拿到测试能行的家里获取SSL证书。
+* 设置好路由器端口映射，默认情况下需将外网443端口映射到设置的port(8443)端口, 80映射到设置的httpport(8080)端口
+* 运行软件，第一次访问网站会自动获取数字证书, 建议每2个月重启一次服务更新数字证书。
 * 第一次访问运行成功后，就停止服务再重新运行，核对各项参数
 * 为避免wifi重连时改变IP地址，建议家里的wifi设置成静态IP地址,和端口映射一致。
