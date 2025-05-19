@@ -16,7 +16,7 @@ var configs =
 	//绑定用户名密码的pac链接, 默认是空[], 数据格式是:['paclink', 'username', 'password'], 上网时会提示输入用户密码
 	pacpass : ['/1111111111111111', 'proxyuser', 'proxypass'],	
 
-    //管理员email, 必须填，数字证书到期会受到email通知	
+	//管理员email, 必须填，数字证书到期会受到email通知	
 	email : ''
 
 };
