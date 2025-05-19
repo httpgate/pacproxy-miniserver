@@ -5,6 +5,7 @@ pacproxy server runs in a mobile device
 
 关于pacproxy参见[pacproxy.js](https://github.com/httpgate/pacproxy.js)
 
+**pacproxy服务器后续版本仅支持[在Android的Termux下运行](https://github.com/httpgate/resources/blob/main/android_termux_run_pacproxy.md)，本代码库将转为只读模式，不再更新。
 
 ## 推荐
 
