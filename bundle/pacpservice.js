@@ -1,11 +1,11 @@
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __glob = (map) => (path) => {
-  var fn2 = map[path];
-  if (fn2) return fn2();
+  var fn = map[path];
+  if (fn) return fn();
   throw new Error("Module not found in bundle: " + path);
 };
-var __esm = (fn2, res) => function __init() {
-  return fn2 && (res = (0, fn2[__getOwnPropNames(fn2)[0]])(fn2 = 0)), res;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
 };
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
@@ -38,11 +38,11 @@ var require_compat = __commonJS({
     var fs = require("fs");
     var fsAsync = {};
     Object.keys(fs).forEach(function(key) {
-      var fn2 = fs[key];
-      if ("function" !== typeof fn2 || !/[a-z]/.test(key[0])) {
+      var fn = fs[key];
+      if ("function" !== typeof fn || !/[a-z]/.test(key[0])) {
         return;
       }
-      fsAsync[key] = require("util").promisify(fn2);
+      fsAsync[key] = require("util").promisify(fn);
     });
     exports2.fsAsync = fsAsync;
   }
@@ -274,12 +274,12 @@ var require_sni = __commonJS({
         };
       }
       return getSecureContext;
-      function notify(ev, args2) {
+      function notify(ev, args) {
         try {
-          (greenlock.notify || greenlock._notify)(ev, args2);
+          (greenlock.notify || greenlock._notify)(ev, args);
         } catch (e) {
           console.error(e);
-          console.error(ev, args2);
+          console.error(ev, args);
         }
       }
       function getSecureContext(servername, cb) {
@@ -363,7 +363,7 @@ var require_sni = __commonJS({
             return null;
           }
           var pems = result.pems;
-          var site2 = result.site;
+          var site = result.site;
           if (!pems || !pems.cert) {
             return null;
           }
@@ -376,7 +376,7 @@ var require_sni = __commonJS({
             })
           };
           meta2.secureContext._valid = true;
-          (result.altnames || site2.altnames || [result.subject || site2.subject]).forEach(function(altname) {
+          (result.altnames || site.altnames || [result.subject || site.subject]).forEach(function(altname) {
             _cache[altname] = meta2;
           });
           return meta2.secureContext;
@@ -555,14 +555,14 @@ var require_servers = __commonJS({
       };
       var _middlewareApp;
       servers.http2Server = function(secureOpts, defaultApp) {
-        return servers._httpsServer(secureOpts, defaultApp, function(secureOpts2, fn2) {
+        return servers._httpsServer(secureOpts, defaultApp, function(secureOpts2, fn) {
           secureOpts2.allowHTTP1 = true;
-          return require("http2").createSecureServer(secureOpts2, fn2);
+          return require("http2").createSecureServer(secureOpts2, fn);
         });
       };
       servers.httpsServer = function(secureOpts, defaultApp) {
-        return servers._httpsServer(secureOpts, defaultApp, function(secureOpts2, fn2) {
-          return require("https").createServer(secureOpts2, fn2);
+        return servers._httpsServer(secureOpts, defaultApp, function(secureOpts2, fn) {
+          return require("https").createServer(secureOpts2, fn);
         });
       };
       servers._httpsServer = function(secureOpts, defaultApp, createSecureServer) {
@@ -669,26 +669,26 @@ var require_worker = __commonJS({
     Worker.create = function() {
       var greenlock = {};
       ["getAcmeHttp01ChallengeResponse", "get", "notify", "_notify"].forEach(function(k) {
-        greenlock[k] = function(args2) {
-          return rpc(k, args2);
+        greenlock[k] = function(args) {
+          return rpc(k, args);
         };
       });
       var worker = {
-        ready: function(fn2) {
+        ready: function(fn) {
           var servers = require_servers().create(greenlock);
-          fn2(servers);
+          fn(servers);
           return worker;
         },
         master: function() {
           return worker;
         },
-        serve: function(fn2) {
-          if (1 === fn2.length) {
-            worker.ready(fn2);
+        serve: function(fn) {
+          if (1 === fn.length) {
+            worker.ready(fn);
             return;
           }
           worker.ready(function(glx) {
-            glx.serveApp(fn2);
+            glx.serveApp(fn);
           });
         }
       };
@@ -983,9 +983,9 @@ var require_packer2 = __commonJS({
     var ASN1 = module2.exports;
     var Enc = require_hex();
     function Any() {
-      var args2 = Array.prototype.slice.call(arguments);
-      var typ = args2.shift();
-      var str = args2.join("").replace(/\s+/g, "").toLowerCase();
+      var args = Array.prototype.slice.call(arguments);
+      var typ = args.shift();
+      var str = args.join("").replace(/\s+/g, "").toLowerCase();
       var len = str.length / 2;
       var lenlen = 0;
       var hex = typ;
@@ -3500,15 +3500,15 @@ var require_request = __commonJS({
         }
         return urequestHelper(reqOpts, cb);
       }
-      function smartPromisify(fn2) {
+      function smartPromisify(fn) {
         return function(opts) {
           var cb;
           if ("function" === typeof arguments[1]) {
             cb = Array.prototype.slice.call(arguments)[1];
-            return fn2(opts, cb);
+            return fn(opts, cb);
           }
           return new Promise(function(resolve, reject) {
-            fn2(opts, function(err, resp) {
+            fn(opts, function(err, resp) {
               if (err) {
                 err._response = resp;
                 reject(err);
@@ -4308,10 +4308,10 @@ var require_acme = __commonJS({
             "'" + k + "' may have incorrect function signatures, or contains deprecated use of callbacks"
           );
         }
-        function promisify(fn2) {
+        function promisify(fn) {
           return function(opts) {
             new Promise(function(resolve, reject) {
-              fn2(opts, function(err2, result) {
+              fn(opts, function(err2, result) {
                 if (err2) {
                   reject(err2);
                   return;
@@ -5675,10 +5675,10 @@ var require_plugins = __commonJS({
           "'" + name + "' did not return a Promise when called. This should be fixed by the maintainer."
         );
       }
-      function wrappy(fn2) {
+      function wrappy(fn) {
         return function(_params) {
           return Promise.resolve().then(function() {
-            var result = fn2.call(ch, _params);
+            var result = fn.call(ch, _params);
             if (!result || !result.then) {
               warn2();
             }
@@ -5744,17 +5744,17 @@ var require_plugins = __commonJS({
       } catch (e) {
       }
       var npm = "npm";
-      var args2 = ["install", "--save", moduleName];
+      var args = ["install", "--save", moduleName];
       var out = "";
       var cmd;
       try {
-        cmd = spawnSync(npm, args2, {
+        cmd = spawnSync(npm, args, {
           cwd: P.PKG_DIR,
           windowsHide: true
         });
       } catch (e) {
         console.error(
-          "Failed to start: '" + npm + " " + args2.join(" ") + "' in '" + P.PKG_DIR + "'"
+          "Failed to start: '" + npm + " " + args.join(" ") + "' in '" + P.PKG_DIR + "'"
         );
         console.error(e.message);
         process.exit(1);
@@ -5770,10 +5770,10 @@ var require_plugins = __commonJS({
         console.error();
       }
       console.error(
-        "Failed to run: '" + npm + " " + args2.join(" ") + "' in '" + P.PKG_DIR + "'"
+        "Failed to run: '" + npm + " " + args.join(" ") + "' in '" + P.PKG_DIR + "'"
       );
       console.error(
-        "Try for yourself:\n	cd " + P.PKG_DIR + "\n	npm " + args2.join(" ")
+        "Try for yourself:\n	cd " + P.PKG_DIR + "\n	npm " + args.join(" ")
       );
       process.exit(1);
     };
@@ -5783,9 +5783,9 @@ var require_plugins = __commonJS({
           throw new Error("no module name given");
         }
         var npm = "npm";
-        var args2 = ["install", "--save", moduleName];
+        var args = ["install", "--save", moduleName];
         var out = "";
-        var cmd = spawn(npm, args2, {
+        var cmd = spawn(npm, args, {
           cwd: P.PKG_DIR,
           windowsHide: true
         });
@@ -5797,7 +5797,7 @@ var require_plugins = __commonJS({
         });
         cmd.on("error", function(e) {
           console.error(
-            "Failed to start: '" + npm + " " + args2.join(" ") + "' in '" + P.PKG_DIR + "'"
+            "Failed to start: '" + npm + " " + args.join(" ") + "' in '" + P.PKG_DIR + "'"
           );
           console.error(e.message);
           process.exit(1);
@@ -5813,10 +5813,10 @@ var require_plugins = __commonJS({
             console.error();
           }
           console.error(
-            "Failed to run: '" + npm + " " + args2.join(" ") + "' in '" + P.PKG_DIR + "'"
+            "Failed to run: '" + npm + " " + args.join(" ") + "' in '" + P.PKG_DIR + "'"
           );
           console.error(
-            "Try for yourself:\n	cd " + P.PKG_DIR + "\n	npm " + args2.join(" ")
+            "Try for yourself:\n	cd " + P.PKG_DIR + "\n	npm " + args.join(" ")
           );
           process.exit(1);
         });
@@ -5836,13 +5836,13 @@ var require_accounts = __commonJS({
     var U = require_utils2();
     var E = require_errors2();
     var pending = {};
-    A._getOrCreate = function(gnlck, mconf, db, acme, args2) {
-      var email = args2.subscriberEmail || mconf.subscriberEmail;
+    A._getOrCreate = function(gnlck, mconf, db, acme, args) {
+      var email = args.subscriberEmail || mconf.subscriberEmail;
       if (!email) {
-        throw E.NO_SUBSCRIBER("get account", args2.subject);
+        throw E.NO_SUBSCRIBER("get account", args.subject);
       }
       return U._validMx(email).catch(function() {
-        throw E.NO_SUBSCRIBER("get account", args2.subcriberEmail);
+        throw E.NO_SUBSCRIBER("get account", args.subcriberEmail);
       }).then(function() {
         if (pending[email]) {
           return pending[email];
@@ -5852,7 +5852,7 @@ var require_accounts = __commonJS({
           mconf,
           db,
           acme,
-          args2,
+          args,
           email
         ).catch(function(e) {
           delete pending[email];
@@ -5864,41 +5864,41 @@ var require_accounts = __commonJS({
         return pending[email];
       });
     };
-    A._rawGetOrCreate = function(gnlck, mconf, db, acme, args2, email) {
+    A._rawGetOrCreate = function(gnlck, mconf, db, acme, args, email) {
       var p;
       if (db.check) {
-        p = A._checkStore(gnlck, mconf, db, acme, args2, email);
+        p = A._checkStore(gnlck, mconf, db, acme, args, email);
       } else {
         p = Promise.resolve(null);
       }
       return p.then(function(fullAccount) {
         if (!fullAccount) {
-          return A._newAccount(gnlck, mconf, db, acme, args2, email, null);
+          return A._newAccount(gnlck, mconf, db, acme, args, email, null);
         }
         if (fullAccount.keypair && fullAccount.key && fullAccount.key.kid) {
           return fullAccount;
         }
-        return A._newAccount(gnlck, mconf, db, acme, args2, email, fullAccount);
+        return A._newAccount(gnlck, mconf, db, acme, args, email, fullAccount);
       });
     };
-    A._newAccount = function(gnlck, mconf, db, acme, args2, email, fullAccount) {
-      var keyType = args2.accountKeyType || mconf.accountKeyType;
+    A._newAccount = function(gnlck, mconf, db, acme, args, email, fullAccount) {
+      var keyType = args.accountKeyType || mconf.accountKeyType;
       var query = {
-        subject: args2.subject,
+        subject: args.subject,
         email,
         subscriberEmail: email,
-        customerEmail: args2.customerEmail,
+        customerEmail: args.customerEmail,
         account: fullAccount || {},
-        directoryUrl: args2.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
+        directoryUrl: args.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
       };
-      return U._getOrCreateKeypair(db, args2.subject, query, keyType).then(
+      return U._getOrCreateKeypair(db, args.subject, query, keyType).then(
         function(kresult) {
           var keypair = kresult.keypair;
           var accReg = {
             subscriberEmail: email,
-            agreeToTerms: args2.agreeToTerms || mconf.agreeToTerms || gnlck._defaults.agreeToTerms,
+            agreeToTerms: args.agreeToTerms || mconf.agreeToTerms || gnlck._defaults.agreeToTerms,
             accountKey: keypair.privateKeyJwk || keypair.private,
-            debug: args2.debug
+            debug: args.debug
           };
           return acme.accounts.create(accReg).then(function(receipt) {
             var reg = {
@@ -5906,9 +5906,9 @@ var require_accounts = __commonJS({
               receipt,
               // shudder... not actually a KeyID... but so it is called anyway...
               kid: receipt && receipt.key && (receipt.key.kid || receipt.kid),
-              email: args2.email,
+              email: args.email,
               subscriberEmail: email,
-              customerEmail: args2.customerEmail
+              customerEmail: args.customerEmail
             };
             var keyP;
             if (kresult.exists) {
@@ -5929,10 +5929,10 @@ var require_accounts = __commonJS({
                   // id to be set by Store
                   email,
                   subscriberEmail: email,
-                  customerEmail: args2.customerEmail,
+                  customerEmail: args.customerEmail,
                   agreeTos: true,
                   agreeToTerms: true,
-                  directoryUrl: args2.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
+                  directoryUrl: args.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
                   /*
                   server: gnlck._defaults.directoryUrl.replace(
                   	/^https?:\/\//i,
@@ -5962,20 +5962,20 @@ var require_accounts = __commonJS({
         }
       );
     };
-    A._checkStore = function(gnlck, mconf, db, acme, args2, email) {
-      if ((args2.domain || args2.domains) && !args2.subject) {
+    A._checkStore = function(gnlck, mconf, db, acme, args, email) {
+      if ((args.domain || args.domains) && !args.subject) {
         console.warn("use 'subject' instead of 'domain'");
-        args2.subject = args2.domain;
+        args.subject = args.domain;
       }
-      var account = args2.account;
+      var account = args.account;
       if (!account) {
         account = {};
       }
-      if (args2.accountKey) {
+      if (args.accountKey) {
         console.warn(
           "rather than passing accountKey, put it directly into your account key store"
         );
-        return U._importKeypair(args2.accountKey);
+        return U._importKeypair(args.accountKey);
       }
       if (!db.check) {
         return Promise.resolve(null);
@@ -5985,9 +5985,9 @@ var require_accounts = __commonJS({
         //receipt: undefined,
         email,
         subscriberEmail: email,
-        customerEmail: args2.customerEmail || mconf.customerEmail,
+        customerEmail: args.customerEmail || mconf.customerEmail,
         account,
-        directoryUrl: args2.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
+        directoryUrl: args.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
       }).then(function(fullAccount) {
         if (!fullAccount) {
           return null;
@@ -6009,9 +6009,9 @@ var require_certificates = __commonJS({
     var Keypairs = require_keypairs2();
     var pending = {};
     var rawPending = {};
-    C._getOrOrder = function(gnlck, mconf, db, acme, chs, acc, args2) {
-      var email = args2.subscriberEmail || mconf.subscriberEmail;
-      var id = args2.altnames.slice(0).sort().join(" ");
+    C._getOrOrder = function(gnlck, mconf, db, acme, chs, acc, args) {
+      var email = args.subscriberEmail || mconf.subscriberEmail;
+      var id = args.altnames.slice(0).sort().join(" ");
       if (pending[id]) {
         return pending[id];
       }
@@ -6023,7 +6023,7 @@ var require_certificates = __commonJS({
         chs,
         acc,
         email,
-        args2
+        args
       ).then(function(pems) {
         delete pending[id];
         return pems;
@@ -6033,59 +6033,59 @@ var require_certificates = __commonJS({
       });
       return pending[id];
     };
-    C._rawGetOrOrder = function(gnlck, mconf, db, acme, chs, acc, email, args2) {
-      return C._check(gnlck, mconf, db, args2).then(function(pems) {
+    C._rawGetOrOrder = function(gnlck, mconf, db, acme, chs, acc, email, args) {
+      return C._check(gnlck, mconf, db, args).then(function(pems) {
         if (pems) {
-          if (!C._isStale(gnlck, mconf, args2, pems)) {
+          if (!C._isStale(gnlck, mconf, args, pems)) {
             return pems;
           }
         }
-        var p = C._rawOrder(gnlck, mconf, db, acme, chs, acc, email, args2);
+        var p = C._rawOrder(gnlck, mconf, db, acme, chs, acc, email, args);
         var evname = pems ? "cert_renewal" : "cert_issue";
         p.then(function(newPems) {
-          var renewAt = C._renewWithStagger(gnlck, mconf, args2, newPems);
+          var renewAt = C._renewWithStagger(gnlck, mconf, args, newPems);
           gnlck._notify(evname, {
             renewAt,
-            subject: args2.subject,
-            altnames: args2.altnames
+            subject: args.subject,
+            altnames: args.altnames
           });
           gnlck._notify("_cert_issue", {
             renewAt,
-            subject: args2.subject,
-            altnames: args2.altnames,
+            subject: args.subject,
+            altnames: args.altnames,
             pems: newPems
           });
         }).catch(function(err) {
           if (!err.context) {
             err.context = evname;
           }
-          err.subject = args2.subject;
-          err.altnames = args2.altnames;
+          err.subject = args.subject;
+          err.altnames = args.altnames;
           gnlck._notify("error", err);
         });
         if (!pems || pems.renewAt < Date.now() - 24 * 60 * 60 * 1e3 || pems.expiresAt <= Date.now() + 24 * 60 * 60 * 1e3) {
           return p;
         }
-        if (args2.waitForRenewal) {
+        if (args.waitForRenewal) {
           return p;
         }
         return pems;
       });
     };
-    C._rawOrder = function(gnlck, mconf, db, acme, chs, acc, email, args2) {
-      var id = args2.altnames.slice(0).sort().join(" ");
+    C._rawOrder = function(gnlck, mconf, db, acme, chs, acc, email, args) {
+      var id = args.altnames.slice(0).sort().join(" ");
       if (rawPending[id]) {
         return rawPending[id];
       }
-      var keyType = args2.serverKeyType || mconf.serverKeyType;
+      var keyType = args.serverKeyType || mconf.serverKeyType;
       var query = {
-        subject: args2.subject,
-        certificate: args2.certificate || {},
-        directoryUrl: args2.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
+        subject: args.subject,
+        certificate: args.certificate || {},
+        directoryUrl: args.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
       };
-      rawPending[id] = U._getOrCreateKeypair(db, args2.subject, query, keyType).then(function(kresult) {
+      rawPending[id] = U._getOrCreateKeypair(db, args.subject, query, keyType).then(function(kresult) {
         var serverKeypair = kresult.keypair;
-        var domains = args2.altnames.slice(0);
+        var domains = args.altnames.slice(0);
         return CSR.csr({
           jwk: serverKeypair.privateKeyJwk || serverKeypair.private,
           domains,
@@ -6097,7 +6097,7 @@ var require_certificates = __commonJS({
             gnlck._notify(ev, opts);
           }
           var certReq = {
-            debug: args2.debug || gnlck._defaults.debug,
+            debug: args.debug || gnlck._defaults.debug,
             challenges: chs,
             account: acc,
             // only used if accounts.key.kid exists
@@ -6128,7 +6128,7 @@ var require_certificates = __commonJS({
         query.pems = pems;
         return db.set(query);
       }).then(function() {
-        return C._check(gnlck, mconf, db, args2);
+        return C._check(gnlck, mconf, db, args);
       }).then(function(bundle) {
         delete rawPending[id];
         return bundle;
@@ -6138,25 +6138,25 @@ var require_certificates = __commonJS({
       });
       return rawPending[id];
     };
-    C._check = function(gnlck, mconf, db, args2) {
+    C._check = function(gnlck, mconf, db, args) {
       var query = {
-        subject: args2.subject,
+        subject: args.subject,
         // may contain certificate.id
-        certificate: args2.certificate,
-        directoryUrl: args2.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
+        certificate: args.certificate,
+        directoryUrl: args.directoryUrl || mconf.directoryUrl || gnlck._defaults.directoryUrl
       };
       return db.check(query).then(function(pems) {
         if (!pems) {
           return null;
         }
         pems = U._attachCertInfo(pems);
-        if (args2.subject && !U._certHasDomain(pems, args2.subject)) {
+        if (args.subject && !U._certHasDomain(pems, args.subject)) {
           return null;
         }
-        if (args2.domain && !U._certHasDomain(pems, args2.domain)) {
+        if (args.domain && !U._certHasDomain(pems, args.domain)) {
           return null;
         }
-        return U._getKeypair(db, args2.subject, query).then(function(keypair) {
+        return U._getKeypair(db, args.subject, query).then(function(keypair) {
           return Keypairs.export({
             jwk: keypair.privateKeyJwk || keypair.private,
             encoding: "pem"
@@ -6169,29 +6169,29 @@ var require_certificates = __commonJS({
         });
       });
     };
-    C._isStale = function(gnlck, mconf, args2, pems) {
-      if (args2.duplicate) {
+    C._isStale = function(gnlck, mconf, args, pems) {
+      if (args.duplicate) {
         return true;
       }
-      var renewAt = C._renewableAt(gnlck, mconf, args2, pems);
+      var renewAt = C._renewableAt(gnlck, mconf, args, pems);
       if (Date.now() >= renewAt) {
         return true;
       }
       return false;
     };
-    C._renewWithStagger = function(gnlck, mconf, args2, pems) {
-      var renewOffset = C._renewOffset(gnlck, mconf, args2, pems);
+    C._renewWithStagger = function(gnlck, mconf, args, pems) {
+      var renewOffset = C._renewOffset(gnlck, mconf, args, pems);
       var renewStagger;
       try {
         renewStagger = U._parseDuration(
-          args2.renewStagger || mconf.renewStagger || 0
+          args.renewStagger || mconf.renewStagger || 0
         );
       } catch (e) {
         renewStagger = U._parseDuration(
-          args2.renewStagger || mconf.renewStagger
+          args.renewStagger || mconf.renewStagger
         );
       }
-      if (!args2.force && renewStagger / renewOffset >= 0.5) {
+      if (!args.force && renewStagger / renewOffset >= 0.5) {
         renewStagger = renewOffset * 0.1;
       }
       if (renewOffset > 0) {
@@ -6203,23 +6203,23 @@ var require_certificates = __commonJS({
         pems.expiresAt + renewOffset - Math.random() * renewStagger
       );
     };
-    C._renewOffset = function(gnlck, mconf, args2) {
+    C._renewOffset = function(gnlck, mconf, args) {
       var renewOffset = U._parseDuration(
-        args2.renewOffset || mconf.renewOffset || 0
+        args.renewOffset || mconf.renewOffset || 0
       );
       var week = 1e3 * 60 * 60 * 24 * 6;
-      if (!args2.force && Math.abs(renewOffset) < week) {
+      if (!args.force && Math.abs(renewOffset) < week) {
         throw new Error(
           "developer error: `renewOffset` should always be at least a week, use `force` to not safety-check renewOffset"
         );
       }
       return renewOffset;
     };
-    C._renewableAt = function(gnlck, mconf, args2, pems) {
-      if (args2.renewAt) {
-        return args2.renewAt;
+    C._renewableAt = function(gnlck, mconf, args, pems) {
+      if (args.renewAt) {
+        return args.renewAt;
       }
-      var renewOffset = C._renewOffset(gnlck, mconf, args2, pems);
+      var renewOffset = C._renewOffset(gnlck, mconf, args, pems);
       if (renewOffset > 0) {
         return pems.issuedAt + renewOffset;
       }
@@ -6248,12 +6248,12 @@ var require_directory_url = __commonJS({
       var stagingUrl = "https://acme-staging-v02.api.letsencrypt.org/directory";
       var stagingRe = /(^http:|staging|^127\.0\.|^::|localhost)/;
       var env = "";
-      var args2 = [];
+      var args = [];
       if ("undefined" !== typeof process) {
         env = process.env && process.env.ENV || "";
-        args2 = process.argv && process.argv.slice(1) || [];
+        args = process.argv && process.argv.slice(1) || [];
       }
-      if (staging || stagingRe.test(dirUrl) || args2.includes("--staging") || /DEV|STAG/i.test(env)) {
+      if (staging || stagingRe.test(dirUrl) || args.includes("--staging") || /DEV|STAG/i.test(env)) {
         if (!stagingRe.test(dirUrl)) {
           dirUrl = stagingUrl;
         }
@@ -6276,15 +6276,15 @@ var require_challenges_wrapper = __commonJS({
       greenlock.challenges = {};
       greenlock.challenges.get = async function(chall) {
         var servername = chall.servername || chall.altname || chall.identifier && chall.identifier.value;
-        var site2 = await greenlock._config({ servername });
-        if (!site2) {
+        var site = await greenlock._config({ servername });
+        if (!site) {
           return null;
         }
-        if (!site2.challenges || !site2.challenges["http-01"]) {
-          var copy = JSON.parse(JSON.stringify(site2));
+        if (!site.challenges || !site.challenges["http-01"]) {
+          var copy = JSON.parse(JSON.stringify(site));
           sanitizeCopiedConf(copy);
           sanitizeCopiedConf(copy.store);
-          if (site2.challenges) {
+          if (site.challenges) {
             sanitizeCopiedConf(copy.challenges["http-01"]);
             sanitizeCopiedConf(copy.challenges["dns-01"]);
             sanitizeCopiedConf(copy.challenges["tls-alpn-01"]);
@@ -6297,7 +6297,7 @@ var require_challenges_wrapper = __commonJS({
           console.warn("	site:", JSON.stringify(copy));
           return null;
         }
-        var plugin = await Greenlock._loadChallenge(site2.challenges, "http-01");
+        var plugin = await Greenlock._loadChallenge(site.challenges, "http-01");
         if (!plugin) {
           return null;
         }
@@ -6519,101 +6519,101 @@ var require_manager = __commonJS({
         });
         return manage._txPromise;
       };
-      manage.set = async function(args2) {
+      manage.set = async function(args) {
         manage._txPromise = manage._txPromise.then(async function() {
           var config = await Manage._getLatest(manage, CONF);
-          manage._merge(config, config.sites[args2.subject], args2);
+          manage._merge(config, config.sites[args.subject], args);
           await manage._save(config);
-          return JSON.parse(JSON.stringify(config.sites[args2.subject]));
+          return JSON.parse(JSON.stringify(config.sites[args.subject]));
         });
         return manage._txPromise;
       };
-      manage.get = async function(args2) {
+      manage.get = async function(args) {
         manage._txPromise = manage._txPromise.then(async function() {
           var config = await Manage._getLatest(manage, CONF);
-          var site2;
+          var site;
           Object.keys(config.sites).some(function(k) {
             var _site = config.sites[k];
             return _site.altnames.some(function(altname) {
-              if ([args2.servername, args2.wildname].includes(altname)) {
-                site2 = _site;
+              if ([args.servername, args.wildname].includes(altname)) {
+                site = _site;
               }
             });
           });
-          if (site2 && !site2.deletedAt) {
-            return doctor.site(config.sites, site2.subject);
+          if (site && !site.deletedAt) {
+            return doctor.site(config.sites, site.subject);
           }
           return null;
         });
         return manage._txPromise;
       };
-      manage._merge = function(config, current, args2) {
+      manage._merge = function(config, current, args) {
         if (!current || current.deletedAt) {
-          current = config.sites[args2.subject] = {
-            subject: args2.subject,
+          current = config.sites[args.subject] = {
+            subject: args.subject,
             altnames: [],
             renewAt: 1
           };
         }
-        current.renewAt = parseInt(args2.renewAt || current.renewAt, 10) || 1;
+        current.renewAt = parseInt(args.renewAt || current.renewAt, 10) || 1;
         var oldAlts;
         var newAlts;
-        if (args2.altnames) {
+        if (args.altnames) {
           oldAlts = current.altnames.slice(0).sort();
-          newAlts = args2.altnames.slice(0).sort();
+          newAlts = args.altnames.slice(0).sort();
           if (newAlts.join() !== oldAlts.join()) {
-            args2.renewAt = 1;
-            current.altnames = args2.altnames.slice(0);
+            args.renewAt = 1;
+            current.altnames = args.altnames.slice(0);
           }
         }
-        Object.keys(args2).forEach(function(k) {
+        Object.keys(args).forEach(function(k) {
           if ("altnames" === k) {
             return;
           }
-          current[k] = args2[k];
+          current[k] = args[k];
         });
       };
-      manage.find = async function(args2) {
-        var ours = await _find(args2);
+      manage.find = async function(args) {
+        var ours = await _find(args);
         if (!CONF.find) {
           return ours;
         }
-        var theirs = await CONF.find(args2);
+        var theirs = await CONF.find(args);
         var config = await Manage._getLatest(manage, CONF);
         return _mergeFind(config, ours, theirs);
       };
-      function _find(args2) {
+      function _find(args) {
         manage._txPromise = manage._txPromise.then(async function() {
           var config = await Manage._getLatest(manage, CONF);
-          var issuedBefore = args2.issuedBefore || Infinity;
-          var expiresBefore = args2.expiresBefore || Infinity;
-          var renewBefore = args2.renewBefore || Infinity;
+          var issuedBefore = args.issuedBefore || Infinity;
+          var expiresBefore = args.expiresBefore || Infinity;
+          var renewBefore = args.renewBefore || Infinity;
           var nameKeys = ["subject", "altnames"];
           var matchAll = !nameKeys.some(function(k) {
-            return k in args2;
+            return k in args;
           });
-          var querynames = (args2.altnames || []).slice(0);
+          var querynames = (args.altnames || []).slice(0);
           var sites = Object.keys(config.sites).filter(function(subject) {
-            var site2 = config.sites[subject];
-            if (site2.deletedAt) {
+            var site = config.sites[subject];
+            if (site.deletedAt) {
               return false;
             }
-            if (site2.expiresAt >= expiresBefore) {
+            if (site.expiresAt >= expiresBefore) {
               return false;
             }
-            if (site2.issuedAt >= issuedBefore) {
+            if (site.issuedAt >= issuedBefore) {
               return false;
             }
-            if (site2.renewAt >= renewBefore) {
+            if (site.renewAt >= renewBefore) {
               return false;
             }
             if (matchAll) {
               return true;
             }
-            if (site2.subject === args2.subject) {
+            if (site.subject === args.subject) {
               return true;
             }
-            return site2.altnames.some(function(altname) {
+            return site.altnames.some(function(altname) {
               return querynames.includes(altname);
             });
           }).map(function(name) {
@@ -6654,19 +6654,19 @@ var require_manager = __commonJS({
         });
         return manage._txPromise;
       }
-      manage.remove = function(args2) {
-        if (!args2.subject) {
+      manage.remove = function(args) {
+        if (!args.subject) {
           throw new Error("should have a subject for sites to remove");
         }
         manage._txPromise = manage._txPromise.then(async function() {
           var config = await Manage._getLatest(manage, CONF);
-          var site2 = config.sites[args2.subject];
-          if (!site2 || site2.deletedAt) {
+          var site = config.sites[args.subject];
+          if (!site || site.deletedAt) {
             return null;
           }
-          site2.deletedAt = Date.now();
+          site.deletedAt = Date.now();
           await manage._save(config);
-          return JSON.parse(JSON.stringify(site2));
+          return JSON.parse(JSON.stringify(site));
         });
         return manage._txPromise;
       };
@@ -6740,8 +6740,8 @@ var require_manager = __commonJS({
       }
       if (Array.isArray(config.sites)) {
         sites = {};
-        config.sites.forEach(function(site2) {
-          sites[site2.subject] = site2;
+        config.sites.forEach(function(site) {
+          sites[site.subject] = site;
         });
       }
       Object.keys(sites).forEach(function(k) {
@@ -6750,24 +6750,24 @@ var require_manager = __commonJS({
       config.sites = sites;
     };
     doctor.site = function(sconfs, subject) {
-      var site2 = sconfs[subject];
-      if (!site2) {
+      var site = sconfs[subject];
+      if (!site) {
         delete sconfs[subject];
-        site2 = {};
+        site = {};
       }
-      if ("string" !== typeof site2.subject) {
+      if ("string" !== typeof site.subject) {
         console.warn("warning: deleted malformed site from config file:");
-        console.warn(JSON.stringify(site2));
+        console.warn(JSON.stringify(site));
         delete sconfs[subject];
-        site2.subject = "greenlock-error.example.com";
+        site.subject = "greenlock-error.example.com";
       }
-      if (!Array.isArray(site2.altnames)) {
-        site2.altnames = [site2.subject];
+      if (!Array.isArray(site.altnames)) {
+        site.altnames = [site.subject];
       }
-      if (!site2.renewAt) {
-        site2.renewAt = 1;
+      if (!site.renewAt) {
+        site.renewAt = 1;
       }
-      return site2;
+      return site;
     };
     doctor.challenges = function(defaults) {
       var challenges = defaults.challenges;
@@ -6956,44 +6956,44 @@ var require_manager_wrapper = __commonJS({
       greenlock.manager._defaults = function(opts) {
         return mega.defaults(opts);
       };
-      greenlock.manager.add = function(args2) {
-        if (!args2 || !Array.isArray(args2.altnames) || !args2.altnames.length) {
+      greenlock.manager.add = function(args) {
+        if (!args || !Array.isArray(args.altnames) || !args.altnames.length) {
           throw new Error(
             "you must specify `altnames` when adding a new site"
           );
         }
-        if (args2.renewAt) {
+        if (args.renewAt) {
           throw new Error(
             "you cannot specify `renewAt` when adding a new site"
           );
         }
-        return greenlock.manager.set(args2);
+        return greenlock.manager.set(args);
       };
-      greenlock.manager.set = greenlock.manager.update = function(args2) {
+      greenlock.manager.set = greenlock.manager.update = function(args) {
         return greenlock._init().then(function() {
-          args2.subject = checkSubject(args2);
-          if (Array.isArray(args2.altnames)) {
-            args2.altnames = checkAltnames(args2.subject, args2);
+          args.subject = checkSubject(args);
+          if (Array.isArray(args.altnames)) {
+            args.altnames = checkAltnames(args.subject, args);
           }
           return Promise.all(
-            (args2.altnames || []).map(function(d) {
+            (args.altnames || []).map(function(d) {
               d = d.replace("*.", "");
               return U._validDomain(d);
             })
           ).then(function() {
-            if (!U._uniqueNames(args2.altnames || [])) {
+            if (!U._uniqueNames(args.altnames || [])) {
               throw E.NOT_UNIQUE(
                 "add",
-                "'" + args2.altnames.join("' '") + "'"
+                "'" + args.altnames.join("' '") + "'"
               );
             }
-            if (args2.renewOffset) {
-              args2.renewOffset = U._parseDuration(args2.renewOffset);
+            if (args.renewOffset) {
+              args.renewOffset = U._parseDuration(args.renewOffset);
             }
-            if (args2.renewStagger) {
-              args2.renewStagger = U._parseDuration(args2.renewStagger);
+            if (args.renewStagger) {
+              args.renewStagger = U._parseDuration(args.renewStagger);
             }
-            return mega.set(args2).then(function(result) {
+            return mega.set(args).then(function(result) {
               if (!gconf._bin_mode) {
                 greenlock.renew({}).catch(function(err) {
                   if (!err.context) {
@@ -7007,71 +7007,71 @@ var require_manager_wrapper = __commonJS({
           });
         });
       };
-      greenlock.manager.get = greenlock.sites.get = function(args2) {
+      greenlock.manager.get = greenlock.sites.get = function(args) {
         return Promise.resolve().then(function() {
-          if (args2.subject) {
+          if (args.subject) {
             throw new Error(
               "get({ servername }) searches certificates by altnames, not by subject specifically"
             );
           }
-          if (args2.servernames || args2.altnames || args2.renewBefore) {
+          if (args.servernames || args.altnames || args.renewBefore) {
             throw new Error(
               "get({ servername }) does not take arguments that could lead to multiple results"
             );
           }
-          return mega.get(args2);
+          return mega.get(args);
         });
       };
-      greenlock.manager.remove = function(args2) {
+      greenlock.manager.remove = function(args) {
         return Promise.resolve().then(function() {
-          args2.subject = checkSubject(args2);
-          if (args2.servername) {
+          args.subject = checkSubject(args);
+          if (args.servername) {
             throw new Error(
               "remove() should be called with `subject` only, if you wish to remove altnames use `update()`"
             );
           }
-          if (args2.altnames) {
+          if (args.altnames) {
             throw new Error(
               "remove() should be called with `subject` only, not `altnames`"
             );
           }
-          return mega.remove(args2);
+          return mega.remove(args);
         });
       };
-      greenlock._find = async function(args2) {
-        args2 = _mangleFindArgs(args2);
-        var ours = await mega.find(args2);
+      greenlock._find = async function(args) {
+        args = _mangleFindArgs(args);
+        var ours = await mega.find(args);
         if (!myFind) {
           return ours;
         }
-        var theirs = await myFind(args2);
-        theirs = theirs.filter(function(site2) {
-          if (!site2 || "string" !== typeof site2.subject) {
+        var theirs = await myFind(args);
+        theirs = theirs.filter(function(site) {
+          if (!site || "string" !== typeof site.subject) {
             throw new Error("found site is missing subject");
           }
-          if (!Array.isArray(site2.altnames) || !site2.altnames.length || !site2.altnames[0] || site2.altnames[0] !== site2.subject) {
+          if (!Array.isArray(site.altnames) || !site.altnames.length || !site.altnames[0] || site.altnames[0] !== site.subject) {
             throw new Error("missing or malformed altnames");
           }
           ["renewAt", "issuedAt", "expiresAt"].forEach(function(k) {
-            if (site2[k]) {
+            if (site[k]) {
               throw new Error(
                 "`" + k + "` should be updated by `set()`, not by `find()`"
               );
             }
           });
-          if (!site2) {
+          if (!site) {
             return;
           }
-          if (args2.subject && site2.subject !== args2.subject) {
+          if (args.subject && site.subject !== args.subject) {
             return false;
           }
-          var servernames = args2.servernames || args2.altnames;
-          if (servernames && !site2.altnames.some(function(altname) {
+          var servernames = args.servernames || args.altnames;
+          if (servernames && !site.altnames.some(function(altname) {
             return servernames.includes(altname);
           })) {
             return false;
           }
-          return site2.renewAt < (args2.renewBefore || Infinity);
+          return site.renewAt < (args.renewBefore || Infinity);
         });
         return _mergeFind(ours, theirs);
       };
@@ -7108,8 +7108,8 @@ var require_manager_wrapper = __commonJS({
           _older._exists = void 0;
         });
         Promise.all(
-          toUpdate.map(function(site2) {
-            return greenlock.sites.update(site2).catch(function(err) {
+          toUpdate.map(function(site) {
+            return greenlock.sites.update(site).catch(function(err) {
               console.error(
                 "Developer Error: cannot update sites from user-supplied `find()`:"
               );
@@ -7121,36 +7121,36 @@ var require_manager_wrapper = __commonJS({
       }
       greenlock.manager.init = mega.init;
     };
-    function checkSubject(args2) {
-      if (!args2 || !args2.subject) {
+    function checkSubject(args) {
+      if (!args || !args.subject) {
         throw new Error("you must specify `subject` when configuring a site");
       }
-      var subject = (args2.subject || "").toLowerCase();
-      if (subject !== args2.subject) {
-        console.warn("`subject` must be lowercase", args2.subject);
+      var subject = (args.subject || "").toLowerCase();
+      if (subject !== args.subject) {
+        console.warn("`subject` must be lowercase", args.subject);
       }
       return U._encodeName(subject);
     }
-    function checkAltnames(subject, args2) {
-      var altnames = (args2.altnames || []).map(function(name) {
+    function checkAltnames(subject, args) {
+      var altnames = (args.altnames || []).map(function(name) {
         return String(name || "").toLowerCase();
       });
-      if (altnames.join() !== args2.altnames.join()) {
+      if (altnames.join() !== args.altnames.join()) {
         console.warn(
           "all domains in `altnames` must be lowercase:",
-          args2.altnames
+          args.altnames
         );
       }
-      args2.altnames = args2.altnames.map(U._encodeName);
-      if (!args2.altnames.every(function(d) {
+      args.altnames = args.altnames.map(U._encodeName);
+      if (!args.altnames.every(function(d) {
         return U._validName(d);
       })) {
-        throw E.INVALID_HOSTNAME("add", "'" + args2.altnames.join("' '") + "'");
+        throw E.INVALID_HOSTNAME("add", "'" + args.altnames.join("' '") + "'");
       }
-      if (subject && subject !== args2.altnames[0]) {
+      if (subject && subject !== args.altnames[0]) {
         throw E.BAD_ORDER(
           "add",
-          "(" + args2.subject + ") '" + args2.altnames.join("' '") + "'"
+          "(" + args.subject + ") '" + args.altnames.join("' '") + "'"
         );
       }
       return altnames;
@@ -7199,13 +7199,13 @@ var require_manager_wrapper = __commonJS({
         };
       } else {
         mega.remove = function(opts) {
-          mega.get(opts).then(function(site2) {
-            if (!site2) {
+          mega.get(opts).then(function(site) {
+            if (!site) {
               return null;
             }
-            site2.deletedAt = Date.now();
-            return mega.set(site2).then(function() {
-              return site2;
+            site.deletedAt = Date.now();
+            return mega.set(site).then(function() {
+              return site;
             });
           });
         };
@@ -7234,23 +7234,23 @@ var require_manager_wrapper = __commonJS({
             mega._get = m().get;
           }
           var existing = await mega._get(opts);
-          var site2 = await mini.get(opts);
+          var site = await mini.get(opts);
           if (!existing) {
-            if (!site2) {
+            if (!site) {
               return;
             }
-            site2.renewAt = 1;
-            site2.deletedAt = 0;
-            await mega.set(site2);
+            site.renewAt = 1;
+            site.deletedAt = 0;
+            await mega.set(site);
             existing = await mega._get(opts);
-          } else if (!site2) {
-            existing.deletedAt = site2.deletedAt || Date.now();
+          } else if (!site) {
+            existing.deletedAt = site.deletedAt || Date.now();
             await mega.set(existing);
             existing = null;
-          } else if (site2.subject !== existing.subject || site2.altnames.join(" ") !== existing.altnames.join(" ")) {
-            site2.renewAt = 1;
-            site2.deletedAt = 0;
-            await mega.set(site2);
+          } else if (site.subject !== existing.subject || site.altnames.join(" ") !== existing.altnames.join(" ")) {
+            site.renewAt = 1;
+            site.deletedAt = 0;
+            await mega.set(site);
             existing = await mega._get(opts);
             if (!existing) {
               throw new Error("failed to `get` after `set`");
@@ -7264,8 +7264,8 @@ var require_manager_wrapper = __commonJS({
           delete opts.servername;
           opts.servernames = servername && [servername] || void 0;
           return mini.find(opts).then(function(sites) {
-            return sites.filter(function(site2) {
-              return site2.altnames.include(servername);
+            return sites.filter(function(site) {
+              return site.altnames.include(servername);
             })[0];
           });
         };
@@ -7295,8 +7295,8 @@ var require_manager_wrapper = __commonJS({
           delete opts.servername;
           opts.servernames = servername && [servername] || void 0;
           return mega.find(opts).then(function(sites) {
-            return sites.filter(function(site2) {
-              return site2.altnames.include(servername);
+            return sites.filter(function(site) {
+              return site.altnames.include(servername);
             })[0];
           });
         };
@@ -7316,11 +7316,11 @@ var require_manager_wrapper = __commonJS({
       };
       return mega;
     }
-    function _mangleFindArgs(args2) {
-      var servernames = (args2.servernames || []).concat(args2.altnames || []).filter(Boolean).slice(0);
+    function _mangleFindArgs(args) {
+      var servernames = (args.servernames || []).concat(args.altnames || []).filter(Boolean).slice(0);
       var modified = servernames.slice(0);
       ["wildname", "servername"].forEach(function(k) {
-        var altname = args2[k] || "";
+        var altname = args[k] || "";
         if (altname && !modified.includes(altname)) {
           modified.push(altname);
         }
@@ -7328,10 +7328,10 @@ var require_manager_wrapper = __commonJS({
       if (modified.length) {
         servernames = modified;
         servernames = servernames.map(U._encodeName);
-        args2.altnames = servernames;
-        args2.servernames = args2.altnames = checkAltnames(false, args2);
+        args.altnames = servernames;
+        args.servernames = args.altnames = checkAltnames(false, args);
       }
-      return args2;
+      return args;
     }
   }
 });
@@ -7706,20 +7706,20 @@ var require_greenlock = __commonJS({
           });
         }
       };
-      greenlock.get = async function(args2) {
-        greenlock._single(args2);
-        args2._includePems = true;
-        var results = await greenlock.renew(args2);
+      greenlock.get = async function(args) {
+        greenlock._single(args);
+        args._includePems = true;
+        var results = await greenlock.renew(args);
         if (!results || !results.length) {
           return null;
         }
         var result = results[0];
         if (results.length > 1) {
           var err = new Error(
-            "a search for '" + args2.servername + "' returned multiple certificates"
+            "a search for '" + args.servername + "' returned multiple certificates"
           );
           err.context = "duplicate_certs";
-          err.servername = args2.servername;
+          err.servername = args.servername;
           err.subjects = results.map(function(r) {
             return (r.site || {}).subject || "N/A";
           });
@@ -7730,88 +7730,88 @@ var require_greenlock = __commonJS({
         }
         return result;
       };
-      greenlock._single = async function(args2) {
-        if ("string" !== typeof args2.servername) {
+      greenlock._single = async function(args) {
+        if ("string" !== typeof args.servername) {
           throw new Error("no `servername` given");
         }
-        args2.wildname = "*." + args2.servername.split(".").slice(1).join(".");
-        if (args2.wildname.split(".").length < 3) {
-          args2.wildname = "";
+        args.wildname = "*." + args.servername.split(".").slice(1).join(".");
+        if (args.wildname.split(".").length < 3) {
+          args.wildname = "";
         }
-        if (args2.servernames || //TODO I think we need to block altnames as well, but I don't want to break anything
+        if (args.servernames || //TODO I think we need to block altnames as well, but I don't want to break anything
         //args.altnames ||
-        args2.subject || args2.renewBefore || args2.issueBefore || args2.expiresBefore) {
+        args.subject || args.renewBefore || args.issueBefore || args.expiresBefore) {
           throw new Error(
             "bad arguments, did you mean to call greenlock.renew()?"
           );
         }
-        return args2;
+        return args;
       };
-      greenlock._config = async function(args2) {
-        greenlock._single(args2);
-        var sites = await greenlock._configAll(args2);
+      greenlock._config = async function(args) {
+        greenlock._single(args);
+        var sites = await greenlock._configAll(args);
         return sites[0];
       };
-      greenlock._configAll = async function(args2) {
-        var sites = await greenlock._find(args2);
+      greenlock._configAll = async function(args) {
+        var sites = await greenlock._find(args);
         if (!sites || !sites.length) {
           return [];
         }
         sites = JSON.parse(JSON.stringify(sites));
         var mconf = await greenlock.manager._defaults();
-        return sites.map(function(site2) {
-          if (site2.store && site2.challenges) {
-            return site2;
+        return sites.map(function(site) {
+          if (site.store && site.challenges) {
+            return site;
           }
-          var dconf = site2;
+          var dconf = site;
           if (gconf._bin_mode) {
-            dconf = site2.defaults = {};
+            dconf = site.defaults = {};
           }
-          if (!site2.store) {
+          if (!site.store) {
             dconf.store = mconf.store;
           }
-          if (!site2.challenges) {
+          if (!site.challenges) {
             dconf.challenges = mconf.challenges;
           }
-          return site2;
+          return site;
         });
       };
-      greenlock.renew = async function(args2) {
+      greenlock.renew = async function(args) {
         await greenlock._init();
         var mconf = await greenlock.manager._defaults();
-        return greenlock._renew(mconf, args2);
+        return greenlock._renew(mconf, args);
       };
-      greenlock._renew = async function(mconf, args2) {
-        if (!args2) {
-          args2 = {};
+      greenlock._renew = async function(mconf, args) {
+        if (!args) {
+          args = {};
         }
         var renewedOrFailed = [];
-        var sites = await greenlock._find(args2);
+        var sites = await greenlock._find(args);
         if (!Array.isArray(sites)) {
           throw new Error(
             "Developer Error: not an array of sites returned from find: " + JSON.stringify(sites)
           );
         }
         await async function next() {
-          var site2 = sites.shift();
-          if (!site2) {
+          var site = sites.shift();
+          if (!site) {
             return null;
           }
-          var order = { site: site2 };
+          var order = { site };
           renewedOrFailed.push(order);
-          return greenlock._order(mconf, site2).then(function(pems) {
-            if (args2._includePems) {
+          return greenlock._order(mconf, site).then(function(pems) {
+            if (args._includePems) {
               order.pems = pems;
             }
           }).catch(function(err) {
             order.error = err;
             err.toJSON = errorToJSON;
             err.context = err.context || "cert_order";
-            err.subject = site2.subject;
-            if (args2.servername) {
-              err.servername = args2.servername;
+            err.subject = site.subject;
+            if (args.servername) {
+              err.servername = args.servername;
             }
-            err._site = site2;
+            err._site = site;
             greenlock._notify("error", err);
           }).then(function() {
             return next();
@@ -7819,7 +7819,7 @@ var require_greenlock = __commonJS({
         }();
         return renewedOrFailed;
       };
-      greenlock._acme = async function(mconf, args2, dirUrl) {
+      greenlock._acme = async function(mconf, args, dirUrl) {
         var packageAgent = gconf.packageAgent || "";
         if (!/greenlock/i.test(packageAgent)) {
           packageAgent = (packageAgent + " Greenlock/" + pkg.version).trim();
@@ -7828,7 +7828,7 @@ var require_greenlock = __commonJS({
           maintainerEmail: gconf.maintainerEmail,
           packageAgent,
           notify: greenlock._notify,
-          debug: greenlock._defaults.debug || args2.debug
+          debug: greenlock._defaults.debug || args.debug
         });
         var dir = caches[dirUrl];
         if (dir && Date.now() - dir.ts < 1 * 60 * 60 * 1e3) {
@@ -8000,11 +8000,11 @@ var require_greenlock = __commonJS({
         console.info("");
       }
     }
-    function _notify(ev, args2) {
-      if (!args2) {
-        args2 = ev;
-        ev = args2.event;
-        delete args2.event;
+    function _notify(ev, args) {
+      if (!args) {
+        args = ev;
+        ev = args.event;
+        delete args.event;
       }
       if (!_notify._notice) {
         console.info(
@@ -8020,34 +8020,34 @@ var require_greenlock = __commonJS({
         case "warning":
           console.error(
             prefix + "%s:",
-            (" " + (args2.context || "")).trimRight()
+            (" " + (args.context || "")).trimRight()
           );
-          console.error(args2.message);
-          if (args2.description) {
-            console.error(args2.description);
+          console.error(args.message);
+          if (args.description) {
+            console.error(args.description);
           }
-          if (args2.code) {
-            console.error("code:", args2.code);
+          if (args.code) {
+            console.error("code:", args.code);
           }
-          if (args2.stack) {
-            console.error(args2.stack);
+          if (args.stack) {
+            console.error(args.stack);
           }
           break;
         default:
           if (/status/.test(ev)) {
             console.info(
               ev,
-              args2.altname || args2.subject || "",
-              args2.status || ""
+              args.altname || args.subject || "",
+              args.status || ""
             );
-            if (!args2.status) {
-              console.info(args2);
+            if (!args.status) {
+              console.info(args);
             }
             break;
           }
           console.info(
             ev,
-            "(more info available: " + Object.keys(args2).join(" ") + ")"
+            "(more info available: " + Object.keys(args).join(" ") + ")"
           );
       }
     }
@@ -8143,8 +8143,8 @@ var require_greenlock_shim = __commonJS({
         console.info("Ready to Serve:");
         var max = 3;
         if (sites.length >= 1) {
-          sites.slice(0, max).forEach(function(site2) {
-            console.info("	", site2.altnames.join(" "));
+          sites.slice(0, max).forEach(function(site) {
+            console.info("	", site.altnames.join(" "));
           });
         }
         if (sites.length > max) {
@@ -8180,9 +8180,9 @@ var require_master = __commonJS({
       var greenlock = require_greenlock_shim().create(opts);
       var ready = new Promise(function(resolve) {
         resolveCb = resolve;
-      }).then(function(fn2) {
-        _readyCb = fn2;
-        return fn2;
+      }).then(function(fn) {
+        _readyCb = fn;
+        return fn;
       });
       function kickoff() {
         if (_kicked) {
@@ -8190,8 +8190,8 @@ var require_master = __commonJS({
         }
         _kicked = true;
         Master._spawnWorkers(opts, greenlock);
-        ready.then(function(fn2) {
-          fn2();
+        ready.then(function(fn) {
+          fn();
         });
       }
       var master = {
@@ -8199,16 +8199,16 @@ var require_master = __commonJS({
           kickoff();
           return master;
         },
-        master: function(fn2) {
+        master: function(fn) {
           if (_readyCb) {
             throw new Error("can't call master twice");
           }
           kickoff();
-          resolveCb(fn2);
+          resolveCb(fn);
           return master;
         },
-        serve: function(fn2) {
-          master.ready(fn2);
+        serve: function(fn) {
+          master.ready(fn);
         }
       };
       return master;
@@ -8307,20 +8307,20 @@ var require_single = __commonJS({
       var greenlock = require_greenlock_shim().create(opts);
       var servers = Servers.create(greenlock);
       var single = {
-        ready: function(fn2) {
-          fn2(servers);
+        ready: function(fn) {
+          fn(servers);
           return single;
         },
         master: function() {
           return single;
         },
-        serve: function(fn2) {
-          if (1 === fn2.length) {
-            single.ready(fn2);
+        serve: function(fn) {
+          if (1 === fn.length) {
+            single.ready(fn);
             return;
           }
           single.ready(function(glx) {
-            glx.serveApp(fn2);
+            glx.serveApp(fn);
           });
         }
       };
@@ -8336,15 +8336,15 @@ var require_greenlock_express = __commonJS({
     require_compat();
     var cluster = require("cluster");
     var GLE = module2.exports;
-    GLE.init = function(fn2) {
-      if (fn2 && false !== fn2.cluster && cluster.isWorker) {
+    GLE.init = function(fn) {
+      if (fn && false !== fn.cluster && cluster.isWorker) {
         return require_worker().create();
       }
       var opts;
-      if ("function" === typeof fn2) {
-        opts = fn2();
-      } else if ("object" === typeof fn2) {
-        opts = fn2;
+      if ("function" === typeof fn) {
+        opts = fn();
+      } else if ("object" === typeof fn) {
+        opts = fn;
       }
       if (!opts || "object" !== typeof opts) {
         throw new Error("the `Greenlock.init(fn)` function should return an object `{ packageRoot, cluster }`");
@@ -9677,11 +9677,11 @@ var require_receiver = __commonJS({
        * @return {(Error|RangeError)} The error
        * @private
        */
-      createError(ErrorCtor, message2, prefix, statusCode, errorCode) {
+      createError(ErrorCtor, message, prefix, statusCode, errorCode) {
         this._loop = false;
         this._errored = true;
         const err = new ErrorCtor(
-          prefix ? `Invalid WebSocket frame: ${message2}` : message2
+          prefix ? `Invalid WebSocket frame: ${message}` : message
         );
         Error.captureStackTrace(err, this.createError);
         err.code = errorCode;
@@ -10342,10 +10342,10 @@ var require_event_target = __commonJS({
             callListener(handler, this, event);
           };
         } else if (type === "close") {
-          wrapper = function onClose(code, message2) {
+          wrapper = function onClose(code, message) {
             const event = new CloseEvent("close", {
               code,
-              reason: message2.toString(),
+              reason: message.toString(),
               wasClean: this._closeFrameReceived && this._closeFrameSent
             });
             event[kTarget] = this;
@@ -11253,29 +11253,29 @@ var require_websocket = __commonJS({
         const secWebSocketExtensions = res.headers["sec-websocket-extensions"];
         if (secWebSocketExtensions !== void 0) {
           if (!perMessageDeflate) {
-            const message2 = "Server sent a Sec-WebSocket-Extensions header but no extension was requested";
-            abortHandshake(websocket, socket, message2);
+            const message = "Server sent a Sec-WebSocket-Extensions header but no extension was requested";
+            abortHandshake(websocket, socket, message);
             return;
           }
           let extensions;
           try {
             extensions = parse(secWebSocketExtensions);
           } catch (err) {
-            const message2 = "Invalid Sec-WebSocket-Extensions header";
-            abortHandshake(websocket, socket, message2);
+            const message = "Invalid Sec-WebSocket-Extensions header";
+            abortHandshake(websocket, socket, message);
             return;
           }
           const extensionNames = Object.keys(extensions);
           if (extensionNames.length !== 1 || extensionNames[0] !== PerMessageDeflate.extensionName) {
-            const message2 = "Server indicated an extension that was not requested";
-            abortHandshake(websocket, socket, message2);
+            const message = "Server indicated an extension that was not requested";
+            abortHandshake(websocket, socket, message);
             return;
           }
           try {
             perMessageDeflate.accept(extensions[PerMessageDeflate.extensionName]);
           } catch (err) {
-            const message2 = "Invalid Sec-WebSocket-Extensions header";
-            abortHandshake(websocket, socket, message2);
+            const message = "Invalid Sec-WebSocket-Extensions header";
+            abortHandshake(websocket, socket, message);
             return;
           }
           websocket._extensions[PerMessageDeflate.extensionName] = perMessageDeflate;
@@ -11310,9 +11310,9 @@ var require_websocket = __commonJS({
       }
       return tls.connect(options);
     }
-    function abortHandshake(websocket, stream, message2) {
+    function abortHandshake(websocket, stream, message) {
       websocket._readyState = WebSocket.CLOSING;
-      const err = new Error(message2);
+      const err = new Error(message);
       Error.captureStackTrace(err, abortHandshake);
       if (stream.setHeader) {
         stream[kAborted] = true;
@@ -11476,7 +11476,7 @@ var require_stream = __commonJS({
         objectMode: false,
         writableObjectMode: false
       });
-      ws.on("message", function message2(msg, isBinary) {
+      ws.on("message", function message(msg, isBinary) {
         const data = !isBinary && duplex._readableState.objectMode ? msg.toString() : msg;
         if (!duplex.push(data)) ws.pause();
       });
@@ -11789,23 +11789,23 @@ var require_websocket_server = __commonJS({
         const upgrade = req.headers.upgrade;
         const version = +req.headers["sec-websocket-version"];
         if (req.method !== "GET") {
-          const message2 = "Invalid HTTP method";
-          abortHandshakeOrEmitwsClientError(this, req, socket, 405, message2);
+          const message = "Invalid HTTP method";
+          abortHandshakeOrEmitwsClientError(this, req, socket, 405, message);
           return;
         }
         if (upgrade === void 0 || upgrade.toLowerCase() !== "websocket") {
-          const message2 = "Invalid Upgrade header";
-          abortHandshakeOrEmitwsClientError(this, req, socket, 400, message2);
+          const message = "Invalid Upgrade header";
+          abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);
           return;
         }
         if (key === void 0 || !keyRegex.test(key)) {
-          const message2 = "Missing or invalid Sec-WebSocket-Key header";
-          abortHandshakeOrEmitwsClientError(this, req, socket, 400, message2);
+          const message = "Missing or invalid Sec-WebSocket-Key header";
+          abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);
           return;
         }
         if (version !== 8 && version !== 13) {
-          const message2 = "Missing or invalid Sec-WebSocket-Version header";
-          abortHandshakeOrEmitwsClientError(this, req, socket, 400, message2);
+          const message = "Missing or invalid Sec-WebSocket-Version header";
+          abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);
           return;
         }
         if (!this.shouldHandle(req)) {
@@ -11818,8 +11818,8 @@ var require_websocket_server = __commonJS({
           try {
             protocols = subprotocol.parse(secWebSocketProtocol);
           } catch (err) {
-            const message2 = "Invalid Sec-WebSocket-Protocol header";
-            abortHandshakeOrEmitwsClientError(this, req, socket, 400, message2);
+            const message = "Invalid Sec-WebSocket-Protocol header";
+            abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);
             return;
           }
         }
@@ -11838,8 +11838,8 @@ var require_websocket_server = __commonJS({
               extensions[PerMessageDeflate.extensionName] = perMessageDeflate;
             }
           } catch (err) {
-            const message2 = "Invalid or unacceptable Sec-WebSocket-Extensions header";
-            abortHandshakeOrEmitwsClientError(this, req, socket, 400, message2);
+            const message = "Invalid or unacceptable Sec-WebSocket-Extensions header";
+            abortHandshakeOrEmitwsClientError(this, req, socket, 400, message);
             return;
           }
         }
@@ -11850,9 +11850,9 @@ var require_websocket_server = __commonJS({
             req
           };
           if (this.options.verifyClient.length === 2) {
-            this.options.verifyClient(info, (verified, code, message2, headers) => {
+            this.options.verifyClient(info, (verified, code, message, headers) => {
               if (!verified) {
-                return abortHandshake(socket, code || 401, message2, headers);
+                return abortHandshake(socket, code || 401, message, headers);
               }
               this.completeUpgrade(
                 extensions,
@@ -11950,27 +11950,27 @@ var require_websocket_server = __commonJS({
     function socketOnError() {
       this.destroy();
     }
-    function abortHandshake(socket, code, message2, headers) {
-      message2 = message2 || http.STATUS_CODES[code];
+    function abortHandshake(socket, code, message, headers) {
+      message = message || http.STATUS_CODES[code];
       headers = {
         Connection: "close",
         "Content-Type": "text/html",
-        "Content-Length": Buffer.byteLength(message2),
+        "Content-Length": Buffer.byteLength(message),
         ...headers
       };
       socket.once("finish", socket.destroy);
       socket.end(
         `HTTP/1.1 ${code} ${http.STATUS_CODES[code]}\r
-` + Object.keys(headers).map((h) => `${h}: ${headers[h]}`).join("\r\n") + "\r\n\r\n" + message2
+` + Object.keys(headers).map((h) => `${h}: ${headers[h]}`).join("\r\n") + "\r\n\r\n" + message
       );
     }
-    function abortHandshakeOrEmitwsClientError(server, req, socket, code, message2) {
+    function abortHandshakeOrEmitwsClientError(server, req, socket, code, message) {
       if (server.listenerCount("wsClientError")) {
-        const err = new Error(message2);
+        const err = new Error(message);
         Error.captureStackTrace(err, abortHandshakeOrEmitwsClientError);
         server.emit("wsClientError", err, socket, req);
       } else {
-        abortHandshake(socket, code, message2);
+        abortHandshake(socket, code, message);
       }
     }
   }
@@ -12207,7 +12207,7 @@ var require_pacproxy = __commonJS({
       return https.createServer(options);
     }
     function gErrorHandler(e) {
-      log2("General Error %s ", e.message);
+      log("General Error %s ", e.message);
     }
     function generateBasicAuth(user, password) {
       var token = user + ":" + password;
@@ -12239,12 +12239,12 @@ var require_pacproxy = __commonJS({
       if ("upgrade" in resHeaders) delete resHeaders["upgrade"];
       return resHeaders;
     }
-    function log2(...args2) {
-      if (pacProxy.configs && pacProxy.configs.logging) console.log(...args2);
+    function log(...args) {
+      if (pacProxy.configs && pacProxy.configs.logging) console.log(...args);
     }
     function pacContent(req, vbrowser) {
       let userAgent = req.headers["user-agent"];
-      log2("%s PAC %s ", vbrowser, userAgent);
+      log("%s PAC %s ", vbrowser, userAgent);
       if (!req.headers["host"]) {
         return pacDirect;
       }
@@ -12343,7 +12343,7 @@ var require_pacproxy = __commonJS({
     }
     function requestRemote(parsed, req, res) {
       const visitorIP = req.socket.remoteAddress;
-      log2("%s Fetch %s ", visitorIP, parsed.toString());
+      log("%s Fetch %s ", visitorIP, parsed.toString());
       let agent = http;
       if (parsed.protocol == "https:") agent = https;
       if (pacProxy.configs.proxyip != "0.0.0.0") {
@@ -12359,7 +12359,7 @@ var require_pacproxy = __commonJS({
         proxyRes.pipe(res);
       });
       proxyReq.on("error", (err) => {
-        log2("%s REQUEST %s ", visitorIP, err);
+        log("%s REQUEST %s ", visitorIP, err);
         if (gotResponse) {
         } else if ("ENOTFOUND" == err.code) response(res, 400);
         else response(res, 500);
@@ -12378,7 +12378,7 @@ var require_pacproxy = __commonJS({
     }
     function handleWebsite(req, res, tunnelRequest = false) {
       const visitorIP = req.socket.remoteAddress;
-      log2("%s %s %s ", visitorIP, req.headers.host, req.url);
+      log("%s %s %s ", visitorIP, req.headers.host, req.url);
       try {
         var parsed = new URL("https://" + pacProxy.configs.domain + req.url);
       } catch (e) {
@@ -12412,7 +12412,7 @@ var require_pacproxy = __commonJS({
       try {
         requestRemote(parsed, req, res);
       } catch (e) {
-        log2("%s Error %s ", visitorIP, e.message);
+        log("%s Error %s ", visitorIP, e.message);
       }
     }
     function handleRequest(req, res) {
@@ -12431,7 +12431,7 @@ var require_pacproxy = __commonJS({
     }
     function _handleRequest(req, res) {
       const visitorIP = req.socket.remoteAddress;
-      log2("%s %s %s ", visitorIP, req.method, req.url);
+      log("%s %s %s ", visitorIP, req.method, req.url);
       if (visitorIP == "127.0.0.1" && req.headers.host.startsWith("localhost") && req.url.startsWith("/pac")) {
         const vpac = pacContent(req, req.url.slice(5));
         if (vpac == pacDirect) return response(res, 200, { "Content-Type": "text/plain" }, vpac);
@@ -12460,7 +12460,7 @@ var require_pacproxy = __commonJS({
       try {
         requestRemote(parsed, req, res);
       } catch (e) {
-        log2("%s Error %s ", visitorIP, e.message);
+        log("%s Error %s ", visitorIP, e.message);
       }
     }
     function handleConnect(req, socket) {
@@ -12480,7 +12480,7 @@ var require_pacproxy = __commonJS({
     function _handleConnect(req, socket) {
       if (isLocalHost(req.url)) return socketResponse(socket, "HTTP/1.1 403 Forbidden\r\n");
       const visitorIP = req.socket.remoteAddress;
-      log2("%s %s %s ", visitorIP, req.method, req.url);
+      log("%s %s %s ", visitorIP, req.method, req.url);
       var gotResponse = false;
       const ontunnelerror = (err) => {
         if (gotResponse) return socket.end();
@@ -12508,7 +12508,7 @@ var require_pacproxy = __commonJS({
           tunnel.pipe(socket);
           socket.pipe(tunnel);
         } catch (e) {
-          log2("%s Error %s ", visitorIP, e.message);
+          log("%s Error %s ", visitorIP, e.message);
         }
       };
       var tunnel = net.createConnection(
@@ -12517,7 +12517,7 @@ var require_pacproxy = __commonJS({
       );
       tunnel.on("lookup", (err, addresss) => {
         if (isLocalIP(addresss)) {
-          log2("%s Error %s ", visitorIP, "visit localIP");
+          log("%s Error %s ", visitorIP, "visit localIP");
           gotResponse = true;
           tunnel.destroy();
           socket.end();
@@ -12532,7 +12532,7 @@ var require_pacproxy = __commonJS({
       if (!req.url.startsWith(pacProxy.configs.paclink)) return pacProxy.configs.onconnection(ws, req);
       const visitorIP = req.socket.remoteAddress;
       const suburl = req.url.slice(pacProxy.configs.paclink.length);
-      log2("%s %s %s ", visitorIP, "WSS", suburl);
+      log("%s %s %s ", visitorIP, "WSS", suburl);
       if (!suburl) var tolocal = { host: "127.0.0.1", port: pacProxy.configs.wssport, keepAlive: true };
       else if (suburl.toLowerCase() == "/tls") var tolocal = { host: "127.0.0.1", port: pacProxy.configs.tlsport, keepAlive: true };
       else if (suburl.toLowerCase() == "/pac") var tolocal = { host: "127.0.0.1", port: pacProxy.configs.pacport, keepAlive: true };
@@ -12553,10 +12553,19 @@ var require_pacproxy = __commonJS({
         duplex.pipe(tunnel);
         tunnel.pipe(duplex);
       } catch (e) {
-        log2("%s Error %s ", visitorIP, e.message);
+        log("%s Error %s ", visitorIP, e.message);
       }
     }
     process.on("uncaughtException", gErrorHandler);
+  }
+});
+
+// node_modules/pacproxy-https-server/app.js
+var require_app = __commonJS({
+  "node_modules/pacproxy-https-server/app.js"(exports2) {
+    "use strict";
+    exports2.onrequest = false;
+    exports2.onconnection = false;
   }
 });
 
@@ -13328,21 +13337,21 @@ var require_parse = __commonJS({
       }
       return parsed;
     }
-    function parse(command, args2, options) {
-      if (args2 && !Array.isArray(args2)) {
-        options = args2;
-        args2 = null;
+    function parse(command, args, options) {
+      if (args && !Array.isArray(args)) {
+        options = args;
+        args = null;
       }
-      args2 = args2 ? args2.slice(0) : [];
+      args = args ? args.slice(0) : [];
       options = Object.assign({}, options);
       const parsed = {
         command,
-        args: args2,
+        args,
         options,
         file: void 0,
         original: {
           command,
-          args: args2
+          args
         }
       };
       return options.shell ? parsed : parseNonShell(parsed);
@@ -13408,14 +13417,14 @@ var require_cross_spawn = __commonJS({
     var cp = require("child_process");
     var parse = require_parse();
     var enoent = require_enoent();
-    function spawn(command, args2, options) {
-      const parsed = parse(command, args2, options);
+    function spawn(command, args, options) {
+      const parsed = parse(command, args, options);
       const spawned = cp.spawn(parsed.command, parsed.args, parsed.options);
       enoent.hookChildProcess(spawned, parsed);
       return spawned;
     }
-    function spawnSync(command, args2, options) {
-      const parsed = parse(command, args2, options);
+    function spawnSync(command, args, options) {
+      const parsed = parse(command, args, options);
       const result = cp.spawnSync(parsed.command, parsed.args, parsed.options);
       result.error = result.error || enoent.verifyENOENTSync(result.status, parsed);
       return result;
@@ -13983,12 +13992,12 @@ var require_error = __commonJS({
       const isError = Object.prototype.toString.call(error) === "[object Error]";
       const shortMessage = isError ? `${execaMessage}
 ${error.message}` : execaMessage;
-      const message2 = [shortMessage, stderr, stdout].filter(Boolean).join("\n");
+      const message = [shortMessage, stderr, stdout].filter(Boolean).join("\n");
       if (isError) {
         error.originalMessage = error.message;
-        error.message = message2;
+        error.message = message;
       } else {
-        error = new Error(message2);
+        error = new Error(message);
       }
       error.shortMessage = shortMessage;
       error.command = command;
@@ -14587,7 +14596,7 @@ var require_promise = __commonJS({
     ]);
     var mergePromise = (spawned, promise) => {
       for (const [property, descriptor] of descriptors) {
-        const value = typeof promise === "function" ? (...args2) => Reflect.apply(descriptor.value, promise(), args2) : descriptor.value.bind(promise);
+        const value = typeof promise === "function" ? (...args) => Reflect.apply(descriptor.value, promise(), args) : descriptor.value.bind(promise);
         Reflect.defineProperty(spawned, property, { ...descriptor, value });
       }
       return spawned;
@@ -14618,11 +14627,11 @@ var require_promise = __commonJS({
 var require_command = __commonJS({
   "node_modules/execa/lib/command.js"(exports2, module2) {
     "use strict";
-    var normalizeArgs = (file, args2 = []) => {
-      if (!Array.isArray(args2)) {
+    var normalizeArgs = (file, args = []) => {
+      if (!Array.isArray(args)) {
         return [file];
       }
-      return [file, ...args2];
+      return [file, ...args];
     };
     var NO_ESCAPE_REGEXP = /^[\w.-]+$/;
     var DOUBLE_QUOTES_REGEXP = /"/g;
@@ -14632,11 +14641,11 @@ var require_command = __commonJS({
       }
       return `"${arg.replace(DOUBLE_QUOTES_REGEXP, '\\"')}"`;
     };
-    var joinCommand = (file, args2) => {
-      return normalizeArgs(file, args2).join(" ");
+    var joinCommand = (file, args) => {
+      return normalizeArgs(file, args).join(" ");
     };
-    var getEscapedCommand = (file, args2) => {
-      return normalizeArgs(file, args2).map((arg) => escapeArg(arg)).join(" ");
+    var getEscapedCommand = (file, args) => {
+      return normalizeArgs(file, args).map((arg) => escapeArg(arg)).join(" ");
     };
     var SPACES_REGEXP = / +/g;
     var parseCommand = (command) => {
@@ -14683,10 +14692,10 @@ var require_execa = __commonJS({
       }
       return env;
     };
-    var handleArguments = (file, args2, options = {}) => {
-      const parsed = crossSpawn._parse(file, args2, options);
+    var handleArguments = (file, args, options = {}) => {
+      const parsed = crossSpawn._parse(file, args, options);
       file = parsed.command;
-      args2 = parsed.args;
+      args = parsed.args;
       options = parsed.options;
       options = {
         maxBuffer: DEFAULT_MAX_BUFFER,
@@ -14706,9 +14715,9 @@ var require_execa = __commonJS({
       options.env = getEnv(options);
       options.stdio = normalizeStdio(options);
       if (process.platform === "win32" && path.basename(file, ".exe") === "cmd") {
-        args2.unshift("/q");
+        args.unshift("/q");
       }
-      return { file, args: args2, options, parsed };
+      return { file, args, options, parsed };
     };
     var handleOutput = (options, value, error) => {
       if (typeof value !== "string" && !Buffer.isBuffer(value)) {
@@ -14719,10 +14728,10 @@ var require_execa = __commonJS({
       }
       return value;
     };
-    var execa = (file, args2, options) => {
-      const parsed = handleArguments(file, args2, options);
-      const command = joinCommand(file, args2);
-      const escapedCommand = getEscapedCommand(file, args2);
+    var execa = (file, args, options) => {
+      const parsed = handleArguments(file, args, options);
+      const command = joinCommand(file, args);
+      const escapedCommand = getEscapedCommand(file, args);
       validateTimeout(parsed.options);
       let spawned;
       try {
@@ -14793,10 +14802,10 @@ var require_execa = __commonJS({
       return mergePromise(spawned, handlePromiseOnce);
     };
     module2.exports = execa;
-    module2.exports.sync = (file, args2, options) => {
-      const parsed = handleArguments(file, args2, options);
-      const command = joinCommand(file, args2);
-      const escapedCommand = getEscapedCommand(file, args2);
+    module2.exports.sync = (file, args, options) => {
+      const parsed = handleArguments(file, args, options);
+      const command = joinCommand(file, args);
+      const escapedCommand = getEscapedCommand(file, args);
       validateInputSync(parsed.options);
       let result;
       try {
@@ -14849,17 +14858,17 @@ var require_execa = __commonJS({
       };
     };
     module2.exports.command = (command, options) => {
-      const [file, ...args2] = parseCommand(command);
-      return execa(file, args2, options);
+      const [file, ...args] = parseCommand(command);
+      return execa(file, args, options);
     };
     module2.exports.commandSync = (command, options) => {
-      const [file, ...args2] = parseCommand(command);
-      return execa.sync(file, args2, options);
+      const [file, ...args] = parseCommand(command);
+      return execa.sync(file, args, options);
     };
-    module2.exports.node = (scriptPath, args2, options = {}) => {
-      if (args2 && !Array.isArray(args2) && typeof args2 === "object") {
-        options = args2;
-        args2 = [];
+    module2.exports.node = (scriptPath, args, options = {}) => {
+      if (args && !Array.isArray(args) && typeof args === "object") {
+        options = args;
+        args = [];
       }
       const stdio = normalizeStdio.node(options);
       const defaultExecArgv = process.execArgv.filter((arg) => !arg.startsWith("--inspect"));
@@ -14872,7 +14881,7 @@ var require_execa = __commonJS({
         [
           ...nodeOptions,
           scriptPath,
-          ...Array.isArray(args2) ? args2 : []
+          ...Array.isArray(args) ? args : []
         ],
         {
           ...options,
@@ -14893,7 +14902,7 @@ var require_android = __commonJS({
     "use strict";
     var { isIP } = require("net");
     var execa = require_execa();
-    var args2 = {
+    var args = {
       v4: ["-4", "r"],
       v6: ["-6", "r"]
     };
@@ -14912,11 +14921,11 @@ var require_android = __commonJS({
       return result;
     };
     var promise = async (family) => {
-      const { stdout } = await execa("ip", args2[family]);
+      const { stdout } = await execa("ip", args[family]);
       return parse(stdout, family);
     };
     var sync = (family) => {
-      const { stdout } = execa.sync("ip", args2[family]);
+      const { stdout } = execa.sync("ip", args[family]);
       return parse(stdout);
     };
     module2.exports.v4 = () => promise("v4");
@@ -14934,7 +14943,7 @@ var require_darwin = __commonJS({
     var { release } = require("os");
     var execa = require_execa();
     var dests = /* @__PURE__ */ new Set(["default", "0.0.0.0", "0.0.0.0/0", "::", "::/0"]);
-    var args2 = {
+    var args = {
       v4: ["-rn", "-f", "inet"],
       v6: ["-rn", "-f", "inet6"]
     };
@@ -14957,11 +14966,11 @@ var require_darwin = __commonJS({
       return result;
     };
     var promise = async (family) => {
-      const { stdout } = await execa("netstat", args2[family]);
+      const { stdout } = await execa("netstat", args[family]);
       return parse(stdout, family);
     };
     var sync = (family) => {
-      const { stdout } = execa.sync("netstat", args2[family]);
+      const { stdout } = execa.sync("netstat", args[family]);
       return parse(stdout, family);
     };
     module2.exports.v4 = () => promise("v4");
@@ -14978,7 +14987,7 @@ var require_freebsd = __commonJS({
     var { isIP } = require("net");
     var execa = require_execa();
     var dests = /* @__PURE__ */ new Set(["default", "0.0.0.0", "0.0.0.0/0", "::", "::/0"]);
-    var args2 = {
+    var args = {
       v4: ["-rn", "-f", "inet"],
       v6: ["-rn", "-f", "inet6"]
     };
@@ -14997,11 +15006,11 @@ var require_freebsd = __commonJS({
       return result;
     };
     var promise = async (family) => {
-      const { stdout } = await execa("netstat", args2[family]);
+      const { stdout } = await execa("netstat", args[family]);
       return parse(stdout);
     };
     var sync = (family) => {
-      const { stdout } = execa.sync("netstat", args2[family]);
+      const { stdout } = execa.sync("netstat", args[family]);
       return parse(stdout);
     };
     module2.exports.v4 = () => promise("v4");
@@ -15054,7 +15063,7 @@ var require_linux = __commonJS({
     var { isIP } = require("net");
     var { networkInterfaces } = require("os");
     var execa = require_execa();
-    var args2 = {
+    var args = {
       v4: ["-4", "r"],
       v6: ["-6", "r"]
     };
@@ -15085,11 +15094,11 @@ var require_linux = __commonJS({
       return result;
     };
     var promise = async (family) => {
-      const { stdout } = await execa("ip", args2[family]);
+      const { stdout } = await execa("ip", args[family]);
       return parse(stdout, family);
     };
     var sync = (family) => {
-      const { stdout } = execa.sync("ip", args2[family]);
+      const { stdout } = execa.sync("ip", args[family]);
       return parse(stdout, family);
     };
     module2.exports.v4 = () => promise("v4");
@@ -15106,7 +15115,7 @@ var require_openbsd = __commonJS({
     var { isIP } = require("net");
     var execa = require_execa();
     var dests = /* @__PURE__ */ new Set(["default", "0.0.0.0", "0.0.0.0/0", "::", "::/0"]);
-    var args2 = {
+    var args = {
       v4: ["-rn", "-f", "inet"],
       v6: ["-rn", "-f", "inet6"]
     };
@@ -15128,11 +15137,11 @@ var require_openbsd = __commonJS({
       return result;
     };
     var promise = async (family) => {
-      const { stdout } = await execa("netstat", args2[family]);
+      const { stdout } = await execa("netstat", args[family]);
       return parse(stdout);
     };
     var sync = (family) => {
-      const { stdout } = execa.sync("netstat", args2[family]);
+      const { stdout } = execa.sync("netstat", args[family]);
       return parse(stdout);
     };
     module2.exports.v4 = () => promise("v4");
@@ -15149,7 +15158,7 @@ var require_sunos = __commonJS({
     var { isIP } = require("net");
     var execa = require_execa();
     var dests = /* @__PURE__ */ new Set(["default", "0.0.0.0", "0.0.0.0/0", "::", "::/0"]);
-    var args2 = {
+    var args = {
       v4: ["-rn", "-f", "inet"],
       v6: ["-rn", "-f", "inet6"]
     };
@@ -15171,11 +15180,11 @@ var require_sunos = __commonJS({
       return result;
     };
     var promise = async (family) => {
-      const { stdout } = await execa("netstat", args2[family]);
+      const { stdout } = await execa("netstat", args[family]);
       return parse(stdout);
     };
     var sync = (family) => {
-      const { stdout } = execa.sync("netstat", args2[family]);
+      const { stdout } = execa.sync("netstat", args[family]);
       return parse(stdout);
     };
     module2.exports.v4 = () => promise("v4");
@@ -15468,7 +15477,7 @@ var require_common = __commonJS({
         let enableOverride = null;
         let namespacesCache;
         let enabledCache;
-        function debug(...args2) {
+        function debug(...args) {
           if (!debug.enabled) {
             return;
           }
@@ -15479,28 +15488,28 @@ var require_common = __commonJS({
           self.prev = prevTime;
           self.curr = curr;
           prevTime = curr;
-          args2[0] = createDebug.coerce(args2[0]);
-          if (typeof args2[0] !== "string") {
-            args2.unshift("%O");
+          args[0] = createDebug.coerce(args[0]);
+          if (typeof args[0] !== "string") {
+            args.unshift("%O");
           }
           let index = 0;
-          args2[0] = args2[0].replace(/%([a-zA-Z%])/g, (match, format) => {
+          args[0] = args[0].replace(/%([a-zA-Z%])/g, (match, format) => {
             if (match === "%%") {
               return "%";
             }
             index++;
             const formatter = createDebug.formatters[format];
             if (typeof formatter === "function") {
-              const val = args2[index];
+              const val = args[index];
               match = formatter.call(self, val);
-              args2.splice(index, 1);
+              args.splice(index, 1);
               index--;
             }
             return match;
           });
-          createDebug.formatArgs.call(self, args2);
+          createDebug.formatArgs.call(self, args);
           const logFn = self.log || createDebug.log;
-          logFn.apply(self, args2);
+          logFn.apply(self, args);
         }
         debug.namespace = namespace;
         debug.useColors = createDebug.useColors();
@@ -15722,16 +15731,16 @@ var require_browser = __commonJS({
       typeof navigator !== "undefined" && navigator.userAgent && (m = navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/)) && parseInt(m[1], 10) >= 31 || // Double check webkit in userAgent just in case we are in a worker
       typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
     }
-    function formatArgs(args2) {
-      args2[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args2[0] + (this.useColors ? "%c " : " ") + "+" + module2.exports.humanize(this.diff);
+    function formatArgs(args) {
+      args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module2.exports.humanize(this.diff);
       if (!this.useColors) {
         return;
       }
       const c = "color: " + this.color;
-      args2.splice(1, 0, c, "color: inherit");
+      args.splice(1, 0, c, "color: inherit");
       let index = 0;
       let lastC = 0;
-      args2[0].replace(/%[a-zA-Z%]/g, (match) => {
+      args[0].replace(/%[a-zA-Z%]/g, (match) => {
         if (match === "%%") {
           return;
         }
@@ -15740,7 +15749,7 @@ var require_browser = __commonJS({
           lastC = index;
         }
       });
-      args2.splice(lastC, 0, c);
+      args.splice(lastC, 0, c);
     }
     exports2.log = console.debug || console.log || (() => {
     });
@@ -15789,7 +15798,7 @@ var require_node = __commonJS({
     var tty = require("tty");
     var util = require("util");
     exports2.init = init;
-    exports2.log = log2;
+    exports2.log = log;
     exports2.formatArgs = formatArgs;
     exports2.save = save;
     exports2.load = load;
@@ -15906,16 +15915,16 @@ var require_node = __commonJS({
     function useColors() {
       return "colors" in exports2.inspectOpts ? Boolean(exports2.inspectOpts.colors) : tty.isatty(process.stderr.fd);
     }
-    function formatArgs(args2) {
+    function formatArgs(args) {
       const { namespace: name, useColors: useColors2 } = this;
       if (useColors2) {
         const c = this.color;
         const colorCode = "\x1B[3" + (c < 8 ? c : "8;5;" + c);
         const prefix = `  ${colorCode};1m${name} \x1B[0m`;
-        args2[0] = prefix + args2[0].split("\n").join("\n" + prefix);
-        args2.push(colorCode + "m+" + module2.exports.humanize(this.diff) + "\x1B[0m");
+        args[0] = prefix + args[0].split("\n").join("\n" + prefix);
+        args.push(colorCode + "m+" + module2.exports.humanize(this.diff) + "\x1B[0m");
       } else {
-        args2[0] = getDate() + name + " " + args2[0];
+        args[0] = getDate() + name + " " + args[0];
       }
     }
     function getDate() {
@@ -15924,8 +15933,8 @@ var require_node = __commonJS({
       }
       return (/* @__PURE__ */ new Date()).toISOString() + " ";
     }
-    function log2(...args2) {
-      return process.stderr.write(util.formatWithOptions(exports2.inspectOpts, ...args2) + "\n");
+    function log(...args) {
+      return process.stderr.write(util.formatWithOptions(exports2.inspectOpts, ...args) + "\n");
     }
     function save(namespaces) {
       if (namespaces) {
@@ -17554,25 +17563,25 @@ var require_URL = __commonJS({
       if (arguments.length < 1) {
         throw new TypeError("Failed to construct 'URL': 1 argument required, but only " + arguments.length + " present.");
       }
-      const args2 = [];
+      const args = [];
       for (let i = 0; i < arguments.length && i < 2; ++i) {
-        args2[i] = arguments[i];
+        args[i] = arguments[i];
       }
-      args2[0] = conversions["USVString"](args2[0]);
-      if (args2[1] !== void 0) {
-        args2[1] = conversions["USVString"](args2[1]);
+      args[0] = conversions["USVString"](args[0]);
+      if (args[1] !== void 0) {
+        args[1] = conversions["USVString"](args[1]);
       }
-      module2.exports.setup(this, args2);
+      module2.exports.setup(this, args);
     }
     URL2.prototype.toJSON = function toJSON() {
       if (!this || !module2.exports.is(this)) {
         throw new TypeError("Illegal invocation");
       }
-      const args2 = [];
+      const args = [];
       for (let i = 0; i < arguments.length && i < 0; ++i) {
-        args2[i] = arguments[i];
+        args[i] = arguments[i];
       }
-      return this[impl].toJSON.apply(this[impl], args2);
+      return this[impl].toJSON.apply(this[impl], args);
     };
     Object.defineProperty(URL2.prototype, "href", {
       get() {
@@ -17851,9 +17860,9 @@ var require_lib2 = __commonJS({
       enumerable: false,
       configurable: true
     });
-    function FetchError(message2, type, systemError) {
-      Error.call(this, message2);
-      this.message = message2;
+    function FetchError(message, type, systemError) {
+      Error.call(this, message);
+      this.message = message;
       this.type = type;
       if (systemError) {
         this.code = this.errno = systemError.code;
@@ -18710,10 +18719,10 @@ var require_lib2 = __commonJS({
         agent
       });
     }
-    function AbortError(message2) {
-      Error.call(this, message2);
+    function AbortError(message) {
+      Error.call(this, message);
       this.type = "aborted";
-      this.message = message2;
+      this.message = message;
       Error.captureStackTrace(this, this.constructor);
     }
     AbortError.prototype = Object.create(Error.prototype);
@@ -21265,9 +21274,9 @@ var require_XMLNode = __commonJS({
 var require_XMLStringifier = __commonJS({
   "node_modules/xmlbuilder/lib/XMLStringifier.js"(exports2, module2) {
     (function() {
-      var XMLStringifier, bind = function(fn2, me) {
+      var XMLStringifier, bind = function(fn, me) {
         return function() {
-          return fn2.apply(me, arguments);
+          return fn.apply(me, arguments);
         };
       }, hasProp = {}.hasOwnProperty;
       module2.exports = XMLStringifier = function() {
@@ -23172,9 +23181,9 @@ var require_sax = __commonJS({
         var me = this;
         if (!me._parser["on" + ev] && streamWraps.indexOf(ev) !== -1) {
           me._parser["on" + ev] = function() {
-            var args2 = arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments);
-            args2.splice(0, 0, ev);
-            me.emit.apply(me, args2);
+            var args = arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments);
+            args.splice(0, 0, ev);
+            me.emit.apply(me, args);
           };
         }
         return Stream.prototype.on.call(me, ev, handler);
@@ -23588,12 +23597,12 @@ var require_sax = __commonJS({
         SAXParser.call(parser, parser.strict, parser.opt);
         return parser;
       }
-      function strictFail(parser, message2) {
+      function strictFail(parser, message) {
         if (typeof parser !== "object" || !(parser instanceof SAXParser)) {
           throw new Error("bad call to strictFail");
         }
         if (parser.strict) {
-          error(parser, message2);
+          error(parser, message);
         }
       }
       function newTag(parser) {
@@ -24456,9 +24465,9 @@ var require_parser3 = __commonJS({
   "node_modules/xml2js/lib/parser.js"(exports2) {
     (function() {
       "use strict";
-      var bom, defaults, defineProperty, events, isEmpty, processItem, processors, sax, setImmediate2, bind = function(fn2, me) {
+      var bom, defaults, defineProperty, events, isEmpty, processItem, processors, sax, setImmediate2, bind = function(fn, me) {
         return function() {
-          return fn2.apply(me, arguments);
+          return fn.apply(me, arguments);
         };
       }, extend = function(child, parent) {
         for (var key in parent) {
@@ -24570,7 +24579,7 @@ var require_parser3 = __commonJS({
           }
         };
         Parser.prototype.reset = function() {
-          var attrkey, charkey, ontext, stack2;
+          var attrkey, charkey, ontext, stack;
           this.removeAllListeners();
           this.saxParser = sax.parser(this.options.strict, {
             trim: false,
@@ -24598,7 +24607,7 @@ var require_parser3 = __commonJS({
           this.saxParser.ended = false;
           this.EXPLICIT_CHARKEY = this.options.explicitCharkey;
           this.resultObject = null;
-          stack2 = [];
+          stack = [];
           attrkey = this.options.attrkey;
           charkey = this.options.charkey;
           this.saxParser.onopentag = /* @__PURE__ */ function(_this) {
@@ -24629,13 +24638,13 @@ var require_parser3 = __commonJS({
                   local: node.local
                 };
               }
-              return stack2.push(obj);
+              return stack.push(obj);
             };
           }(this);
           this.saxParser.onclosetag = /* @__PURE__ */ function(_this) {
             return function() {
               var cdata, emptyStr, key, node, nodeName, obj, objClone, old, s, xpath;
-              obj = stack2.pop();
+              obj = stack.pop();
               nodeName = obj["#name"];
               if (!_this.options.explicitChildren || !_this.options.preserveChildrenOrder) {
                 delete obj["#name"];
@@ -24644,7 +24653,7 @@ var require_parser3 = __commonJS({
                 cdata = obj.cdata;
                 delete obj.cdata;
               }
-              s = stack2[stack2.length - 1];
+              s = stack[stack.length - 1];
               if (obj[charkey].match(/^\s*$/) && !cdata) {
                 emptyStr = obj[charkey];
                 delete obj[charkey];
@@ -24671,8 +24680,8 @@ var require_parser3 = __commonJS({
                 xpath = "/" + function() {
                   var i, len, results;
                   results = [];
-                  for (i = 0, len = stack2.length; i < len; i++) {
-                    node = stack2[i];
+                  for (i = 0, len = stack.length; i < len; i++) {
+                    node = stack[i];
                     results.push(node["#name"]);
                   }
                   return results;
@@ -24716,7 +24725,7 @@ var require_parser3 = __commonJS({
                   }
                 }
               }
-              if (stack2.length > 0) {
+              if (stack.length > 0) {
                 return _this.assignOrPush(s, nodeName, obj);
               } else {
                 if (_this.options.explicitRoot) {
@@ -24733,7 +24742,7 @@ var require_parser3 = __commonJS({
           ontext = /* @__PURE__ */ function(_this) {
             return function(text) {
               var charChild, s;
-              s = stack2[stack2.length - 1];
+              s = stack[stack.length - 1];
               if (s) {
                 s[charkey] += text;
                 if (_this.options.explicitChildren && _this.options.preserveChildrenOrder && _this.options.charsAsChildren && (_this.options.includeWhiteChars || text.replace(/\\n/g, "").trim() !== "")) {
@@ -24867,8 +24876,8 @@ var require_xml2js = __commonJS({
       exports2.processors = processors;
       exports2.ValidationError = function(superClass) {
         extend(ValidationError, superClass);
-        function ValidationError(message2) {
-          this.message = message2;
+        function ValidationError(message) {
+          this.message = message;
         }
         return ValidationError;
       }(Error);
@@ -24894,10 +24903,10 @@ var require_device = __commonJS({
           "urn:schemas-upnp-org:service:WANPPPConnection:1"
         ];
       }
-      async run(action, args2) {
+      async run(action, args) {
         const info = await this._getService(this.services);
-        const requestBody = '<?xml version="1.0"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:' + action + " xmlns:u=" + JSON.stringify(info.service) + ">" + args2.map((args3) => {
-          return "<" + args3[0] + ">" + (args3[1] ? args3[1] : "") + "</" + args3[0] + ">";
+        const requestBody = '<?xml version="1.0"?><s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:' + action + " xmlns:u=" + JSON.stringify(info.service) + ">" + args.map((args2) => {
+          return "<" + args2[0] + ">" + (args2[1] ? args2[1] : "") + "</" + args2[0] + ">";
         }).join("") + "</u:" + action + "></s:Body></s:Envelope>";
         const res = await fetch(info.controlURL, {
           method: "POST",
@@ -24931,8 +24940,8 @@ var require_device = __commonJS({
               case 724:
                 throw new Error("Internal and External port values MUST be the same.");
               case 725:
-                args2[args2.length - 1] = ["NewLeaseDuration", 0];
-                return await this.run(action, args2);
+                args[args.length - 1] = ["NewLeaseDuration", 0];
+                return await this.run(action, args);
               case 726:
                 throw new Error("RemoteHost must be a wildcard and cannot be a specific IP address or DNS name.");
               case 727:
@@ -25115,9 +25124,9 @@ var require_ssdp = __commonJS({
       createSocket(interf) {
         if (this._destroyed) throw new Error("client is destroyed");
         let socket = dgram.createSocket(interf.family === "IPv4" ? "udp4" : "udp6");
-        socket.on("message", (message2, info) => {
+        socket.on("message", (message, info) => {
           if (this._destroyed) return;
-          this._parseResponse(message2.toString(), socket.address, info);
+          this._parseResponse(message.toString(), socket.address, info);
         });
         const onReady = () => {
           if (this._boundCount < this.sockets.length) return;
@@ -25531,7 +25540,7 @@ var require_pmp = __commonJS({
       onMessage(msg, rinfo) {
         if (this._queue.length === 0) return;
         debug("Client#onMessage()", [msg, rinfo]);
-        const cb = (err, ...args2) => {
+        const cb = (err, ...args) => {
           this._req = null;
           this._reqActive = false;
           if (err) {
@@ -25541,7 +25550,7 @@ var require_pmp = __commonJS({
               this.emit("error", err);
             }
           } else if (req.resolve) {
-            req.resolve.apply(this, args2);
+            req.resolve.apply(this, args);
           }
           this._next();
         };
@@ -26045,12939 +26054,6 @@ var require_nat_api = __commonJS({
   }
 });
 
-// node_modules/@fastify/send/lib/isUtf8MimeType.js
-var require_isUtf8MimeType = __commonJS({
-  "node_modules/@fastify/send/lib/isUtf8MimeType.js"(exports2, module2) {
-    "use strict";
-    function isUtf8MimeType(value) {
-      const len = value.length;
-      return len > 21 && value.indexOf("application/javascript") === 0 || len > 14 && value.indexOf("application/json") === 0 || len > 5 && value.indexOf("text/") === 0;
-    }
-    module2.exports.isUtf8MimeType = isUtf8MimeType;
-  }
-});
-
-// node_modules/mime/Mime.js
-var require_Mime = __commonJS({
-  "node_modules/mime/Mime.js"(exports2, module2) {
-    "use strict";
-    function Mime() {
-      this._types = /* @__PURE__ */ Object.create(null);
-      this._extensions = /* @__PURE__ */ Object.create(null);
-      for (let i = 0; i < arguments.length; i++) {
-        this.define(arguments[i]);
-      }
-      this.define = this.define.bind(this);
-      this.getType = this.getType.bind(this);
-      this.getExtension = this.getExtension.bind(this);
-    }
-    Mime.prototype.define = function(typeMap, force) {
-      for (let type in typeMap) {
-        let extensions = typeMap[type].map(function(t) {
-          return t.toLowerCase();
-        });
-        type = type.toLowerCase();
-        for (let i = 0; i < extensions.length; i++) {
-          const ext = extensions[i];
-          if (ext[0] === "*") {
-            continue;
-          }
-          if (!force && ext in this._types) {
-            throw new Error(
-              'Attempt to change mapping for "' + ext + '" extension from "' + this._types[ext] + '" to "' + type + '". Pass `force=true` to allow this, otherwise remove "' + ext + '" from the list of extensions for "' + type + '".'
-            );
-          }
-          this._types[ext] = type;
-        }
-        if (force || !this._extensions[type]) {
-          const ext = extensions[0];
-          this._extensions[type] = ext[0] !== "*" ? ext : ext.substr(1);
-        }
-      }
-    };
-    Mime.prototype.getType = function(path) {
-      path = String(path);
-      let last = path.replace(/^.*[/\\]/, "").toLowerCase();
-      let ext = last.replace(/^.*\./, "").toLowerCase();
-      let hasPath = last.length < path.length;
-      let hasDot = ext.length < last.length - 1;
-      return (hasDot || !hasPath) && this._types[ext] || null;
-    };
-    Mime.prototype.getExtension = function(type) {
-      type = /^\s*([^;\s]*)/.test(type) && RegExp.$1;
-      return type && this._extensions[type.toLowerCase()] || null;
-    };
-    module2.exports = Mime;
-  }
-});
-
-// node_modules/mime/types/standard.js
-var require_standard = __commonJS({
-  "node_modules/mime/types/standard.js"(exports2, module2) {
-    module2.exports = { "application/andrew-inset": ["ez"], "application/applixware": ["aw"], "application/atom+xml": ["atom"], "application/atomcat+xml": ["atomcat"], "application/atomdeleted+xml": ["atomdeleted"], "application/atomsvc+xml": ["atomsvc"], "application/atsc-dwd+xml": ["dwd"], "application/atsc-held+xml": ["held"], "application/atsc-rsat+xml": ["rsat"], "application/bdoc": ["bdoc"], "application/calendar+xml": ["xcs"], "application/ccxml+xml": ["ccxml"], "application/cdfx+xml": ["cdfx"], "application/cdmi-capability": ["cdmia"], "application/cdmi-container": ["cdmic"], "application/cdmi-domain": ["cdmid"], "application/cdmi-object": ["cdmio"], "application/cdmi-queue": ["cdmiq"], "application/cu-seeme": ["cu"], "application/dash+xml": ["mpd"], "application/davmount+xml": ["davmount"], "application/docbook+xml": ["dbk"], "application/dssc+der": ["dssc"], "application/dssc+xml": ["xdssc"], "application/ecmascript": ["es", "ecma"], "application/emma+xml": ["emma"], "application/emotionml+xml": ["emotionml"], "application/epub+zip": ["epub"], "application/exi": ["exi"], "application/express": ["exp"], "application/fdt+xml": ["fdt"], "application/font-tdpfr": ["pfr"], "application/geo+json": ["geojson"], "application/gml+xml": ["gml"], "application/gpx+xml": ["gpx"], "application/gxf": ["gxf"], "application/gzip": ["gz"], "application/hjson": ["hjson"], "application/hyperstudio": ["stk"], "application/inkml+xml": ["ink", "inkml"], "application/ipfix": ["ipfix"], "application/its+xml": ["its"], "application/java-archive": ["jar", "war", "ear"], "application/java-serialized-object": ["ser"], "application/java-vm": ["class"], "application/javascript": ["js", "mjs"], "application/json": ["json", "map"], "application/json5": ["json5"], "application/jsonml+json": ["jsonml"], "application/ld+json": ["jsonld"], "application/lgr+xml": ["lgr"], "application/lost+xml": ["lostxml"], "application/mac-binhex40": ["hqx"], "application/mac-compactpro": ["cpt"], "application/mads+xml": ["mads"], "application/manifest+json": ["webmanifest"], "application/marc": ["mrc"], "application/marcxml+xml": ["mrcx"], "application/mathematica": ["ma", "nb", "mb"], "application/mathml+xml": ["mathml"], "application/mbox": ["mbox"], "application/mediaservercontrol+xml": ["mscml"], "application/metalink+xml": ["metalink"], "application/metalink4+xml": ["meta4"], "application/mets+xml": ["mets"], "application/mmt-aei+xml": ["maei"], "application/mmt-usd+xml": ["musd"], "application/mods+xml": ["mods"], "application/mp21": ["m21", "mp21"], "application/mp4": ["mp4s", "m4p"], "application/msword": ["doc", "dot"], "application/mxf": ["mxf"], "application/n-quads": ["nq"], "application/n-triples": ["nt"], "application/node": ["cjs"], "application/octet-stream": ["bin", "dms", "lrf", "mar", "so", "dist", "distz", "pkg", "bpk", "dump", "elc", "deploy", "exe", "dll", "deb", "dmg", "iso", "img", "msi", "msp", "msm", "buffer"], "application/oda": ["oda"], "application/oebps-package+xml": ["opf"], "application/ogg": ["ogx"], "application/omdoc+xml": ["omdoc"], "application/onenote": ["onetoc", "onetoc2", "onetmp", "onepkg"], "application/oxps": ["oxps"], "application/p2p-overlay+xml": ["relo"], "application/patch-ops-error+xml": ["xer"], "application/pdf": ["pdf"], "application/pgp-encrypted": ["pgp"], "application/pgp-signature": ["asc", "sig"], "application/pics-rules": ["prf"], "application/pkcs10": ["p10"], "application/pkcs7-mime": ["p7m", "p7c"], "application/pkcs7-signature": ["p7s"], "application/pkcs8": ["p8"], "application/pkix-attr-cert": ["ac"], "application/pkix-cert": ["cer"], "application/pkix-crl": ["crl"], "application/pkix-pkipath": ["pkipath"], "application/pkixcmp": ["pki"], "application/pls+xml": ["pls"], "application/postscript": ["ai", "eps", "ps"], "application/provenance+xml": ["provx"], "application/pskc+xml": ["pskcxml"], "application/raml+yaml": ["raml"], "application/rdf+xml": ["rdf", "owl"], "application/reginfo+xml": ["rif"], "application/relax-ng-compact-syntax": ["rnc"], "application/resource-lists+xml": ["rl"], "application/resource-lists-diff+xml": ["rld"], "application/rls-services+xml": ["rs"], "application/route-apd+xml": ["rapd"], "application/route-s-tsid+xml": ["sls"], "application/route-usd+xml": ["rusd"], "application/rpki-ghostbusters": ["gbr"], "application/rpki-manifest": ["mft"], "application/rpki-roa": ["roa"], "application/rsd+xml": ["rsd"], "application/rss+xml": ["rss"], "application/rtf": ["rtf"], "application/sbml+xml": ["sbml"], "application/scvp-cv-request": ["scq"], "application/scvp-cv-response": ["scs"], "application/scvp-vp-request": ["spq"], "application/scvp-vp-response": ["spp"], "application/sdp": ["sdp"], "application/senml+xml": ["senmlx"], "application/sensml+xml": ["sensmlx"], "application/set-payment-initiation": ["setpay"], "application/set-registration-initiation": ["setreg"], "application/shf+xml": ["shf"], "application/sieve": ["siv", "sieve"], "application/smil+xml": ["smi", "smil"], "application/sparql-query": ["rq"], "application/sparql-results+xml": ["srx"], "application/srgs": ["gram"], "application/srgs+xml": ["grxml"], "application/sru+xml": ["sru"], "application/ssdl+xml": ["ssdl"], "application/ssml+xml": ["ssml"], "application/swid+xml": ["swidtag"], "application/tei+xml": ["tei", "teicorpus"], "application/thraud+xml": ["tfi"], "application/timestamped-data": ["tsd"], "application/toml": ["toml"], "application/trig": ["trig"], "application/ttml+xml": ["ttml"], "application/ubjson": ["ubj"], "application/urc-ressheet+xml": ["rsheet"], "application/urc-targetdesc+xml": ["td"], "application/voicexml+xml": ["vxml"], "application/wasm": ["wasm"], "application/widget": ["wgt"], "application/winhlp": ["hlp"], "application/wsdl+xml": ["wsdl"], "application/wspolicy+xml": ["wspolicy"], "application/xaml+xml": ["xaml"], "application/xcap-att+xml": ["xav"], "application/xcap-caps+xml": ["xca"], "application/xcap-diff+xml": ["xdf"], "application/xcap-el+xml": ["xel"], "application/xcap-ns+xml": ["xns"], "application/xenc+xml": ["xenc"], "application/xhtml+xml": ["xhtml", "xht"], "application/xliff+xml": ["xlf"], "application/xml": ["xml", "xsl", "xsd", "rng"], "application/xml-dtd": ["dtd"], "application/xop+xml": ["xop"], "application/xproc+xml": ["xpl"], "application/xslt+xml": ["*xsl", "xslt"], "application/xspf+xml": ["xspf"], "application/xv+xml": ["mxml", "xhvml", "xvml", "xvm"], "application/yang": ["yang"], "application/yin+xml": ["yin"], "application/zip": ["zip"], "audio/3gpp": ["*3gpp"], "audio/adpcm": ["adp"], "audio/amr": ["amr"], "audio/basic": ["au", "snd"], "audio/midi": ["mid", "midi", "kar", "rmi"], "audio/mobile-xmf": ["mxmf"], "audio/mp3": ["*mp3"], "audio/mp4": ["m4a", "mp4a"], "audio/mpeg": ["mpga", "mp2", "mp2a", "mp3", "m2a", "m3a"], "audio/ogg": ["oga", "ogg", "spx", "opus"], "audio/s3m": ["s3m"], "audio/silk": ["sil"], "audio/wav": ["wav"], "audio/wave": ["*wav"], "audio/webm": ["weba"], "audio/xm": ["xm"], "font/collection": ["ttc"], "font/otf": ["otf"], "font/ttf": ["ttf"], "font/woff": ["woff"], "font/woff2": ["woff2"], "image/aces": ["exr"], "image/apng": ["apng"], "image/avif": ["avif"], "image/bmp": ["bmp"], "image/cgm": ["cgm"], "image/dicom-rle": ["drle"], "image/emf": ["emf"], "image/fits": ["fits"], "image/g3fax": ["g3"], "image/gif": ["gif"], "image/heic": ["heic"], "image/heic-sequence": ["heics"], "image/heif": ["heif"], "image/heif-sequence": ["heifs"], "image/hej2k": ["hej2"], "image/hsj2": ["hsj2"], "image/ief": ["ief"], "image/jls": ["jls"], "image/jp2": ["jp2", "jpg2"], "image/jpeg": ["jpeg", "jpg", "jpe"], "image/jph": ["jph"], "image/jphc": ["jhc"], "image/jpm": ["jpm"], "image/jpx": ["jpx", "jpf"], "image/jxr": ["jxr"], "image/jxra": ["jxra"], "image/jxrs": ["jxrs"], "image/jxs": ["jxs"], "image/jxsc": ["jxsc"], "image/jxsi": ["jxsi"], "image/jxss": ["jxss"], "image/ktx": ["ktx"], "image/ktx2": ["ktx2"], "image/png": ["png"], "image/sgi": ["sgi"], "image/svg+xml": ["svg", "svgz"], "image/t38": ["t38"], "image/tiff": ["tif", "tiff"], "image/tiff-fx": ["tfx"], "image/webp": ["webp"], "image/wmf": ["wmf"], "message/disposition-notification": ["disposition-notification"], "message/global": ["u8msg"], "message/global-delivery-status": ["u8dsn"], "message/global-disposition-notification": ["u8mdn"], "message/global-headers": ["u8hdr"], "message/rfc822": ["eml", "mime"], "model/3mf": ["3mf"], "model/gltf+json": ["gltf"], "model/gltf-binary": ["glb"], "model/iges": ["igs", "iges"], "model/mesh": ["msh", "mesh", "silo"], "model/mtl": ["mtl"], "model/obj": ["obj"], "model/step+xml": ["stpx"], "model/step+zip": ["stpz"], "model/step-xml+zip": ["stpxz"], "model/stl": ["stl"], "model/vrml": ["wrl", "vrml"], "model/x3d+binary": ["*x3db", "x3dbz"], "model/x3d+fastinfoset": ["x3db"], "model/x3d+vrml": ["*x3dv", "x3dvz"], "model/x3d+xml": ["x3d", "x3dz"], "model/x3d-vrml": ["x3dv"], "text/cache-manifest": ["appcache", "manifest"], "text/calendar": ["ics", "ifb"], "text/coffeescript": ["coffee", "litcoffee"], "text/css": ["css"], "text/csv": ["csv"], "text/html": ["html", "htm", "shtml"], "text/jade": ["jade"], "text/jsx": ["jsx"], "text/less": ["less"], "text/markdown": ["markdown", "md"], "text/mathml": ["mml"], "text/mdx": ["mdx"], "text/n3": ["n3"], "text/plain": ["txt", "text", "conf", "def", "list", "log", "in", "ini"], "text/richtext": ["rtx"], "text/rtf": ["*rtf"], "text/sgml": ["sgml", "sgm"], "text/shex": ["shex"], "text/slim": ["slim", "slm"], "text/spdx": ["spdx"], "text/stylus": ["stylus", "styl"], "text/tab-separated-values": ["tsv"], "text/troff": ["t", "tr", "roff", "man", "me", "ms"], "text/turtle": ["ttl"], "text/uri-list": ["uri", "uris", "urls"], "text/vcard": ["vcard"], "text/vtt": ["vtt"], "text/xml": ["*xml"], "text/yaml": ["yaml", "yml"], "video/3gpp": ["3gp", "3gpp"], "video/3gpp2": ["3g2"], "video/h261": ["h261"], "video/h263": ["h263"], "video/h264": ["h264"], "video/iso.segment": ["m4s"], "video/jpeg": ["jpgv"], "video/jpm": ["*jpm", "jpgm"], "video/mj2": ["mj2", "mjp2"], "video/mp2t": ["ts"], "video/mp4": ["mp4", "mp4v", "mpg4"], "video/mpeg": ["mpeg", "mpg", "mpe", "m1v", "m2v"], "video/ogg": ["ogv"], "video/quicktime": ["qt", "mov"], "video/webm": ["webm"] };
-  }
-});
-
-// node_modules/mime/types/other.js
-var require_other = __commonJS({
-  "node_modules/mime/types/other.js"(exports2, module2) {
-    module2.exports = { "application/prs.cww": ["cww"], "application/vnd.1000minds.decision-model+xml": ["1km"], "application/vnd.3gpp.pic-bw-large": ["plb"], "application/vnd.3gpp.pic-bw-small": ["psb"], "application/vnd.3gpp.pic-bw-var": ["pvb"], "application/vnd.3gpp2.tcap": ["tcap"], "application/vnd.3m.post-it-notes": ["pwn"], "application/vnd.accpac.simply.aso": ["aso"], "application/vnd.accpac.simply.imp": ["imp"], "application/vnd.acucobol": ["acu"], "application/vnd.acucorp": ["atc", "acutc"], "application/vnd.adobe.air-application-installer-package+zip": ["air"], "application/vnd.adobe.formscentral.fcdt": ["fcdt"], "application/vnd.adobe.fxp": ["fxp", "fxpl"], "application/vnd.adobe.xdp+xml": ["xdp"], "application/vnd.adobe.xfdf": ["xfdf"], "application/vnd.ahead.space": ["ahead"], "application/vnd.airzip.filesecure.azf": ["azf"], "application/vnd.airzip.filesecure.azs": ["azs"], "application/vnd.amazon.ebook": ["azw"], "application/vnd.americandynamics.acc": ["acc"], "application/vnd.amiga.ami": ["ami"], "application/vnd.android.package-archive": ["apk"], "application/vnd.anser-web-certificate-issue-initiation": ["cii"], "application/vnd.anser-web-funds-transfer-initiation": ["fti"], "application/vnd.antix.game-component": ["atx"], "application/vnd.apple.installer+xml": ["mpkg"], "application/vnd.apple.keynote": ["key"], "application/vnd.apple.mpegurl": ["m3u8"], "application/vnd.apple.numbers": ["numbers"], "application/vnd.apple.pages": ["pages"], "application/vnd.apple.pkpass": ["pkpass"], "application/vnd.aristanetworks.swi": ["swi"], "application/vnd.astraea-software.iota": ["iota"], "application/vnd.audiograph": ["aep"], "application/vnd.balsamiq.bmml+xml": ["bmml"], "application/vnd.blueice.multipass": ["mpm"], "application/vnd.bmi": ["bmi"], "application/vnd.businessobjects": ["rep"], "application/vnd.chemdraw+xml": ["cdxml"], "application/vnd.chipnuts.karaoke-mmd": ["mmd"], "application/vnd.cinderella": ["cdy"], "application/vnd.citationstyles.style+xml": ["csl"], "application/vnd.claymore": ["cla"], "application/vnd.cloanto.rp9": ["rp9"], "application/vnd.clonk.c4group": ["c4g", "c4d", "c4f", "c4p", "c4u"], "application/vnd.cluetrust.cartomobile-config": ["c11amc"], "application/vnd.cluetrust.cartomobile-config-pkg": ["c11amz"], "application/vnd.commonspace": ["csp"], "application/vnd.contact.cmsg": ["cdbcmsg"], "application/vnd.cosmocaller": ["cmc"], "application/vnd.crick.clicker": ["clkx"], "application/vnd.crick.clicker.keyboard": ["clkk"], "application/vnd.crick.clicker.palette": ["clkp"], "application/vnd.crick.clicker.template": ["clkt"], "application/vnd.crick.clicker.wordbank": ["clkw"], "application/vnd.criticaltools.wbs+xml": ["wbs"], "application/vnd.ctc-posml": ["pml"], "application/vnd.cups-ppd": ["ppd"], "application/vnd.curl.car": ["car"], "application/vnd.curl.pcurl": ["pcurl"], "application/vnd.dart": ["dart"], "application/vnd.data-vision.rdz": ["rdz"], "application/vnd.dbf": ["dbf"], "application/vnd.dece.data": ["uvf", "uvvf", "uvd", "uvvd"], "application/vnd.dece.ttml+xml": ["uvt", "uvvt"], "application/vnd.dece.unspecified": ["uvx", "uvvx"], "application/vnd.dece.zip": ["uvz", "uvvz"], "application/vnd.denovo.fcselayout-link": ["fe_launch"], "application/vnd.dna": ["dna"], "application/vnd.dolby.mlp": ["mlp"], "application/vnd.dpgraph": ["dpg"], "application/vnd.dreamfactory": ["dfac"], "application/vnd.ds-keypoint": ["kpxx"], "application/vnd.dvb.ait": ["ait"], "application/vnd.dvb.service": ["svc"], "application/vnd.dynageo": ["geo"], "application/vnd.ecowin.chart": ["mag"], "application/vnd.enliven": ["nml"], "application/vnd.epson.esf": ["esf"], "application/vnd.epson.msf": ["msf"], "application/vnd.epson.quickanime": ["qam"], "application/vnd.epson.salt": ["slt"], "application/vnd.epson.ssf": ["ssf"], "application/vnd.eszigno3+xml": ["es3", "et3"], "application/vnd.ezpix-album": ["ez2"], "application/vnd.ezpix-package": ["ez3"], "application/vnd.fdf": ["fdf"], "application/vnd.fdsn.mseed": ["mseed"], "application/vnd.fdsn.seed": ["seed", "dataless"], "application/vnd.flographit": ["gph"], "application/vnd.fluxtime.clip": ["ftc"], "application/vnd.framemaker": ["fm", "frame", "maker", "book"], "application/vnd.frogans.fnc": ["fnc"], "application/vnd.frogans.ltf": ["ltf"], "application/vnd.fsc.weblaunch": ["fsc"], "application/vnd.fujitsu.oasys": ["oas"], "application/vnd.fujitsu.oasys2": ["oa2"], "application/vnd.fujitsu.oasys3": ["oa3"], "application/vnd.fujitsu.oasysgp": ["fg5"], "application/vnd.fujitsu.oasysprs": ["bh2"], "application/vnd.fujixerox.ddd": ["ddd"], "application/vnd.fujixerox.docuworks": ["xdw"], "application/vnd.fujixerox.docuworks.binder": ["xbd"], "application/vnd.fuzzysheet": ["fzs"], "application/vnd.genomatix.tuxedo": ["txd"], "application/vnd.geogebra.file": ["ggb"], "application/vnd.geogebra.tool": ["ggt"], "application/vnd.geometry-explorer": ["gex", "gre"], "application/vnd.geonext": ["gxt"], "application/vnd.geoplan": ["g2w"], "application/vnd.geospace": ["g3w"], "application/vnd.gmx": ["gmx"], "application/vnd.google-apps.document": ["gdoc"], "application/vnd.google-apps.presentation": ["gslides"], "application/vnd.google-apps.spreadsheet": ["gsheet"], "application/vnd.google-earth.kml+xml": ["kml"], "application/vnd.google-earth.kmz": ["kmz"], "application/vnd.grafeq": ["gqf", "gqs"], "application/vnd.groove-account": ["gac"], "application/vnd.groove-help": ["ghf"], "application/vnd.groove-identity-message": ["gim"], "application/vnd.groove-injector": ["grv"], "application/vnd.groove-tool-message": ["gtm"], "application/vnd.groove-tool-template": ["tpl"], "application/vnd.groove-vcard": ["vcg"], "application/vnd.hal+xml": ["hal"], "application/vnd.handheld-entertainment+xml": ["zmm"], "application/vnd.hbci": ["hbci"], "application/vnd.hhe.lesson-player": ["les"], "application/vnd.hp-hpgl": ["hpgl"], "application/vnd.hp-hpid": ["hpid"], "application/vnd.hp-hps": ["hps"], "application/vnd.hp-jlyt": ["jlt"], "application/vnd.hp-pcl": ["pcl"], "application/vnd.hp-pclxl": ["pclxl"], "application/vnd.hydrostatix.sof-data": ["sfd-hdstx"], "application/vnd.ibm.minipay": ["mpy"], "application/vnd.ibm.modcap": ["afp", "listafp", "list3820"], "application/vnd.ibm.rights-management": ["irm"], "application/vnd.ibm.secure-container": ["sc"], "application/vnd.iccprofile": ["icc", "icm"], "application/vnd.igloader": ["igl"], "application/vnd.immervision-ivp": ["ivp"], "application/vnd.immervision-ivu": ["ivu"], "application/vnd.insors.igm": ["igm"], "application/vnd.intercon.formnet": ["xpw", "xpx"], "application/vnd.intergeo": ["i2g"], "application/vnd.intu.qbo": ["qbo"], "application/vnd.intu.qfx": ["qfx"], "application/vnd.ipunplugged.rcprofile": ["rcprofile"], "application/vnd.irepository.package+xml": ["irp"], "application/vnd.is-xpr": ["xpr"], "application/vnd.isac.fcs": ["fcs"], "application/vnd.jam": ["jam"], "application/vnd.jcp.javame.midlet-rms": ["rms"], "application/vnd.jisp": ["jisp"], "application/vnd.joost.joda-archive": ["joda"], "application/vnd.kahootz": ["ktz", "ktr"], "application/vnd.kde.karbon": ["karbon"], "application/vnd.kde.kchart": ["chrt"], "application/vnd.kde.kformula": ["kfo"], "application/vnd.kde.kivio": ["flw"], "application/vnd.kde.kontour": ["kon"], "application/vnd.kde.kpresenter": ["kpr", "kpt"], "application/vnd.kde.kspread": ["ksp"], "application/vnd.kde.kword": ["kwd", "kwt"], "application/vnd.kenameaapp": ["htke"], "application/vnd.kidspiration": ["kia"], "application/vnd.kinar": ["kne", "knp"], "application/vnd.koan": ["skp", "skd", "skt", "skm"], "application/vnd.kodak-descriptor": ["sse"], "application/vnd.las.las+xml": ["lasxml"], "application/vnd.llamagraphics.life-balance.desktop": ["lbd"], "application/vnd.llamagraphics.life-balance.exchange+xml": ["lbe"], "application/vnd.lotus-1-2-3": ["123"], "application/vnd.lotus-approach": ["apr"], "application/vnd.lotus-freelance": ["pre"], "application/vnd.lotus-notes": ["nsf"], "application/vnd.lotus-organizer": ["org"], "application/vnd.lotus-screencam": ["scm"], "application/vnd.lotus-wordpro": ["lwp"], "application/vnd.macports.portpkg": ["portpkg"], "application/vnd.mapbox-vector-tile": ["mvt"], "application/vnd.mcd": ["mcd"], "application/vnd.medcalcdata": ["mc1"], "application/vnd.mediastation.cdkey": ["cdkey"], "application/vnd.mfer": ["mwf"], "application/vnd.mfmp": ["mfm"], "application/vnd.micrografx.flo": ["flo"], "application/vnd.micrografx.igx": ["igx"], "application/vnd.mif": ["mif"], "application/vnd.mobius.daf": ["daf"], "application/vnd.mobius.dis": ["dis"], "application/vnd.mobius.mbk": ["mbk"], "application/vnd.mobius.mqy": ["mqy"], "application/vnd.mobius.msl": ["msl"], "application/vnd.mobius.plc": ["plc"], "application/vnd.mobius.txf": ["txf"], "application/vnd.mophun.application": ["mpn"], "application/vnd.mophun.certificate": ["mpc"], "application/vnd.mozilla.xul+xml": ["xul"], "application/vnd.ms-artgalry": ["cil"], "application/vnd.ms-cab-compressed": ["cab"], "application/vnd.ms-excel": ["xls", "xlm", "xla", "xlc", "xlt", "xlw"], "application/vnd.ms-excel.addin.macroenabled.12": ["xlam"], "application/vnd.ms-excel.sheet.binary.macroenabled.12": ["xlsb"], "application/vnd.ms-excel.sheet.macroenabled.12": ["xlsm"], "application/vnd.ms-excel.template.macroenabled.12": ["xltm"], "application/vnd.ms-fontobject": ["eot"], "application/vnd.ms-htmlhelp": ["chm"], "application/vnd.ms-ims": ["ims"], "application/vnd.ms-lrm": ["lrm"], "application/vnd.ms-officetheme": ["thmx"], "application/vnd.ms-outlook": ["msg"], "application/vnd.ms-pki.seccat": ["cat"], "application/vnd.ms-pki.stl": ["*stl"], "application/vnd.ms-powerpoint": ["ppt", "pps", "pot"], "application/vnd.ms-powerpoint.addin.macroenabled.12": ["ppam"], "application/vnd.ms-powerpoint.presentation.macroenabled.12": ["pptm"], "application/vnd.ms-powerpoint.slide.macroenabled.12": ["sldm"], "application/vnd.ms-powerpoint.slideshow.macroenabled.12": ["ppsm"], "application/vnd.ms-powerpoint.template.macroenabled.12": ["potm"], "application/vnd.ms-project": ["mpp", "mpt"], "application/vnd.ms-word.document.macroenabled.12": ["docm"], "application/vnd.ms-word.template.macroenabled.12": ["dotm"], "application/vnd.ms-works": ["wps", "wks", "wcm", "wdb"], "application/vnd.ms-wpl": ["wpl"], "application/vnd.ms-xpsdocument": ["xps"], "application/vnd.mseq": ["mseq"], "application/vnd.musician": ["mus"], "application/vnd.muvee.style": ["msty"], "application/vnd.mynfc": ["taglet"], "application/vnd.neurolanguage.nlu": ["nlu"], "application/vnd.nitf": ["ntf", "nitf"], "application/vnd.noblenet-directory": ["nnd"], "application/vnd.noblenet-sealer": ["nns"], "application/vnd.noblenet-web": ["nnw"], "application/vnd.nokia.n-gage.ac+xml": ["*ac"], "application/vnd.nokia.n-gage.data": ["ngdat"], "application/vnd.nokia.n-gage.symbian.install": ["n-gage"], "application/vnd.nokia.radio-preset": ["rpst"], "application/vnd.nokia.radio-presets": ["rpss"], "application/vnd.novadigm.edm": ["edm"], "application/vnd.novadigm.edx": ["edx"], "application/vnd.novadigm.ext": ["ext"], "application/vnd.oasis.opendocument.chart": ["odc"], "application/vnd.oasis.opendocument.chart-template": ["otc"], "application/vnd.oasis.opendocument.database": ["odb"], "application/vnd.oasis.opendocument.formula": ["odf"], "application/vnd.oasis.opendocument.formula-template": ["odft"], "application/vnd.oasis.opendocument.graphics": ["odg"], "application/vnd.oasis.opendocument.graphics-template": ["otg"], "application/vnd.oasis.opendocument.image": ["odi"], "application/vnd.oasis.opendocument.image-template": ["oti"], "application/vnd.oasis.opendocument.presentation": ["odp"], "application/vnd.oasis.opendocument.presentation-template": ["otp"], "application/vnd.oasis.opendocument.spreadsheet": ["ods"], "application/vnd.oasis.opendocument.spreadsheet-template": ["ots"], "application/vnd.oasis.opendocument.text": ["odt"], "application/vnd.oasis.opendocument.text-master": ["odm"], "application/vnd.oasis.opendocument.text-template": ["ott"], "application/vnd.oasis.opendocument.text-web": ["oth"], "application/vnd.olpc-sugar": ["xo"], "application/vnd.oma.dd2+xml": ["dd2"], "application/vnd.openblox.game+xml": ["obgx"], "application/vnd.openofficeorg.extension": ["oxt"], "application/vnd.openstreetmap.data+xml": ["osm"], "application/vnd.openxmlformats-officedocument.presentationml.presentation": ["pptx"], "application/vnd.openxmlformats-officedocument.presentationml.slide": ["sldx"], "application/vnd.openxmlformats-officedocument.presentationml.slideshow": ["ppsx"], "application/vnd.openxmlformats-officedocument.presentationml.template": ["potx"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": ["xlsx"], "application/vnd.openxmlformats-officedocument.spreadsheetml.template": ["xltx"], "application/vnd.openxmlformats-officedocument.wordprocessingml.document": ["docx"], "application/vnd.openxmlformats-officedocument.wordprocessingml.template": ["dotx"], "application/vnd.osgeo.mapguide.package": ["mgp"], "application/vnd.osgi.dp": ["dp"], "application/vnd.osgi.subsystem": ["esa"], "application/vnd.palm": ["pdb", "pqa", "oprc"], "application/vnd.pawaafile": ["paw"], "application/vnd.pg.format": ["str"], "application/vnd.pg.osasli": ["ei6"], "application/vnd.picsel": ["efif"], "application/vnd.pmi.widget": ["wg"], "application/vnd.pocketlearn": ["plf"], "application/vnd.powerbuilder6": ["pbd"], "application/vnd.previewsystems.box": ["box"], "application/vnd.proteus.magazine": ["mgz"], "application/vnd.publishare-delta-tree": ["qps"], "application/vnd.pvi.ptid1": ["ptid"], "application/vnd.quark.quarkxpress": ["qxd", "qxt", "qwd", "qwt", "qxl", "qxb"], "application/vnd.rar": ["rar"], "application/vnd.realvnc.bed": ["bed"], "application/vnd.recordare.musicxml": ["mxl"], "application/vnd.recordare.musicxml+xml": ["musicxml"], "application/vnd.rig.cryptonote": ["cryptonote"], "application/vnd.rim.cod": ["cod"], "application/vnd.rn-realmedia": ["rm"], "application/vnd.rn-realmedia-vbr": ["rmvb"], "application/vnd.route66.link66+xml": ["link66"], "application/vnd.sailingtracker.track": ["st"], "application/vnd.seemail": ["see"], "application/vnd.sema": ["sema"], "application/vnd.semd": ["semd"], "application/vnd.semf": ["semf"], "application/vnd.shana.informed.formdata": ["ifm"], "application/vnd.shana.informed.formtemplate": ["itp"], "application/vnd.shana.informed.interchange": ["iif"], "application/vnd.shana.informed.package": ["ipk"], "application/vnd.simtech-mindmapper": ["twd", "twds"], "application/vnd.smaf": ["mmf"], "application/vnd.smart.teacher": ["teacher"], "application/vnd.software602.filler.form+xml": ["fo"], "application/vnd.solent.sdkm+xml": ["sdkm", "sdkd"], "application/vnd.spotfire.dxp": ["dxp"], "application/vnd.spotfire.sfs": ["sfs"], "application/vnd.stardivision.calc": ["sdc"], "application/vnd.stardivision.draw": ["sda"], "application/vnd.stardivision.impress": ["sdd"], "application/vnd.stardivision.math": ["smf"], "application/vnd.stardivision.writer": ["sdw", "vor"], "application/vnd.stardivision.writer-global": ["sgl"], "application/vnd.stepmania.package": ["smzip"], "application/vnd.stepmania.stepchart": ["sm"], "application/vnd.sun.wadl+xml": ["wadl"], "application/vnd.sun.xml.calc": ["sxc"], "application/vnd.sun.xml.calc.template": ["stc"], "application/vnd.sun.xml.draw": ["sxd"], "application/vnd.sun.xml.draw.template": ["std"], "application/vnd.sun.xml.impress": ["sxi"], "application/vnd.sun.xml.impress.template": ["sti"], "application/vnd.sun.xml.math": ["sxm"], "application/vnd.sun.xml.writer": ["sxw"], "application/vnd.sun.xml.writer.global": ["sxg"], "application/vnd.sun.xml.writer.template": ["stw"], "application/vnd.sus-calendar": ["sus", "susp"], "application/vnd.svd": ["svd"], "application/vnd.symbian.install": ["sis", "sisx"], "application/vnd.syncml+xml": ["xsm"], "application/vnd.syncml.dm+wbxml": ["bdm"], "application/vnd.syncml.dm+xml": ["xdm"], "application/vnd.syncml.dmddf+xml": ["ddf"], "application/vnd.tao.intent-module-archive": ["tao"], "application/vnd.tcpdump.pcap": ["pcap", "cap", "dmp"], "application/vnd.tmobile-livetv": ["tmo"], "application/vnd.trid.tpt": ["tpt"], "application/vnd.triscape.mxs": ["mxs"], "application/vnd.trueapp": ["tra"], "application/vnd.ufdl": ["ufd", "ufdl"], "application/vnd.uiq.theme": ["utz"], "application/vnd.umajin": ["umj"], "application/vnd.unity": ["unityweb"], "application/vnd.uoml+xml": ["uoml"], "application/vnd.vcx": ["vcx"], "application/vnd.visio": ["vsd", "vst", "vss", "vsw"], "application/vnd.visionary": ["vis"], "application/vnd.vsf": ["vsf"], "application/vnd.wap.wbxml": ["wbxml"], "application/vnd.wap.wmlc": ["wmlc"], "application/vnd.wap.wmlscriptc": ["wmlsc"], "application/vnd.webturbo": ["wtb"], "application/vnd.wolfram.player": ["nbp"], "application/vnd.wordperfect": ["wpd"], "application/vnd.wqd": ["wqd"], "application/vnd.wt.stf": ["stf"], "application/vnd.xara": ["xar"], "application/vnd.xfdl": ["xfdl"], "application/vnd.yamaha.hv-dic": ["hvd"], "application/vnd.yamaha.hv-script": ["hvs"], "application/vnd.yamaha.hv-voice": ["hvp"], "application/vnd.yamaha.openscoreformat": ["osf"], "application/vnd.yamaha.openscoreformat.osfpvg+xml": ["osfpvg"], "application/vnd.yamaha.smaf-audio": ["saf"], "application/vnd.yamaha.smaf-phrase": ["spf"], "application/vnd.yellowriver-custom-menu": ["cmp"], "application/vnd.zul": ["zir", "zirz"], "application/vnd.zzazz.deck+xml": ["zaz"], "application/x-7z-compressed": ["7z"], "application/x-abiword": ["abw"], "application/x-ace-compressed": ["ace"], "application/x-apple-diskimage": ["*dmg"], "application/x-arj": ["arj"], "application/x-authorware-bin": ["aab", "x32", "u32", "vox"], "application/x-authorware-map": ["aam"], "application/x-authorware-seg": ["aas"], "application/x-bcpio": ["bcpio"], "application/x-bdoc": ["*bdoc"], "application/x-bittorrent": ["torrent"], "application/x-blorb": ["blb", "blorb"], "application/x-bzip": ["bz"], "application/x-bzip2": ["bz2", "boz"], "application/x-cbr": ["cbr", "cba", "cbt", "cbz", "cb7"], "application/x-cdlink": ["vcd"], "application/x-cfs-compressed": ["cfs"], "application/x-chat": ["chat"], "application/x-chess-pgn": ["pgn"], "application/x-chrome-extension": ["crx"], "application/x-cocoa": ["cco"], "application/x-conference": ["nsc"], "application/x-cpio": ["cpio"], "application/x-csh": ["csh"], "application/x-debian-package": ["*deb", "udeb"], "application/x-dgc-compressed": ["dgc"], "application/x-director": ["dir", "dcr", "dxr", "cst", "cct", "cxt", "w3d", "fgd", "swa"], "application/x-doom": ["wad"], "application/x-dtbncx+xml": ["ncx"], "application/x-dtbook+xml": ["dtb"], "application/x-dtbresource+xml": ["res"], "application/x-dvi": ["dvi"], "application/x-envoy": ["evy"], "application/x-eva": ["eva"], "application/x-font-bdf": ["bdf"], "application/x-font-ghostscript": ["gsf"], "application/x-font-linux-psf": ["psf"], "application/x-font-pcf": ["pcf"], "application/x-font-snf": ["snf"], "application/x-font-type1": ["pfa", "pfb", "pfm", "afm"], "application/x-freearc": ["arc"], "application/x-futuresplash": ["spl"], "application/x-gca-compressed": ["gca"], "application/x-glulx": ["ulx"], "application/x-gnumeric": ["gnumeric"], "application/x-gramps-xml": ["gramps"], "application/x-gtar": ["gtar"], "application/x-hdf": ["hdf"], "application/x-httpd-php": ["php"], "application/x-install-instructions": ["install"], "application/x-iso9660-image": ["*iso"], "application/x-iwork-keynote-sffkey": ["*key"], "application/x-iwork-numbers-sffnumbers": ["*numbers"], "application/x-iwork-pages-sffpages": ["*pages"], "application/x-java-archive-diff": ["jardiff"], "application/x-java-jnlp-file": ["jnlp"], "application/x-keepass2": ["kdbx"], "application/x-latex": ["latex"], "application/x-lua-bytecode": ["luac"], "application/x-lzh-compressed": ["lzh", "lha"], "application/x-makeself": ["run"], "application/x-mie": ["mie"], "application/x-mobipocket-ebook": ["prc", "mobi"], "application/x-ms-application": ["application"], "application/x-ms-shortcut": ["lnk"], "application/x-ms-wmd": ["wmd"], "application/x-ms-wmz": ["wmz"], "application/x-ms-xbap": ["xbap"], "application/x-msaccess": ["mdb"], "application/x-msbinder": ["obd"], "application/x-mscardfile": ["crd"], "application/x-msclip": ["clp"], "application/x-msdos-program": ["*exe"], "application/x-msdownload": ["*exe", "*dll", "com", "bat", "*msi"], "application/x-msmediaview": ["mvb", "m13", "m14"], "application/x-msmetafile": ["*wmf", "*wmz", "*emf", "emz"], "application/x-msmoney": ["mny"], "application/x-mspublisher": ["pub"], "application/x-msschedule": ["scd"], "application/x-msterminal": ["trm"], "application/x-mswrite": ["wri"], "application/x-netcdf": ["nc", "cdf"], "application/x-ns-proxy-autoconfig": ["pac"], "application/x-nzb": ["nzb"], "application/x-perl": ["pl", "pm"], "application/x-pilot": ["*prc", "*pdb"], "application/x-pkcs12": ["p12", "pfx"], "application/x-pkcs7-certificates": ["p7b", "spc"], "application/x-pkcs7-certreqresp": ["p7r"], "application/x-rar-compressed": ["*rar"], "application/x-redhat-package-manager": ["rpm"], "application/x-research-info-systems": ["ris"], "application/x-sea": ["sea"], "application/x-sh": ["sh"], "application/x-shar": ["shar"], "application/x-shockwave-flash": ["swf"], "application/x-silverlight-app": ["xap"], "application/x-sql": ["sql"], "application/x-stuffit": ["sit"], "application/x-stuffitx": ["sitx"], "application/x-subrip": ["srt"], "application/x-sv4cpio": ["sv4cpio"], "application/x-sv4crc": ["sv4crc"], "application/x-t3vm-image": ["t3"], "application/x-tads": ["gam"], "application/x-tar": ["tar"], "application/x-tcl": ["tcl", "tk"], "application/x-tex": ["tex"], "application/x-tex-tfm": ["tfm"], "application/x-texinfo": ["texinfo", "texi"], "application/x-tgif": ["*obj"], "application/x-ustar": ["ustar"], "application/x-virtualbox-hdd": ["hdd"], "application/x-virtualbox-ova": ["ova"], "application/x-virtualbox-ovf": ["ovf"], "application/x-virtualbox-vbox": ["vbox"], "application/x-virtualbox-vbox-extpack": ["vbox-extpack"], "application/x-virtualbox-vdi": ["vdi"], "application/x-virtualbox-vhd": ["vhd"], "application/x-virtualbox-vmdk": ["vmdk"], "application/x-wais-source": ["src"], "application/x-web-app-manifest+json": ["webapp"], "application/x-x509-ca-cert": ["der", "crt", "pem"], "application/x-xfig": ["fig"], "application/x-xliff+xml": ["*xlf"], "application/x-xpinstall": ["xpi"], "application/x-xz": ["xz"], "application/x-zmachine": ["z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8"], "audio/vnd.dece.audio": ["uva", "uvva"], "audio/vnd.digital-winds": ["eol"], "audio/vnd.dra": ["dra"], "audio/vnd.dts": ["dts"], "audio/vnd.dts.hd": ["dtshd"], "audio/vnd.lucent.voice": ["lvp"], "audio/vnd.ms-playready.media.pya": ["pya"], "audio/vnd.nuera.ecelp4800": ["ecelp4800"], "audio/vnd.nuera.ecelp7470": ["ecelp7470"], "audio/vnd.nuera.ecelp9600": ["ecelp9600"], "audio/vnd.rip": ["rip"], "audio/x-aac": ["aac"], "audio/x-aiff": ["aif", "aiff", "aifc"], "audio/x-caf": ["caf"], "audio/x-flac": ["flac"], "audio/x-m4a": ["*m4a"], "audio/x-matroska": ["mka"], "audio/x-mpegurl": ["m3u"], "audio/x-ms-wax": ["wax"], "audio/x-ms-wma": ["wma"], "audio/x-pn-realaudio": ["ram", "ra"], "audio/x-pn-realaudio-plugin": ["rmp"], "audio/x-realaudio": ["*ra"], "audio/x-wav": ["*wav"], "chemical/x-cdx": ["cdx"], "chemical/x-cif": ["cif"], "chemical/x-cmdf": ["cmdf"], "chemical/x-cml": ["cml"], "chemical/x-csml": ["csml"], "chemical/x-xyz": ["xyz"], "image/prs.btif": ["btif"], "image/prs.pti": ["pti"], "image/vnd.adobe.photoshop": ["psd"], "image/vnd.airzip.accelerator.azv": ["azv"], "image/vnd.dece.graphic": ["uvi", "uvvi", "uvg", "uvvg"], "image/vnd.djvu": ["djvu", "djv"], "image/vnd.dvb.subtitle": ["*sub"], "image/vnd.dwg": ["dwg"], "image/vnd.dxf": ["dxf"], "image/vnd.fastbidsheet": ["fbs"], "image/vnd.fpx": ["fpx"], "image/vnd.fst": ["fst"], "image/vnd.fujixerox.edmics-mmr": ["mmr"], "image/vnd.fujixerox.edmics-rlc": ["rlc"], "image/vnd.microsoft.icon": ["ico"], "image/vnd.ms-dds": ["dds"], "image/vnd.ms-modi": ["mdi"], "image/vnd.ms-photo": ["wdp"], "image/vnd.net-fpx": ["npx"], "image/vnd.pco.b16": ["b16"], "image/vnd.tencent.tap": ["tap"], "image/vnd.valve.source.texture": ["vtf"], "image/vnd.wap.wbmp": ["wbmp"], "image/vnd.xiff": ["xif"], "image/vnd.zbrush.pcx": ["pcx"], "image/x-3ds": ["3ds"], "image/x-cmu-raster": ["ras"], "image/x-cmx": ["cmx"], "image/x-freehand": ["fh", "fhc", "fh4", "fh5", "fh7"], "image/x-icon": ["*ico"], "image/x-jng": ["jng"], "image/x-mrsid-image": ["sid"], "image/x-ms-bmp": ["*bmp"], "image/x-pcx": ["*pcx"], "image/x-pict": ["pic", "pct"], "image/x-portable-anymap": ["pnm"], "image/x-portable-bitmap": ["pbm"], "image/x-portable-graymap": ["pgm"], "image/x-portable-pixmap": ["ppm"], "image/x-rgb": ["rgb"], "image/x-tga": ["tga"], "image/x-xbitmap": ["xbm"], "image/x-xpixmap": ["xpm"], "image/x-xwindowdump": ["xwd"], "message/vnd.wfa.wsc": ["wsc"], "model/vnd.collada+xml": ["dae"], "model/vnd.dwf": ["dwf"], "model/vnd.gdl": ["gdl"], "model/vnd.gtw": ["gtw"], "model/vnd.mts": ["mts"], "model/vnd.opengex": ["ogex"], "model/vnd.parasolid.transmit.binary": ["x_b"], "model/vnd.parasolid.transmit.text": ["x_t"], "model/vnd.sap.vds": ["vds"], "model/vnd.usdz+zip": ["usdz"], "model/vnd.valve.source.compiled-map": ["bsp"], "model/vnd.vtu": ["vtu"], "text/prs.lines.tag": ["dsc"], "text/vnd.curl": ["curl"], "text/vnd.curl.dcurl": ["dcurl"], "text/vnd.curl.mcurl": ["mcurl"], "text/vnd.curl.scurl": ["scurl"], "text/vnd.dvb.subtitle": ["sub"], "text/vnd.fly": ["fly"], "text/vnd.fmi.flexstor": ["flx"], "text/vnd.graphviz": ["gv"], "text/vnd.in3d.3dml": ["3dml"], "text/vnd.in3d.spot": ["spot"], "text/vnd.sun.j2me.app-descriptor": ["jad"], "text/vnd.wap.wml": ["wml"], "text/vnd.wap.wmlscript": ["wmls"], "text/x-asm": ["s", "asm"], "text/x-c": ["c", "cc", "cxx", "cpp", "h", "hh", "dic"], "text/x-component": ["htc"], "text/x-fortran": ["f", "for", "f77", "f90"], "text/x-handlebars-template": ["hbs"], "text/x-java-source": ["java"], "text/x-lua": ["lua"], "text/x-markdown": ["mkd"], "text/x-nfo": ["nfo"], "text/x-opml": ["opml"], "text/x-org": ["*org"], "text/x-pascal": ["p", "pas"], "text/x-processing": ["pde"], "text/x-sass": ["sass"], "text/x-scss": ["scss"], "text/x-setext": ["etx"], "text/x-sfv": ["sfv"], "text/x-suse-ymp": ["ymp"], "text/x-uuencode": ["uu"], "text/x-vcalendar": ["vcs"], "text/x-vcard": ["vcf"], "video/vnd.dece.hd": ["uvh", "uvvh"], "video/vnd.dece.mobile": ["uvm", "uvvm"], "video/vnd.dece.pd": ["uvp", "uvvp"], "video/vnd.dece.sd": ["uvs", "uvvs"], "video/vnd.dece.video": ["uvv", "uvvv"], "video/vnd.dvb.file": ["dvb"], "video/vnd.fvt": ["fvt"], "video/vnd.mpegurl": ["mxu", "m4u"], "video/vnd.ms-playready.media.pyv": ["pyv"], "video/vnd.uvvu.mp4": ["uvu", "uvvu"], "video/vnd.vivo": ["viv"], "video/x-f4v": ["f4v"], "video/x-fli": ["fli"], "video/x-flv": ["flv"], "video/x-m4v": ["m4v"], "video/x-matroska": ["mkv", "mk3d", "mks"], "video/x-mng": ["mng"], "video/x-ms-asf": ["asf", "asx"], "video/x-ms-vob": ["vob"], "video/x-ms-wm": ["wm"], "video/x-ms-wmv": ["wmv"], "video/x-ms-wmx": ["wmx"], "video/x-ms-wvx": ["wvx"], "video/x-msvideo": ["avi"], "video/x-sgi-movie": ["movie"], "video/x-smv": ["smv"], "x-conference/x-cooltalk": ["ice"] };
-  }
-});
-
-// node_modules/mime/index.js
-var require_mime = __commonJS({
-  "node_modules/mime/index.js"(exports2, module2) {
-    "use strict";
-    var Mime = require_Mime();
-    module2.exports = new Mime(require_standard(), require_other());
-  }
-});
-
-// node_modules/fast-decode-uri-component/index.js
-var require_fast_decode_uri_component = __commonJS({
-  "node_modules/fast-decode-uri-component/index.js"(exports2, module2) {
-    "use strict";
-    var UTF8_ACCEPT = 12;
-    var UTF8_REJECT = 0;
-    var UTF8_DATA = [
-      // The first part of the table maps bytes to character to a transition.
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      1,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      2,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      3,
-      4,
-      4,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      5,
-      6,
-      7,
-      7,
-      7,
-      7,
-      7,
-      7,
-      7,
-      7,
-      7,
-      7,
-      7,
-      7,
-      8,
-      7,
-      7,
-      10,
-      9,
-      9,
-      9,
-      11,
-      4,
-      4,
-      4,
-      4,
-      4,
-      4,
-      4,
-      4,
-      4,
-      4,
-      4,
-      // The second part of the table maps a state to a new state when adding a
-      // transition.
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      12,
-      0,
-      0,
-      0,
-      0,
-      24,
-      36,
-      48,
-      60,
-      72,
-      84,
-      96,
-      0,
-      12,
-      12,
-      12,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      24,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      24,
-      24,
-      24,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      24,
-      24,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      48,
-      48,
-      48,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      48,
-      48,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      48,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      0,
-      // The third part maps the current transition to a mask that needs to apply
-      // to the byte.
-      127,
-      63,
-      63,
-      63,
-      0,
-      31,
-      15,
-      15,
-      15,
-      7,
-      7,
-      7
-    ];
-    function decodeURIComponent2(uri) {
-      var percentPosition = uri.indexOf("%");
-      if (percentPosition === -1) return uri;
-      var length = uri.length;
-      var decoded = "";
-      var last = 0;
-      var codepoint = 0;
-      var startOfOctets = percentPosition;
-      var state = UTF8_ACCEPT;
-      while (percentPosition > -1 && percentPosition < length) {
-        var high = hexCodeToInt(uri[percentPosition + 1], 4);
-        var low = hexCodeToInt(uri[percentPosition + 2], 0);
-        var byte = high | low;
-        var type = UTF8_DATA[byte];
-        state = UTF8_DATA[256 + state + type];
-        codepoint = codepoint << 6 | byte & UTF8_DATA[364 + type];
-        if (state === UTF8_ACCEPT) {
-          decoded += uri.slice(last, startOfOctets);
-          decoded += codepoint <= 65535 ? String.fromCharCode(codepoint) : String.fromCharCode(
-            55232 + (codepoint >> 10),
-            56320 + (codepoint & 1023)
-          );
-          codepoint = 0;
-          last = percentPosition + 3;
-          percentPosition = startOfOctets = uri.indexOf("%", last);
-        } else if (state === UTF8_REJECT) {
-          return null;
-        } else {
-          percentPosition += 3;
-          if (percentPosition < length && uri.charCodeAt(percentPosition) === 37) continue;
-          return null;
-        }
-      }
-      return decoded + uri.slice(last);
-    }
-    var HEX = {
-      "0": 0,
-      "1": 1,
-      "2": 2,
-      "3": 3,
-      "4": 4,
-      "5": 5,
-      "6": 6,
-      "7": 7,
-      "8": 8,
-      "9": 9,
-      "a": 10,
-      "A": 10,
-      "b": 11,
-      "B": 11,
-      "c": 12,
-      "C": 12,
-      "d": 13,
-      "D": 13,
-      "e": 14,
-      "E": 14,
-      "f": 15,
-      "F": 15
-    };
-    function hexCodeToInt(c, shift) {
-      var i = HEX[c];
-      return i === void 0 ? 255 : i << shift;
-    }
-    module2.exports = decodeURIComponent2;
-  }
-});
-
-// node_modules/@lukeed/ms/dist/index.js
-var require_dist = __commonJS({
-  "node_modules/@lukeed/ms/dist/index.js"(exports2) {
-    var RGX = /^(-?(?:\d+)?\.?\d+) *(m(?:illiseconds?|s(?:ecs?)?))?(s(?:ec(?:onds?|s)?)?)?(m(?:in(?:utes?|s)?)?)?(h(?:ours?|rs?)?)?(d(?:ays?)?)?(w(?:eeks?|ks?)?)?(y(?:ears?|rs?)?)?$/;
-    var SEC = 1e3;
-    var MIN = SEC * 60;
-    var HOUR = MIN * 60;
-    var DAY = HOUR * 24;
-    var YEAR = DAY * 365.25;
-    function parse(val) {
-      var num, arr = val.toLowerCase().match(RGX);
-      if (arr != null && (num = parseFloat(arr[1]))) {
-        if (arr[3] != null) return num * SEC;
-        if (arr[4] != null) return num * MIN;
-        if (arr[5] != null) return num * HOUR;
-        if (arr[6] != null) return num * DAY;
-        if (arr[7] != null) return num * DAY * 7;
-        if (arr[8] != null) return num * YEAR;
-        return num;
-      }
-    }
-    function fmt(val, pfx, str, long) {
-      var num = (val | 0) === val ? val : ~~(val + 0.5);
-      return pfx + num + (long ? " " + str + (num != 1 ? "s" : "") : str[0]);
-    }
-    function format(num, long) {
-      var pfx = num < 0 ? "-" : "", abs = num < 0 ? -num : num;
-      if (abs < SEC) return num + (long ? " ms" : "ms");
-      if (abs < MIN) return fmt(abs / SEC, pfx, "second", long);
-      if (abs < HOUR) return fmt(abs / MIN, pfx, "minute", long);
-      if (abs < DAY) return fmt(abs / HOUR, pfx, "hour", long);
-      if (abs < YEAR) return fmt(abs / DAY, pfx, "day", long);
-      return fmt(abs / YEAR, pfx, "year", long);
-    }
-    exports2.format = format;
-    exports2.parse = parse;
-  }
-});
-
-// node_modules/@fastify/send/lib/collapseLeadingSlashes.js
-var require_collapseLeadingSlashes = __commonJS({
-  "node_modules/@fastify/send/lib/collapseLeadingSlashes.js"(exports2, module2) {
-    "use strict";
-    function collapseLeadingSlashes(str) {
-      if (str[0] !== "/" || str[1] !== "/") {
-        return str;
-      }
-      for (let i = 2, il = str.length; i < il; ++i) {
-        if (str[i] !== "/") {
-          return str.slice(i - 1);
-        }
-      }
-    }
-    module2.exports.collapseLeadingSlashes = collapseLeadingSlashes;
-  }
-});
-
-// node_modules/@fastify/send/lib/containsDotFile.js
-var require_containsDotFile = __commonJS({
-  "node_modules/@fastify/send/lib/containsDotFile.js"(exports2, module2) {
-    "use strict";
-    function containsDotFile(parts) {
-      for (let i = 0, il = parts.length; i < il; ++i) {
-        if (parts[i].length !== 1 && parts[i][0] === ".") {
-          return true;
-        }
-      }
-      return false;
-    }
-    module2.exports.containsDotFile = containsDotFile;
-  }
-});
-
-// node_modules/@fastify/send/lib/contentRange.js
-var require_contentRange = __commonJS({
-  "node_modules/@fastify/send/lib/contentRange.js"(exports2) {
-    "use strict";
-    function contentRange(type, size, range) {
-      return type + " " + (range ? range.start + "-" + range.end : "*") + "/" + size;
-    }
-    exports2.contentRange = contentRange;
-  }
-});
-
-// node_modules/@fastify/send/lib/createHtmlDocument.js
-var require_createHtmlDocument = __commonJS({
-  "node_modules/@fastify/send/lib/createHtmlDocument.js"(exports2) {
-    "use strict";
-    function createHtmlDocument(title, body) {
-      const html = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>' + title + "</title>\n</head>\n<body>\n<pre>" + body + "</pre>\n</body>\n</html>\n";
-      return [html, Buffer.byteLength(html)];
-    }
-    exports2.createHtmlDocument = createHtmlDocument;
-  }
-});
-
-// node_modules/@fastify/send/lib/normalizeList.js
-var require_normalizeList = __commonJS({
-  "node_modules/@fastify/send/lib/normalizeList.js"(exports2, module2) {
-    "use strict";
-    function normalizeList(val, name) {
-      if (typeof val === "string") {
-        return [val];
-      } else if (val === false) {
-        return [];
-      } else if (Array.isArray(val)) {
-        for (let i = 0, il = val.length; i < il; ++i) {
-          if (typeof val[i] !== "string") {
-            throw new TypeError(name + " must be array of strings or false");
-          }
-        }
-        return val;
-      } else {
-        throw new TypeError(name + " must be array of strings or false");
-      }
-    }
-    module2.exports.normalizeList = normalizeList;
-  }
-});
-
-// node_modules/@fastify/send/lib/parseBytesRange.js
-var require_parseBytesRange = __commonJS({
-  "node_modules/@fastify/send/lib/parseBytesRange.js"(exports2, module2) {
-    "use strict";
-    function parseBytesRange(size, str) {
-      const values = str.slice(str.indexOf("=") + 1);
-      const ranges = [];
-      const len = values.length;
-      let i = 0;
-      let il = 0;
-      let j = 0;
-      let start;
-      let end;
-      let commaIdx = values.indexOf(",");
-      let dashIdx = values.indexOf("-");
-      let prevIdx = -1;
-      while (true) {
-        commaIdx === -1 && (commaIdx = len);
-        start = parseInt(values.slice(prevIdx + 1, dashIdx), 10);
-        end = parseInt(values.slice(dashIdx + 1, commaIdx), 10);
-        if (start !== start) {
-          start = size - end;
-          end = size - 1;
-        } else if (end !== end) {
-          end = size - 1;
-        } else if (end > size - 1) {
-          end = size - 1;
-        }
-        if (
-          // eslint-disable-next-line no-self-compare
-          start === start && // fast path of isNaN(number)
-          // eslint-disable-next-line no-self-compare
-          end === end && // fast path of isNaN(number)
-          start > -1 && start <= end
-        ) {
-          ranges.push({
-            start,
-            end,
-            index: j++
-          });
-        }
-        if (commaIdx === len) {
-          break;
-        }
-        prevIdx = commaIdx++;
-        dashIdx = values.indexOf("-", commaIdx);
-        commaIdx = values.indexOf(",", commaIdx);
-      }
-      if (j < 2) {
-        return ranges;
-      }
-      ranges.sort(sortByRangeStart);
-      il = j;
-      j = 0;
-      i = 1;
-      while (i < il) {
-        const range = ranges[i++];
-        const current = ranges[j];
-        if (range.start > current.end + 1) {
-          ranges[++j] = range;
-        } else if (range.end > current.end) {
-          current.end = range.end;
-          current.index > range.index && (current.index = range.index);
-        }
-      }
-      ranges.length = j + 1;
-      ranges.sort(sortByRangeIndex);
-      return ranges;
-    }
-    function sortByRangeIndex(a, b) {
-      return a.index - b.index;
-    }
-    function sortByRangeStart(a, b) {
-      return a.start - b.start;
-    }
-    module2.exports.parseBytesRange = parseBytesRange;
-  }
-});
-
-// node_modules/@fastify/send/lib/parseTokenList.js
-var require_parseTokenList = __commonJS({
-  "node_modules/@fastify/send/lib/parseTokenList.js"(exports2, module2) {
-    "use strict";
-    var slice = String.prototype.slice;
-    function parseTokenList(str, cb) {
-      let end = 0;
-      let start = 0;
-      let result;
-      for (let i = 0, len = str.length; i < len; i++) {
-        switch (str.charCodeAt(i)) {
-          case 32:
-            if (start === end) {
-              start = end = i + 1;
-            }
-            break;
-          case 44:
-            if (start !== end) {
-              result = cb(slice.call(str, start, end));
-              if (result !== void 0) {
-                return result;
-              }
-            }
-            start = end = i + 1;
-            break;
-          default:
-            end = i + 1;
-            break;
-        }
-      }
-      if (start !== end) {
-        return cb(slice.call(str, start, end));
-      }
-    }
-    module2.exports.parseTokenList = parseTokenList;
-  }
-});
-
-// node_modules/depd/index.js
-var require_depd = __commonJS({
-  "node_modules/depd/index.js"(exports2, module2) {
-    var relative2 = require("path").relative;
-    module2.exports = depd2;
-    var basePath2 = process.cwd();
-    function containsNamespace2(str, namespace) {
-      var vals = str.split(/[ ,]+/);
-      var ns = String(namespace).toLowerCase();
-      for (var i = 0; i < vals.length; i++) {
-        var val = vals[i];
-        if (val && (val === "*" || val.toLowerCase() === ns)) {
-          return true;
-        }
-      }
-      return false;
-    }
-    function convertDataDescriptorToAccessor2(obj, prop, message2) {
-      var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
-      var value = descriptor.value;
-      descriptor.get = function getter() {
-        return value;
-      };
-      if (descriptor.writable) {
-        descriptor.set = function setter(val) {
-          return value = val;
-        };
-      }
-      delete descriptor.value;
-      delete descriptor.writable;
-      Object.defineProperty(obj, prop, descriptor);
-      return descriptor;
-    }
-    function createArgumentsString2(arity) {
-      var str = "";
-      for (var i = 0; i < arity; i++) {
-        str += ", arg" + i;
-      }
-      return str.substr(2);
-    }
-    function createStackString2(stack2) {
-      var str = this.name + ": " + this.namespace;
-      if (this.message) {
-        str += " deprecated " + this.message;
-      }
-      for (var i = 0; i < stack2.length; i++) {
-        str += "\n    at " + stack2[i].toString();
-      }
-      return str;
-    }
-    function depd2(namespace) {
-      if (!namespace) {
-        throw new TypeError("argument namespace is required");
-      }
-      var stack2 = getStack2();
-      var site2 = callSiteLocation2(stack2[1]);
-      var file = site2[0];
-      function deprecate2(message2) {
-        log2.call(deprecate2, message2);
-      }
-      deprecate2._file = file;
-      deprecate2._ignored = isignored2(namespace);
-      deprecate2._namespace = namespace;
-      deprecate2._traced = istraced2(namespace);
-      deprecate2._warned = /* @__PURE__ */ Object.create(null);
-      deprecate2.function = wrapfunction2;
-      deprecate2.property = wrapproperty2;
-      return deprecate2;
-    }
-    function eehaslisteners(emitter, type) {
-      var count = typeof emitter.listenerCount !== "function" ? emitter.listeners(type).length : emitter.listenerCount(type);
-      return count > 0;
-    }
-    function isignored2(namespace) {
-      if (process.noDeprecation) {
-        return true;
-      }
-      var str = process.env.NO_DEPRECATION || "";
-      return containsNamespace2(str, namespace);
-    }
-    function istraced2(namespace) {
-      if (process.traceDeprecation) {
-        return true;
-      }
-      var str = process.env.TRACE_DEPRECATION || "";
-      return containsNamespace2(str, namespace);
-    }
-    function log2(message2, site2) {
-      var haslisteners = eehaslisteners(process, "deprecation");
-      if (!haslisteners && this._ignored) {
-        return;
-      }
-      var caller;
-      var callFile;
-      var callSite;
-      var depSite;
-      var i = 0;
-      var seen = false;
-      var stack2 = getStack2();
-      var file = this._file;
-      if (site2) {
-        depSite = site2;
-        callSite = callSiteLocation2(stack2[1]);
-        callSite.name = depSite.name;
-        file = callSite[0];
-      } else {
-        i = 2;
-        depSite = callSiteLocation2(stack2[i]);
-        callSite = depSite;
-      }
-      for (; i < stack2.length; i++) {
-        caller = callSiteLocation2(stack2[i]);
-        callFile = caller[0];
-        if (callFile === file) {
-          seen = true;
-        } else if (callFile === this._file) {
-          file = this._file;
-        } else if (seen) {
-          break;
-        }
-      }
-      var key = caller ? depSite.join(":") + "__" + caller.join(":") : void 0;
-      if (key !== void 0 && key in this._warned) {
-        return;
-      }
-      this._warned[key] = true;
-      var msg = message2;
-      if (!msg) {
-        msg = callSite === depSite || !callSite.name ? defaultMessage2(depSite) : defaultMessage2(callSite);
-      }
-      if (haslisteners) {
-        var err = DeprecationError2(this._namespace, msg, stack2.slice(i));
-        process.emit("deprecation", err);
-        return;
-      }
-      var format = process.stderr.isTTY ? formatColor2 : formatPlain2;
-      var output = format.call(this, msg, caller, stack2.slice(i));
-      process.stderr.write(output + "\n", "utf8");
-    }
-    function callSiteLocation2(callSite) {
-      var file = callSite.getFileName() || "<anonymous>";
-      var line = callSite.getLineNumber();
-      var colm = callSite.getColumnNumber();
-      if (callSite.isEval()) {
-        file = callSite.getEvalOrigin() + ", " + file;
-      }
-      var site2 = [file, line, colm];
-      site2.callSite = callSite;
-      site2.name = callSite.getFunctionName();
-      return site2;
-    }
-    function defaultMessage2(site2) {
-      var callSite = site2.callSite;
-      var funcName = site2.name;
-      if (!funcName) {
-        funcName = "<anonymous@" + formatLocation2(site2) + ">";
-      }
-      var context = callSite.getThis();
-      var typeName = context && callSite.getTypeName();
-      if (typeName === "Object") {
-        typeName = void 0;
-      }
-      if (typeName === "Function") {
-        typeName = context.name || typeName;
-      }
-      return typeName && callSite.getMethodName() ? typeName + "." + funcName : funcName;
-    }
-    function formatPlain2(msg, caller, stack2) {
-      var timestamp = (/* @__PURE__ */ new Date()).toUTCString();
-      var formatted = timestamp + " " + this._namespace + " deprecated " + msg;
-      if (this._traced) {
-        for (var i = 0; i < stack2.length; i++) {
-          formatted += "\n    at " + stack2[i].toString();
-        }
-        return formatted;
-      }
-      if (caller) {
-        formatted += " at " + formatLocation2(caller);
-      }
-      return formatted;
-    }
-    function formatColor2(msg, caller, stack2) {
-      var formatted = "\x1B[36;1m" + this._namespace + "\x1B[22;39m \x1B[33;1mdeprecated\x1B[22;39m \x1B[0m" + msg + "\x1B[39m";
-      if (this._traced) {
-        for (var i = 0; i < stack2.length; i++) {
-          formatted += "\n    \x1B[36mat " + stack2[i].toString() + "\x1B[39m";
-        }
-        return formatted;
-      }
-      if (caller) {
-        formatted += " \x1B[36m" + formatLocation2(caller) + "\x1B[39m";
-      }
-      return formatted;
-    }
-    function formatLocation2(callSite) {
-      return relative2(basePath2, callSite[0]) + ":" + callSite[1] + ":" + callSite[2];
-    }
-    function getStack2() {
-      var limit = Error.stackTraceLimit;
-      var obj = {};
-      var prep = Error.prepareStackTrace;
-      Error.prepareStackTrace = prepareObjectStackTrace2;
-      Error.stackTraceLimit = Math.max(10, limit);
-      Error.captureStackTrace(obj);
-      var stack2 = obj.stack.slice(1);
-      Error.prepareStackTrace = prep;
-      Error.stackTraceLimit = limit;
-      return stack2;
-    }
-    function prepareObjectStackTrace2(obj, stack2) {
-      return stack2;
-    }
-    function wrapfunction2(fn2, message2) {
-      if (typeof fn2 !== "function") {
-        throw new TypeError("argument fn must be a function");
-      }
-      var args2 = createArgumentsString2(fn2.length);
-      var stack2 = getStack2();
-      var site2 = callSiteLocation2(stack2[1]);
-      site2.name = fn2.name;
-      var deprecatedfn2 = new Function(
-        "fn",
-        "log",
-        "deprecate",
-        "message",
-        "site",
-        '"use strict"\nreturn function (' + args2 + ") {log.call(deprecate, message, site)\nreturn fn.apply(this, arguments)\n}"
-      )(fn2, log2, this, message2, site2);
-      return deprecatedfn2;
-    }
-    function wrapproperty2(obj, prop, message2) {
-      if (!obj || typeof obj !== "object" && typeof obj !== "function") {
-        throw new TypeError("argument obj must be object");
-      }
-      var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
-      if (!descriptor) {
-        throw new TypeError("must call property on owner object");
-      }
-      if (!descriptor.configurable) {
-        throw new TypeError("property must be configurable");
-      }
-      var deprecate2 = this;
-      var stack2 = getStack2();
-      var site2 = callSiteLocation2(stack2[1]);
-      site2.name = prop;
-      if ("value" in descriptor) {
-        descriptor = convertDataDescriptorToAccessor2(obj, prop, message2);
-      }
-      var get = descriptor.get;
-      var set = descriptor.set;
-      if (typeof get === "function") {
-        descriptor.get = function getter() {
-          log2.call(deprecate2, message2, site2);
-          return get.apply(this, arguments);
-        };
-      }
-      if (typeof set === "function") {
-        descriptor.set = function setter() {
-          log2.call(deprecate2, message2, site2);
-          return set.apply(this, arguments);
-        };
-      }
-      Object.defineProperty(obj, prop, descriptor);
-    }
-    function DeprecationError2(namespace, message2, stack2) {
-      var error = new Error();
-      var stackString;
-      Object.defineProperty(error, "constructor", {
-        value: DeprecationError2
-      });
-      Object.defineProperty(error, "message", {
-        configurable: true,
-        enumerable: false,
-        value: message2,
-        writable: true
-      });
-      Object.defineProperty(error, "name", {
-        enumerable: false,
-        configurable: true,
-        value: "DeprecationError",
-        writable: true
-      });
-      Object.defineProperty(error, "namespace", {
-        configurable: true,
-        enumerable: false,
-        value: namespace,
-        writable: true
-      });
-      Object.defineProperty(error, "stack", {
-        configurable: true,
-        enumerable: false,
-        get: function() {
-          if (stackString !== void 0) {
-            return stackString;
-          }
-          return stackString = createStackString2.call(this, stack2);
-        },
-        set: function setter(val) {
-          stackString = val;
-        }
-      });
-      return error;
-    }
-  }
-});
-
-// node_modules/setprototypeof/index.js
-var require_setprototypeof = __commonJS({
-  "node_modules/setprototypeof/index.js"(exports2, module2) {
-    "use strict";
-    module2.exports = Object.setPrototypeOf || ({ __proto__: [] } instanceof Array ? setProtoOf : mixinProperties);
-    function setProtoOf(obj, proto) {
-      obj.__proto__ = proto;
-      return obj;
-    }
-    function mixinProperties(obj, proto) {
-      for (var prop in proto) {
-        if (!Object.prototype.hasOwnProperty.call(obj, prop)) {
-          obj[prop] = proto[prop];
-        }
-      }
-      return obj;
-    }
-  }
-});
-
-// node_modules/statuses/codes.json
-var require_codes = __commonJS({
-  "node_modules/statuses/codes.json"(exports2, module2) {
-    module2.exports = {
-      "100": "Continue",
-      "101": "Switching Protocols",
-      "102": "Processing",
-      "103": "Early Hints",
-      "200": "OK",
-      "201": "Created",
-      "202": "Accepted",
-      "203": "Non-Authoritative Information",
-      "204": "No Content",
-      "205": "Reset Content",
-      "206": "Partial Content",
-      "207": "Multi-Status",
-      "208": "Already Reported",
-      "226": "IM Used",
-      "300": "Multiple Choices",
-      "301": "Moved Permanently",
-      "302": "Found",
-      "303": "See Other",
-      "304": "Not Modified",
-      "305": "Use Proxy",
-      "307": "Temporary Redirect",
-      "308": "Permanent Redirect",
-      "400": "Bad Request",
-      "401": "Unauthorized",
-      "402": "Payment Required",
-      "403": "Forbidden",
-      "404": "Not Found",
-      "405": "Method Not Allowed",
-      "406": "Not Acceptable",
-      "407": "Proxy Authentication Required",
-      "408": "Request Timeout",
-      "409": "Conflict",
-      "410": "Gone",
-      "411": "Length Required",
-      "412": "Precondition Failed",
-      "413": "Payload Too Large",
-      "414": "URI Too Long",
-      "415": "Unsupported Media Type",
-      "416": "Range Not Satisfiable",
-      "417": "Expectation Failed",
-      "418": "I'm a Teapot",
-      "421": "Misdirected Request",
-      "422": "Unprocessable Entity",
-      "423": "Locked",
-      "424": "Failed Dependency",
-      "425": "Too Early",
-      "426": "Upgrade Required",
-      "428": "Precondition Required",
-      "429": "Too Many Requests",
-      "431": "Request Header Fields Too Large",
-      "451": "Unavailable For Legal Reasons",
-      "500": "Internal Server Error",
-      "501": "Not Implemented",
-      "502": "Bad Gateway",
-      "503": "Service Unavailable",
-      "504": "Gateway Timeout",
-      "505": "HTTP Version Not Supported",
-      "506": "Variant Also Negotiates",
-      "507": "Insufficient Storage",
-      "508": "Loop Detected",
-      "509": "Bandwidth Limit Exceeded",
-      "510": "Not Extended",
-      "511": "Network Authentication Required"
-    };
-  }
-});
-
-// node_modules/statuses/index.js
-var require_statuses = __commonJS({
-  "node_modules/statuses/index.js"(exports2, module2) {
-    "use strict";
-    var codes = require_codes();
-    module2.exports = status;
-    status.message = codes;
-    status.code = createMessageToStatusCodeMap(codes);
-    status.codes = createStatusCodeList(codes);
-    status.redirect = {
-      300: true,
-      301: true,
-      302: true,
-      303: true,
-      305: true,
-      307: true,
-      308: true
-    };
-    status.empty = {
-      204: true,
-      205: true,
-      304: true
-    };
-    status.retry = {
-      502: true,
-      503: true,
-      504: true
-    };
-    function createMessageToStatusCodeMap(codes2) {
-      var map = {};
-      Object.keys(codes2).forEach(function forEachCode(code) {
-        var message2 = codes2[code];
-        var status2 = Number(code);
-        map[message2.toLowerCase()] = status2;
-      });
-      return map;
-    }
-    function createStatusCodeList(codes2) {
-      return Object.keys(codes2).map(function mapCode(code) {
-        return Number(code);
-      });
-    }
-    function getStatusCode(message2) {
-      var msg = message2.toLowerCase();
-      if (!Object.prototype.hasOwnProperty.call(status.code, msg)) {
-        throw new Error('invalid status message: "' + message2 + '"');
-      }
-      return status.code[msg];
-    }
-    function getStatusMessage(code) {
-      if (!Object.prototype.hasOwnProperty.call(status.message, code)) {
-        throw new Error("invalid status code: " + code);
-      }
-      return status.message[code];
-    }
-    function status(code) {
-      if (typeof code === "number") {
-        return getStatusMessage(code);
-      }
-      if (typeof code !== "string") {
-        throw new TypeError("code must be a number or string");
-      }
-      var n = parseInt(code, 10);
-      if (!isNaN(n)) {
-        return getStatusMessage(n);
-      }
-      return getStatusCode(code);
-    }
-  }
-});
-
-// node_modules/inherits/inherits_browser.js
-var require_inherits_browser = __commonJS({
-  "node_modules/inherits/inherits_browser.js"(exports2, module2) {
-    if (typeof Object.create === "function") {
-      module2.exports = function inherits(ctor, superCtor) {
-        if (superCtor) {
-          ctor.super_ = superCtor;
-          ctor.prototype = Object.create(superCtor.prototype, {
-            constructor: {
-              value: ctor,
-              enumerable: false,
-              writable: true,
-              configurable: true
-            }
-          });
-        }
-      };
-    } else {
-      module2.exports = function inherits(ctor, superCtor) {
-        if (superCtor) {
-          ctor.super_ = superCtor;
-          var TempCtor = function() {
-          };
-          TempCtor.prototype = superCtor.prototype;
-          ctor.prototype = new TempCtor();
-          ctor.prototype.constructor = ctor;
-        }
-      };
-    }
-  }
-});
-
-// node_modules/inherits/inherits.js
-var require_inherits = __commonJS({
-  "node_modules/inherits/inherits.js"(exports2, module2) {
-    try {
-      util = require("util");
-      if (typeof util.inherits !== "function") throw "";
-      module2.exports = util.inherits;
-    } catch (e) {
-      module2.exports = require_inherits_browser();
-    }
-    var util;
-  }
-});
-
-// node_modules/toidentifier/index.js
-var require_toidentifier = __commonJS({
-  "node_modules/toidentifier/index.js"(exports2, module2) {
-    "use strict";
-    module2.exports = toIdentifier;
-    function toIdentifier(str) {
-      return str.split(" ").map(function(token) {
-        return token.slice(0, 1).toUpperCase() + token.slice(1);
-      }).join("").replace(/[^ _0-9a-z]/gi, "");
-    }
-  }
-});
-
-// node_modules/http-errors/index.js
-var require_http_errors = __commonJS({
-  "node_modules/http-errors/index.js"(exports2, module2) {
-    "use strict";
-    var deprecate2 = require_depd()("http-errors");
-    var setPrototypeOf = require_setprototypeof();
-    var statuses = require_statuses();
-    var inherits = require_inherits();
-    var toIdentifier = require_toidentifier();
-    module2.exports = createError;
-    module2.exports.HttpError = createHttpErrorConstructor();
-    module2.exports.isHttpError = createIsHttpErrorFunction(module2.exports.HttpError);
-    populateConstructorExports(module2.exports, statuses.codes, module2.exports.HttpError);
-    function codeClass(status) {
-      return Number(String(status).charAt(0) + "00");
-    }
-    function createError() {
-      var err;
-      var msg;
-      var status = 500;
-      var props = {};
-      for (var i = 0; i < arguments.length; i++) {
-        var arg = arguments[i];
-        var type = typeof arg;
-        if (type === "object" && arg instanceof Error) {
-          err = arg;
-          status = err.status || err.statusCode || status;
-        } else if (type === "number" && i === 0) {
-          status = arg;
-        } else if (type === "string") {
-          msg = arg;
-        } else if (type === "object") {
-          props = arg;
-        } else {
-          throw new TypeError("argument #" + (i + 1) + " unsupported type " + type);
-        }
-      }
-      if (typeof status === "number" && (status < 400 || status >= 600)) {
-        deprecate2("non-error status code; use only 4xx or 5xx status codes");
-      }
-      if (typeof status !== "number" || !statuses.message[status] && (status < 400 || status >= 600)) {
-        status = 500;
-      }
-      var HttpError = createError[status] || createError[codeClass(status)];
-      if (!err) {
-        err = HttpError ? new HttpError(msg) : new Error(msg || statuses.message[status]);
-        Error.captureStackTrace(err, createError);
-      }
-      if (!HttpError || !(err instanceof HttpError) || err.status !== status) {
-        err.expose = status < 500;
-        err.status = err.statusCode = status;
-      }
-      for (var key in props) {
-        if (key !== "status" && key !== "statusCode") {
-          err[key] = props[key];
-        }
-      }
-      return err;
-    }
-    function createHttpErrorConstructor() {
-      function HttpError() {
-        throw new TypeError("cannot construct abstract class");
-      }
-      inherits(HttpError, Error);
-      return HttpError;
-    }
-    function createClientErrorConstructor(HttpError, name, code) {
-      var className = toClassName(name);
-      function ClientError(message2) {
-        var msg = message2 != null ? message2 : statuses.message[code];
-        var err = new Error(msg);
-        Error.captureStackTrace(err, ClientError);
-        setPrototypeOf(err, ClientError.prototype);
-        Object.defineProperty(err, "message", {
-          enumerable: true,
-          configurable: true,
-          value: msg,
-          writable: true
-        });
-        Object.defineProperty(err, "name", {
-          enumerable: false,
-          configurable: true,
-          value: className,
-          writable: true
-        });
-        return err;
-      }
-      inherits(ClientError, HttpError);
-      nameFunc(ClientError, className);
-      ClientError.prototype.status = code;
-      ClientError.prototype.statusCode = code;
-      ClientError.prototype.expose = true;
-      return ClientError;
-    }
-    function createIsHttpErrorFunction(HttpError) {
-      return function isHttpError(val) {
-        if (!val || typeof val !== "object") {
-          return false;
-        }
-        if (val instanceof HttpError) {
-          return true;
-        }
-        return val instanceof Error && typeof val.expose === "boolean" && typeof val.statusCode === "number" && val.status === val.statusCode;
-      };
-    }
-    function createServerErrorConstructor(HttpError, name, code) {
-      var className = toClassName(name);
-      function ServerError(message2) {
-        var msg = message2 != null ? message2 : statuses.message[code];
-        var err = new Error(msg);
-        Error.captureStackTrace(err, ServerError);
-        setPrototypeOf(err, ServerError.prototype);
-        Object.defineProperty(err, "message", {
-          enumerable: true,
-          configurable: true,
-          value: msg,
-          writable: true
-        });
-        Object.defineProperty(err, "name", {
-          enumerable: false,
-          configurable: true,
-          value: className,
-          writable: true
-        });
-        return err;
-      }
-      inherits(ServerError, HttpError);
-      nameFunc(ServerError, className);
-      ServerError.prototype.status = code;
-      ServerError.prototype.statusCode = code;
-      ServerError.prototype.expose = false;
-      return ServerError;
-    }
-    function nameFunc(func, name) {
-      var desc = Object.getOwnPropertyDescriptor(func, "name");
-      if (desc && desc.configurable) {
-        desc.value = name;
-        Object.defineProperty(func, "name", desc);
-      }
-    }
-    function populateConstructorExports(exports3, codes, HttpError) {
-      codes.forEach(function forEachCode(code) {
-        var CodeError;
-        var name = toIdentifier(statuses.message[code]);
-        switch (codeClass(code)) {
-          case 400:
-            CodeError = createClientErrorConstructor(HttpError, name, code);
-            break;
-          case 500:
-            CodeError = createServerErrorConstructor(HttpError, name, code);
-            break;
-        }
-        if (CodeError) {
-          exports3[code] = CodeError;
-          exports3[name] = CodeError;
-        }
-      });
-    }
-    function toClassName(name) {
-      return name.substr(-5) !== "Error" ? name + "Error" : name;
-    }
-  }
-});
-
-// node_modules/@fastify/send/lib/createHttpError.js
-var require_createHttpError = __commonJS({
-  "node_modules/@fastify/send/lib/createHttpError.js"(exports2, module2) {
-    "use strict";
-    var createError = require_http_errors();
-    function createHttpError(status, err) {
-      if (!err) {
-        return createError(status);
-      }
-      return err instanceof Error ? createError(status, err, { expose: false }) : createError(status, err);
-    }
-    module2.exports.createHttpError = createHttpError;
-  }
-});
-
-// node_modules/@fastify/send/lib/send.js
-var require_send = __commonJS({
-  "node_modules/@fastify/send/lib/send.js"(exports2, module2) {
-    "use strict";
-    var fs = require("node:fs");
-    var path = require("node:path");
-    var stream = require("node:stream");
-    var debug = require("node:util").debuglog("send");
-    var decode = require_fast_decode_uri_component();
-    var escapeHtml = require_escape_html();
-    var mime = require_mime();
-    var ms = require_dist();
-    var { collapseLeadingSlashes } = require_collapseLeadingSlashes();
-    var { containsDotFile } = require_containsDotFile();
-    var { contentRange } = require_contentRange();
-    var { createHtmlDocument } = require_createHtmlDocument();
-    var { isUtf8MimeType } = require_isUtf8MimeType();
-    var { normalizeList } = require_normalizeList();
-    var { parseBytesRange } = require_parseBytesRange();
-    var { parseTokenList } = require_parseTokenList();
-    var { createHttpError } = require_createHttpError();
-    var extname = path.extname;
-    var join = path.join;
-    var normalize = path.normalize;
-    var resolve = path.resolve;
-    var sep = path.sep;
-    var Readable = stream.Readable;
-    var BYTES_RANGE_REGEXP = /^ *bytes=/;
-    var MAX_MAXAGE = 60 * 60 * 24 * 365 * 1e3;
-    var UP_PATH_REGEXP = /(?:^|[\\/])\.\.(?:[\\/]|$)/;
-    var ERROR_RESPONSES = {
-      400: createHtmlDocument("Error", "Bad Request"),
-      403: createHtmlDocument("Error", "Forbidden"),
-      404: createHtmlDocument("Error", "Not Found"),
-      412: createHtmlDocument("Error", "Precondition Failed"),
-      416: createHtmlDocument("Error", "Range Not Satisfiable"),
-      500: createHtmlDocument("Error", "Internal Server Error")
-    };
-    var validDotFilesOptions = [
-      "allow",
-      "ignore",
-      "deny"
-    ];
-    function normalizeMaxAge(_maxage) {
-      let maxage;
-      if (typeof _maxage === "string") {
-        maxage = ms.parse(_maxage);
-      } else {
-        maxage = Number(_maxage);
-      }
-      if (maxage !== maxage) {
-        return 0;
-      }
-      return Math.min(Math.max(0, maxage), MAX_MAXAGE);
-    }
-    function normalizeOptions(options) {
-      options = options ?? {};
-      const acceptRanges = options.acceptRanges !== void 0 ? Boolean(options.acceptRanges) : true;
-      const cacheControl = options.cacheControl !== void 0 ? Boolean(options.cacheControl) : true;
-      const contentType = options.contentType !== void 0 ? Boolean(options.contentType) : true;
-      const etag = options.etag !== void 0 ? Boolean(options.etag) : true;
-      const dotfiles = options.dotfiles !== void 0 ? validDotFilesOptions.indexOf(options.dotfiles) : 1;
-      if (dotfiles === -1) {
-        throw new TypeError('dotfiles option must be "allow", "deny", or "ignore"');
-      }
-      const extensions = options.extensions !== void 0 ? normalizeList(options.extensions, "extensions option") : [];
-      const immutable = options.immutable !== void 0 ? Boolean(options.immutable) : false;
-      const index = options.index !== void 0 ? normalizeList(options.index, "index option") : ["index.html"];
-      const lastModified = options.lastModified !== void 0 ? Boolean(options.lastModified) : true;
-      const maxage = normalizeMaxAge(options.maxAge ?? options.maxage);
-      const maxContentRangeChunkSize = options.maxContentRangeChunkSize !== void 0 ? Number(options.maxContentRangeChunkSize) : null;
-      const root = options.root ? resolve(options.root) : null;
-      return {
-        acceptRanges,
-        cacheControl,
-        contentType,
-        etag,
-        dotfiles,
-        extensions,
-        immutable,
-        index,
-        lastModified,
-        maxage,
-        maxContentRangeChunkSize,
-        root,
-        start: options.start,
-        end: options.end
-      };
-    }
-    function normalizePath(_path, root) {
-      let path2 = decode(_path);
-      if (path2 == null) {
-        return { statusCode: 400 };
-      }
-      if (~path2.indexOf("\0")) {
-        return { statusCode: 400 };
-      }
-      let parts;
-      if (root !== null) {
-        if (path2) {
-          path2 = normalize("." + sep + path2);
-        }
-        if (UP_PATH_REGEXP.test(path2)) {
-          debug('malicious path "%s"', path2);
-          return { statusCode: 403 };
-        }
-        parts = path2.split(sep);
-        path2 = normalize(join(root, path2));
-      } else {
-        if (UP_PATH_REGEXP.test(path2)) {
-          debug('malicious path "%s"', path2);
-          return { statusCode: 403 };
-        }
-        parts = normalize(path2).split(sep);
-        path2 = resolve(path2);
-      }
-      return { path: path2, parts };
-    }
-    function hasTrailingSlash(path2) {
-      return path2[path2.length - 1] === "/";
-    }
-    function isConditionalGET(request) {
-      return request.headers["if-match"] || request.headers["if-unmodified-since"] || request.headers["if-none-match"] || request.headers["if-modified-since"];
-    }
-    function isNotModifiedFailure(request, headers) {
-      if ("cache-control" in request.headers && request.headers["cache-control"].indexOf("no-cache") !== -1) {
-        return false;
-      }
-      if ("if-none-match" in request.headers) {
-        const ifNoneMatch = request.headers["if-none-match"];
-        if (ifNoneMatch === "*") {
-          return true;
-        }
-        const etag = headers.ETag;
-        if (typeof etag !== "string") {
-          return false;
-        }
-        const etagL = etag.length;
-        const isMatching = parseTokenList(ifNoneMatch, function(match) {
-          const mL = match.length;
-          if (etagL === mL && match === etag || etagL > mL && "W/" + match === etag) {
-            return true;
-          }
-        });
-        if (isMatching) {
-          return true;
-        }
-        return false;
-      }
-      if ("if-modified-since" in request.headers) {
-        const ifModifiedSince = request.headers["if-modified-since"];
-        const lastModified = headers["Last-Modified"];
-        if (!lastModified || Date.parse(lastModified) <= Date.parse(ifModifiedSince)) {
-          return true;
-        }
-      }
-      return false;
-    }
-    function isPreconditionFailure(request, headers) {
-      const ifMatch = request.headers["if-match"];
-      if (ifMatch) {
-        const etag = headers.ETag;
-        if (ifMatch !== "*") {
-          const isMatching = parseTokenList(ifMatch, function(match) {
-            if (match === etag || "W/" + match === etag) {
-              return true;
-            }
-          }) || false;
-          if (isMatching !== true) {
-            return true;
-          }
-        }
-      }
-      if ("if-unmodified-since" in request.headers) {
-        const ifUnmodifiedSince = request.headers["if-unmodified-since"];
-        const unmodifiedSince = Date.parse(ifUnmodifiedSince);
-        if (unmodifiedSince === unmodifiedSince) {
-          const lastModified = Date.parse(headers["Last-Modified"]);
-          if (
-            // eslint-disable-next-line no-self-compare
-            lastModified !== lastModified || // fast path of isNaN(number)
-            lastModified > unmodifiedSince
-          ) {
-            return true;
-          }
-        }
-      }
-      return false;
-    }
-    function isRangeFresh(request, headers) {
-      if (!("if-range" in request.headers)) {
-        return true;
-      }
-      const ifRange = request.headers["if-range"];
-      if (ifRange.indexOf('"') !== -1) {
-        const etag = headers.ETag;
-        return etag && ifRange.indexOf(etag) !== -1 || false;
-      }
-      const ifRangeTimestamp = Date.parse(ifRange);
-      if (ifRangeTimestamp !== ifRangeTimestamp) {
-        return false;
-      }
-      const lastModified = Date.parse(headers["Last-Modified"]);
-      return (
-        // eslint-disable-next-line no-self-compare
-        lastModified !== lastModified || // fast path of isNaN(number)
-        lastModified <= ifRangeTimestamp
-      );
-    }
-    function tryStat(path2) {
-      return new Promise((resolve2) => {
-        fs.stat(path2, function onstat(error, stat) {
-          resolve2({ error, stat });
-        });
-      });
-    }
-    function sendError(statusCode, err) {
-      const headers = {};
-      if (err && err.headers) {
-        for (const headerName in err.headers) {
-          headers[headerName] = err.headers[headerName];
-        }
-      }
-      const doc = ERROR_RESPONSES[statusCode];
-      headers["Content-Type"] = "text/html; charset=utf-8";
-      headers["Content-Length"] = doc[1];
-      headers["Content-Security-Policy"] = "default-src 'none'";
-      headers["X-Content-Type-Options"] = "nosniff";
-      return {
-        statusCode,
-        headers,
-        stream: Readable.from(doc[0]),
-        // metadata
-        type: "error",
-        metadata: { error: createHttpError(statusCode, err) }
-      };
-    }
-    function sendStatError(err) {
-      switch (err.code) {
-        case "ENAMETOOLONG":
-        case "ENOTDIR":
-        case "ENOENT":
-          return sendError(404, err);
-        default:
-          return sendError(500, err);
-      }
-    }
-    function sendNotModified(headers, path2, stat) {
-      debug("not modified");
-      delete headers["Content-Encoding"];
-      delete headers["Content-Language"];
-      delete headers["Content-Length"];
-      delete headers["Content-Range"];
-      delete headers["Content-Type"];
-      return {
-        statusCode: 304,
-        headers,
-        stream: Readable.from(""),
-        // metadata
-        type: "file",
-        metadata: { path: path2, stat }
-      };
-    }
-    function sendFileDirectly(request, path2, stat, options) {
-      let len = stat.size;
-      let offset = options.start ?? 0;
-      let statusCode = 200;
-      const headers = {};
-      debug('send "%s"', path2);
-      if (options.acceptRanges) {
-        debug("accept ranges");
-        headers["Accept-Ranges"] = "bytes";
-      }
-      if (options.cacheControl) {
-        let cacheControl = "public, max-age=" + Math.floor(options.maxage / 1e3);
-        if (options.immutable) {
-          cacheControl += ", immutable";
-        }
-        debug("cache-control %s", cacheControl);
-        headers["Cache-Control"] = cacheControl;
-      }
-      if (options.lastModified) {
-        const modified = stat.mtime.toUTCString();
-        debug("modified %s", modified);
-        headers["Last-Modified"] = modified;
-      }
-      if (options.etag) {
-        const etag = 'W/"' + stat.size.toString(16) + "-" + stat.mtime.getTime().toString(16) + '"';
-        debug("etag %s", etag);
-        headers.ETag = etag;
-      }
-      if (options.contentType) {
-        let type = mime.getType(path2) || mime.default_type;
-        debug("content-type %s", type);
-        if (type && isUtf8MimeType(type)) {
-          type += "; charset=utf-8";
-        }
-        if (type) {
-          headers["Content-Type"] = type;
-        }
-      }
-      if (isConditionalGET(request)) {
-        if (isPreconditionFailure(request, headers)) {
-          return sendError(412);
-        }
-        if (isNotModifiedFailure(request, headers)) {
-          return sendNotModified(headers, path2, stat);
-        }
-      }
-      len = Math.max(0, len - offset);
-      if (options.end !== void 0) {
-        const bytes = options.end - offset + 1;
-        if (len > bytes) len = bytes;
-      }
-      if (options.acceptRanges) {
-        const rangeHeader = request.headers.range;
-        if (rangeHeader !== void 0 && BYTES_RANGE_REGEXP.test(rangeHeader)) {
-          if (isRangeFresh(request, headers)) {
-            const ranges = parseBytesRange(len, rangeHeader);
-            if (ranges.length === 0) {
-              debug("range unsatisfiable");
-              headers["Content-Range"] = contentRange("bytes", len);
-              return sendError(416, {
-                headers: { "Content-Range": headers["Content-Range"] }
-              });
-            } else if (ranges.length === 1) {
-              debug("range %j", ranges);
-              statusCode = 206;
-              if (options.maxContentRangeChunkSize) {
-                ranges[0].end = Math.min(ranges[0].end, ranges[0].start + options.maxContentRangeChunkSize - 1);
-              }
-              headers["Content-Range"] = contentRange("bytes", len, ranges[0]);
-              offset += ranges[0].start;
-              len = ranges[0].end - ranges[0].start + 1;
-            }
-          } else {
-            debug("range stale");
-          }
-        }
-      }
-      headers["Content-Length"] = len;
-      if (request.method === "HEAD") {
-        return {
-          statusCode,
-          headers,
-          stream: Readable.from(""),
-          // metadata
-          type: "file",
-          metadata: { path: path2, stat }
-        };
-      }
-      const stream2 = fs.createReadStream(path2, {
-        start: offset,
-        end: Math.max(offset, offset + len - 1)
-      });
-      return {
-        statusCode,
-        headers,
-        stream: stream2,
-        // metadata
-        type: "file",
-        metadata: { path: path2, stat }
-      };
-    }
-    function sendRedirect(path2, options) {
-      if (hasTrailingSlash(options.path)) {
-        return sendError(403);
-      }
-      const loc = encodeURI(collapseLeadingSlashes(options.path + "/"));
-      const doc = createHtmlDocument("Redirecting", "Redirecting to " + escapeHtml(loc));
-      const headers = {};
-      headers["Content-Type"] = "text/html; charset=utf-8";
-      headers["Content-Length"] = doc[1];
-      headers["Content-Security-Policy"] = "default-src 'none'";
-      headers["X-Content-Type-Options"] = "nosniff";
-      headers.Location = loc;
-      return {
-        statusCode: 301,
-        headers,
-        stream: Readable.from(doc[0]),
-        // metadata
-        type: "directory",
-        metadata: { requestPath: options.path, path: path2 }
-      };
-    }
-    async function sendIndex(request, path2, options) {
-      let err;
-      for (let i = 0; i < options.index.length; i++) {
-        const index = options.index[i];
-        const p = join(path2, index);
-        const { error, stat } = await tryStat(p);
-        if (error) {
-          err = error;
-          continue;
-        }
-        if (stat.isDirectory()) continue;
-        return sendFileDirectly(request, p, stat, options);
-      }
-      if (err) {
-        return sendStatError(err);
-      }
-      return sendError(404);
-    }
-    async function sendFile(request, path2, options) {
-      const { error, stat } = await tryStat(path2);
-      if (error && error.code === "ENOENT" && !extname(path2) && path2[path2.length - 1] !== sep) {
-        let err = error;
-        for (let i = 0; i < options.extensions.length; i++) {
-          const extension = options.extensions[i];
-          const p = path2 + "." + extension;
-          const { error: error2, stat: stat2 } = await tryStat(p);
-          if (error2) {
-            err = error2;
-            continue;
-          }
-          if (stat2.isDirectory()) {
-            err = null;
-            continue;
-          }
-          return sendFileDirectly(request, p, stat2, options);
-        }
-        if (err) {
-          return sendStatError(err);
-        }
-        return sendError(404);
-      }
-      if (error) return sendStatError(error);
-      if (stat.isDirectory()) return sendRedirect(path2, options);
-      return sendFileDirectly(request, path2, stat, options);
-    }
-    async function send(request, _path, options) {
-      const opts = normalizeOptions(options);
-      opts.path = _path;
-      const parsed = normalizePath(_path, opts.root);
-      const { path: path2, parts } = parsed;
-      if (parsed.statusCode !== void 0) {
-        return sendError(parsed.statusCode);
-      }
-      if ((debug.enabled || // if debugging is enabled, then check for all cases to log allow case
-      opts.dotfiles !== 0) && containsDotFile(parts)) {
-        switch (opts.dotfiles) {
-          /* c8 ignore start */
-          /* unreachable, because NODE_DEBUG can not be set after process is running */
-          case 0:
-            debug('allow dotfile "%s"', path2);
-            break;
-          /* c8 ignore stop */
-          case 2:
-            debug('deny dotfile "%s"', path2);
-            return sendError(403);
-          case 1:
-          // 'ignore'
-          default:
-            debug('ignore dotfile "%s"', path2);
-            return sendError(404);
-        }
-      }
-      if (opts.index.length && hasTrailingSlash(_path)) {
-        return sendIndex(request, path2, opts);
-      }
-      return sendFile(request, path2, opts);
-    }
-    module2.exports.send = send;
-  }
-});
-
-// node_modules/@fastify/send/index.js
-var require_send2 = __commonJS({
-  "node_modules/@fastify/send/index.js"(exports2, module2) {
-    "use strict";
-    var isUtf8MimeType = require_isUtf8MimeType().isUtf8MimeType;
-    var mime = require_mime();
-    var send = require_send().send;
-    module2.exports = send;
-    module2.exports.default = send;
-    module2.exports.send = send;
-    module2.exports.isUtf8MimeType = isUtf8MimeType;
-    module2.exports.mime = mime;
-  }
-});
-
-// node_modules/negotiator/lib/charset.js
-var require_charset = __commonJS({
-  "node_modules/negotiator/lib/charset.js"(exports2, module2) {
-    "use strict";
-    module2.exports = preferredCharsets;
-    module2.exports.preferredCharsets = preferredCharsets;
-    var simpleCharsetRegExp = /^\s*([^\s;]+)\s*(?:;(.*))?$/;
-    function parseAcceptCharset(accept) {
-      var accepts = accept.split(",");
-      for (var i = 0, j = 0; i < accepts.length; i++) {
-        var charset = parseCharset(accepts[i].trim(), i);
-        if (charset) {
-          accepts[j++] = charset;
-        }
-      }
-      accepts.length = j;
-      return accepts;
-    }
-    function parseCharset(str, i) {
-      var match = simpleCharsetRegExp.exec(str);
-      if (!match) return null;
-      var charset = match[1];
-      var q = 1;
-      if (match[2]) {
-        var params = match[2].split(";");
-        for (var j = 0; j < params.length; j++) {
-          var p = params[j].trim().split("=");
-          if (p[0] === "q") {
-            q = parseFloat(p[1]);
-            break;
-          }
-        }
-      }
-      return {
-        charset,
-        q,
-        i
-      };
-    }
-    function getCharsetPriority(charset, accepted, index) {
-      var priority = { o: -1, q: 0, s: 0 };
-      for (var i = 0; i < accepted.length; i++) {
-        var spec = specify(charset, accepted[i], index);
-        if (spec && (priority.s - spec.s || priority.q - spec.q || priority.o - spec.o) < 0) {
-          priority = spec;
-        }
-      }
-      return priority;
-    }
-    function specify(charset, spec, index) {
-      var s = 0;
-      if (spec.charset.toLowerCase() === charset.toLowerCase()) {
-        s |= 1;
-      } else if (spec.charset !== "*") {
-        return null;
-      }
-      return {
-        i: index,
-        o: spec.i,
-        q: spec.q,
-        s
-      };
-    }
-    function preferredCharsets(accept, provided) {
-      var accepts = parseAcceptCharset(accept === void 0 ? "*" : accept || "");
-      if (!provided) {
-        return accepts.filter(isQuality).sort(compareSpecs).map(getFullCharset);
-      }
-      var priorities = provided.map(function getPriority(type, index) {
-        return getCharsetPriority(type, accepts, index);
-      });
-      return priorities.filter(isQuality).sort(compareSpecs).map(function getCharset(priority) {
-        return provided[priorities.indexOf(priority)];
-      });
-    }
-    function compareSpecs(a, b) {
-      return b.q - a.q || b.s - a.s || a.o - b.o || a.i - b.i || 0;
-    }
-    function getFullCharset(spec) {
-      return spec.charset;
-    }
-    function isQuality(spec) {
-      return spec.q > 0;
-    }
-  }
-});
-
-// node_modules/negotiator/lib/encoding.js
-var require_encoding2 = __commonJS({
-  "node_modules/negotiator/lib/encoding.js"(exports2, module2) {
-    "use strict";
-    module2.exports = preferredEncodings;
-    module2.exports.preferredEncodings = preferredEncodings;
-    var simpleEncodingRegExp = /^\s*([^\s;]+)\s*(?:;(.*))?$/;
-    function parseAcceptEncoding(accept) {
-      var accepts = accept.split(",");
-      var hasIdentity = false;
-      var minQuality = 1;
-      for (var i = 0, j = 0; i < accepts.length; i++) {
-        var encoding = parseEncoding(accepts[i].trim(), i);
-        if (encoding) {
-          accepts[j++] = encoding;
-          hasIdentity = hasIdentity || specify("identity", encoding);
-          minQuality = Math.min(minQuality, encoding.q || 1);
-        }
-      }
-      if (!hasIdentity) {
-        accepts[j++] = {
-          encoding: "identity",
-          q: minQuality,
-          i
-        };
-      }
-      accepts.length = j;
-      return accepts;
-    }
-    function parseEncoding(str, i) {
-      var match = simpleEncodingRegExp.exec(str);
-      if (!match) return null;
-      var encoding = match[1];
-      var q = 1;
-      if (match[2]) {
-        var params = match[2].split(";");
-        for (var j = 0; j < params.length; j++) {
-          var p = params[j].trim().split("=");
-          if (p[0] === "q") {
-            q = parseFloat(p[1]);
-            break;
-          }
-        }
-      }
-      return {
-        encoding,
-        q,
-        i
-      };
-    }
-    function getEncodingPriority(encoding, accepted, index) {
-      var priority = { o: -1, q: 0, s: 0 };
-      for (var i = 0; i < accepted.length; i++) {
-        var spec = specify(encoding, accepted[i], index);
-        if (spec && (priority.s - spec.s || priority.q - spec.q || priority.o - spec.o) < 0) {
-          priority = spec;
-        }
-      }
-      return priority;
-    }
-    function specify(encoding, spec, index) {
-      var s = 0;
-      if (spec.encoding.toLowerCase() === encoding.toLowerCase()) {
-        s |= 1;
-      } else if (spec.encoding !== "*") {
-        return null;
-      }
-      return {
-        i: index,
-        o: spec.i,
-        q: spec.q,
-        s
-      };
-    }
-    function preferredEncodings(accept, provided) {
-      var accepts = parseAcceptEncoding(accept || "");
-      if (!provided) {
-        return accepts.filter(isQuality).sort(compareSpecs).map(getFullEncoding);
-      }
-      var priorities = provided.map(function getPriority(type, index) {
-        return getEncodingPriority(type, accepts, index);
-      });
-      return priorities.filter(isQuality).sort(compareSpecs).map(function getEncoding(priority) {
-        return provided[priorities.indexOf(priority)];
-      });
-    }
-    function compareSpecs(a, b) {
-      return b.q - a.q || b.s - a.s || a.o - b.o || a.i - b.i || 0;
-    }
-    function getFullEncoding(spec) {
-      return spec.encoding;
-    }
-    function isQuality(spec) {
-      return spec.q > 0;
-    }
-  }
-});
-
-// node_modules/negotiator/lib/language.js
-var require_language = __commonJS({
-  "node_modules/negotiator/lib/language.js"(exports2, module2) {
-    "use strict";
-    module2.exports = preferredLanguages;
-    module2.exports.preferredLanguages = preferredLanguages;
-    var simpleLanguageRegExp = /^\s*([^\s\-;]+)(?:-([^\s;]+))?\s*(?:;(.*))?$/;
-    function parseAcceptLanguage(accept) {
-      var accepts = accept.split(",");
-      for (var i = 0, j = 0; i < accepts.length; i++) {
-        var language = parseLanguage(accepts[i].trim(), i);
-        if (language) {
-          accepts[j++] = language;
-        }
-      }
-      accepts.length = j;
-      return accepts;
-    }
-    function parseLanguage(str, i) {
-      var match = simpleLanguageRegExp.exec(str);
-      if (!match) return null;
-      var prefix = match[1];
-      var suffix = match[2];
-      var full = prefix;
-      if (suffix) full += "-" + suffix;
-      var q = 1;
-      if (match[3]) {
-        var params = match[3].split(";");
-        for (var j = 0; j < params.length; j++) {
-          var p = params[j].split("=");
-          if (p[0] === "q") q = parseFloat(p[1]);
-        }
-      }
-      return {
-        prefix,
-        suffix,
-        q,
-        i,
-        full
-      };
-    }
-    function getLanguagePriority(language, accepted, index) {
-      var priority = { o: -1, q: 0, s: 0 };
-      for (var i = 0; i < accepted.length; i++) {
-        var spec = specify(language, accepted[i], index);
-        if (spec && (priority.s - spec.s || priority.q - spec.q || priority.o - spec.o) < 0) {
-          priority = spec;
-        }
-      }
-      return priority;
-    }
-    function specify(language, spec, index) {
-      var p = parseLanguage(language);
-      if (!p) return null;
-      var s = 0;
-      if (spec.full.toLowerCase() === p.full.toLowerCase()) {
-        s |= 4;
-      } else if (spec.prefix.toLowerCase() === p.full.toLowerCase()) {
-        s |= 2;
-      } else if (spec.full.toLowerCase() === p.prefix.toLowerCase()) {
-        s |= 1;
-      } else if (spec.full !== "*") {
-        return null;
-      }
-      return {
-        i: index,
-        o: spec.i,
-        q: spec.q,
-        s
-      };
-    }
-    function preferredLanguages(accept, provided) {
-      var accepts = parseAcceptLanguage(accept === void 0 ? "*" : accept || "");
-      if (!provided) {
-        return accepts.filter(isQuality).sort(compareSpecs).map(getFullLanguage);
-      }
-      var priorities = provided.map(function getPriority(type, index) {
-        return getLanguagePriority(type, accepts, index);
-      });
-      return priorities.filter(isQuality).sort(compareSpecs).map(function getLanguage(priority) {
-        return provided[priorities.indexOf(priority)];
-      });
-    }
-    function compareSpecs(a, b) {
-      return b.q - a.q || b.s - a.s || a.o - b.o || a.i - b.i || 0;
-    }
-    function getFullLanguage(spec) {
-      return spec.full;
-    }
-    function isQuality(spec) {
-      return spec.q > 0;
-    }
-  }
-});
-
-// node_modules/negotiator/lib/mediaType.js
-var require_mediaType = __commonJS({
-  "node_modules/negotiator/lib/mediaType.js"(exports2, module2) {
-    "use strict";
-    module2.exports = preferredMediaTypes;
-    module2.exports.preferredMediaTypes = preferredMediaTypes;
-    var simpleMediaTypeRegExp = /^\s*([^\s\/;]+)\/([^;\s]+)\s*(?:;(.*))?$/;
-    function parseAccept(accept) {
-      var accepts = splitMediaTypes(accept);
-      for (var i = 0, j = 0; i < accepts.length; i++) {
-        var mediaType = parseMediaType(accepts[i].trim(), i);
-        if (mediaType) {
-          accepts[j++] = mediaType;
-        }
-      }
-      accepts.length = j;
-      return accepts;
-    }
-    function parseMediaType(str, i) {
-      var match = simpleMediaTypeRegExp.exec(str);
-      if (!match) return null;
-      var params = /* @__PURE__ */ Object.create(null);
-      var q = 1;
-      var subtype = match[2];
-      var type = match[1];
-      if (match[3]) {
-        var kvps = splitParameters(match[3]).map(splitKeyValuePair);
-        for (var j = 0; j < kvps.length; j++) {
-          var pair = kvps[j];
-          var key = pair[0].toLowerCase();
-          var val = pair[1];
-          var value = val && val[0] === '"' && val[val.length - 1] === '"' ? val.substr(1, val.length - 2) : val;
-          if (key === "q") {
-            q = parseFloat(value);
-            break;
-          }
-          params[key] = value;
-        }
-      }
-      return {
-        type,
-        subtype,
-        params,
-        q,
-        i
-      };
-    }
-    function getMediaTypePriority(type, accepted, index) {
-      var priority = { o: -1, q: 0, s: 0 };
-      for (var i = 0; i < accepted.length; i++) {
-        var spec = specify(type, accepted[i], index);
-        if (spec && (priority.s - spec.s || priority.q - spec.q || priority.o - spec.o) < 0) {
-          priority = spec;
-        }
-      }
-      return priority;
-    }
-    function specify(type, spec, index) {
-      var p = parseMediaType(type);
-      var s = 0;
-      if (!p) {
-        return null;
-      }
-      if (spec.type.toLowerCase() == p.type.toLowerCase()) {
-        s |= 4;
-      } else if (spec.type != "*") {
-        return null;
-      }
-      if (spec.subtype.toLowerCase() == p.subtype.toLowerCase()) {
-        s |= 2;
-      } else if (spec.subtype != "*") {
-        return null;
-      }
-      var keys = Object.keys(spec.params);
-      if (keys.length > 0) {
-        if (keys.every(function(k) {
-          return spec.params[k] == "*" || (spec.params[k] || "").toLowerCase() == (p.params[k] || "").toLowerCase();
-        })) {
-          s |= 1;
-        } else {
-          return null;
-        }
-      }
-      return {
-        i: index,
-        o: spec.i,
-        q: spec.q,
-        s
-      };
-    }
-    function preferredMediaTypes(accept, provided) {
-      var accepts = parseAccept(accept === void 0 ? "*/*" : accept || "");
-      if (!provided) {
-        return accepts.filter(isQuality).sort(compareSpecs).map(getFullType);
-      }
-      var priorities = provided.map(function getPriority(type, index) {
-        return getMediaTypePriority(type, accepts, index);
-      });
-      return priorities.filter(isQuality).sort(compareSpecs).map(function getType(priority) {
-        return provided[priorities.indexOf(priority)];
-      });
-    }
-    function compareSpecs(a, b) {
-      return b.q - a.q || b.s - a.s || a.o - b.o || a.i - b.i || 0;
-    }
-    function getFullType(spec) {
-      return spec.type + "/" + spec.subtype;
-    }
-    function isQuality(spec) {
-      return spec.q > 0;
-    }
-    function quoteCount(string) {
-      var count = 0;
-      var index = 0;
-      while ((index = string.indexOf('"', index)) !== -1) {
-        count++;
-        index++;
-      }
-      return count;
-    }
-    function splitKeyValuePair(str) {
-      var index = str.indexOf("=");
-      var key;
-      var val;
-      if (index === -1) {
-        key = str;
-      } else {
-        key = str.substr(0, index);
-        val = str.substr(index + 1);
-      }
-      return [key, val];
-    }
-    function splitMediaTypes(accept) {
-      var accepts = accept.split(",");
-      for (var i = 1, j = 0; i < accepts.length; i++) {
-        if (quoteCount(accepts[j]) % 2 == 0) {
-          accepts[++j] = accepts[i];
-        } else {
-          accepts[j] += "," + accepts[i];
-        }
-      }
-      accepts.length = j + 1;
-      return accepts;
-    }
-    function splitParameters(str) {
-      var parameters = str.split(";");
-      for (var i = 1, j = 0; i < parameters.length; i++) {
-        if (quoteCount(parameters[j]) % 2 == 0) {
-          parameters[++j] = parameters[i];
-        } else {
-          parameters[j] += ";" + parameters[i];
-        }
-      }
-      parameters.length = j + 1;
-      for (var i = 0; i < parameters.length; i++) {
-        parameters[i] = parameters[i].trim();
-      }
-      return parameters;
-    }
-  }
-});
-
-// node_modules/negotiator/index.js
-var require_negotiator = __commonJS({
-  "node_modules/negotiator/index.js"(exports2, module2) {
-    "use strict";
-    var preferredCharsets = require_charset();
-    var preferredEncodings = require_encoding2();
-    var preferredLanguages = require_language();
-    var preferredMediaTypes = require_mediaType();
-    module2.exports = Negotiator;
-    module2.exports.Negotiator = Negotiator;
-    function Negotiator(request) {
-      if (!(this instanceof Negotiator)) {
-        return new Negotiator(request);
-      }
-      this.request = request;
-    }
-    Negotiator.prototype.charset = function charset(available) {
-      var set = this.charsets(available);
-      return set && set[0];
-    };
-    Negotiator.prototype.charsets = function charsets(available) {
-      return preferredCharsets(this.request.headers["accept-charset"], available);
-    };
-    Negotiator.prototype.encoding = function encoding(available) {
-      var set = this.encodings(available);
-      return set && set[0];
-    };
-    Negotiator.prototype.encodings = function encodings(available) {
-      return preferredEncodings(this.request.headers["accept-encoding"], available);
-    };
-    Negotiator.prototype.language = function language(available) {
-      var set = this.languages(available);
-      return set && set[0];
-    };
-    Negotiator.prototype.languages = function languages(available) {
-      return preferredLanguages(this.request.headers["accept-language"], available);
-    };
-    Negotiator.prototype.mediaType = function mediaType(available) {
-      var set = this.mediaTypes(available);
-      return set && set[0];
-    };
-    Negotiator.prototype.mediaTypes = function mediaTypes(available) {
-      return preferredMediaTypes(this.request.headers.accept, available);
-    };
-    Negotiator.prototype.preferredCharset = Negotiator.prototype.charset;
-    Negotiator.prototype.preferredCharsets = Negotiator.prototype.charsets;
-    Negotiator.prototype.preferredEncoding = Negotiator.prototype.encoding;
-    Negotiator.prototype.preferredEncodings = Negotiator.prototype.encodings;
-    Negotiator.prototype.preferredLanguage = Negotiator.prototype.language;
-    Negotiator.prototype.preferredLanguages = Negotiator.prototype.languages;
-    Negotiator.prototype.preferredMediaType = Negotiator.prototype.mediaType;
-    Negotiator.prototype.preferredMediaTypes = Negotiator.prototype.mediaTypes;
-  }
-});
-
-// node_modules/mime-db/db.json
-var require_db = __commonJS({
-  "node_modules/mime-db/db.json"(exports2, module2) {
-    module2.exports = {
-      "application/1d-interleaved-parityfec": {
-        source: "iana"
-      },
-      "application/3gpdash-qoe-report+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/3gpp-ims+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/3gpphal+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/3gpphalforms+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/a2l": {
-        source: "iana"
-      },
-      "application/ace+cbor": {
-        source: "iana"
-      },
-      "application/activemessage": {
-        source: "iana"
-      },
-      "application/activity+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-costmap+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-costmapfilter+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-directory+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-endpointcost+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-endpointcostparams+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-endpointprop+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-endpointpropparams+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-error+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-networkmap+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-networkmapfilter+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-updatestreamcontrol+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/alto-updatestreamparams+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/aml": {
-        source: "iana"
-      },
-      "application/andrew-inset": {
-        source: "iana",
-        extensions: ["ez"]
-      },
-      "application/applefile": {
-        source: "iana"
-      },
-      "application/applixware": {
-        source: "apache",
-        extensions: ["aw"]
-      },
-      "application/at+jwt": {
-        source: "iana"
-      },
-      "application/atf": {
-        source: "iana"
-      },
-      "application/atfx": {
-        source: "iana"
-      },
-      "application/atom+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["atom"]
-      },
-      "application/atomcat+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["atomcat"]
-      },
-      "application/atomdeleted+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["atomdeleted"]
-      },
-      "application/atomicmail": {
-        source: "iana"
-      },
-      "application/atomsvc+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["atomsvc"]
-      },
-      "application/atsc-dwd+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["dwd"]
-      },
-      "application/atsc-dynamic-event-message": {
-        source: "iana"
-      },
-      "application/atsc-held+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["held"]
-      },
-      "application/atsc-rdt+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/atsc-rsat+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rsat"]
-      },
-      "application/atxml": {
-        source: "iana"
-      },
-      "application/auth-policy+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/bacnet-xdd+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/batch-smtp": {
-        source: "iana"
-      },
-      "application/bdoc": {
-        compressible: false,
-        extensions: ["bdoc"]
-      },
-      "application/beep+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/calendar+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/calendar+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xcs"]
-      },
-      "application/call-completion": {
-        source: "iana"
-      },
-      "application/cals-1840": {
-        source: "iana"
-      },
-      "application/captive+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/cbor": {
-        source: "iana"
-      },
-      "application/cbor-seq": {
-        source: "iana"
-      },
-      "application/cccex": {
-        source: "iana"
-      },
-      "application/ccmp+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/ccxml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["ccxml"]
-      },
-      "application/cdfx+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["cdfx"]
-      },
-      "application/cdmi-capability": {
-        source: "iana",
-        extensions: ["cdmia"]
-      },
-      "application/cdmi-container": {
-        source: "iana",
-        extensions: ["cdmic"]
-      },
-      "application/cdmi-domain": {
-        source: "iana",
-        extensions: ["cdmid"]
-      },
-      "application/cdmi-object": {
-        source: "iana",
-        extensions: ["cdmio"]
-      },
-      "application/cdmi-queue": {
-        source: "iana",
-        extensions: ["cdmiq"]
-      },
-      "application/cdni": {
-        source: "iana"
-      },
-      "application/cea": {
-        source: "iana"
-      },
-      "application/cea-2018+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/cellml+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/cfw": {
-        source: "iana"
-      },
-      "application/city+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/clr": {
-        source: "iana"
-      },
-      "application/clue+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/clue_info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/cms": {
-        source: "iana"
-      },
-      "application/cnrp+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/coap-group+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/coap-payload": {
-        source: "iana"
-      },
-      "application/commonground": {
-        source: "iana"
-      },
-      "application/conference-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/cose": {
-        source: "iana"
-      },
-      "application/cose-key": {
-        source: "iana"
-      },
-      "application/cose-key-set": {
-        source: "iana"
-      },
-      "application/cpl+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["cpl"]
-      },
-      "application/csrattrs": {
-        source: "iana"
-      },
-      "application/csta+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/cstadata+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/csvm+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/cu-seeme": {
-        source: "apache",
-        extensions: ["cu"]
-      },
-      "application/cwt": {
-        source: "iana"
-      },
-      "application/cybercash": {
-        source: "iana"
-      },
-      "application/dart": {
-        compressible: true
-      },
-      "application/dash+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mpd"]
-      },
-      "application/dash-patch+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mpp"]
-      },
-      "application/dashdelta": {
-        source: "iana"
-      },
-      "application/davmount+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["davmount"]
-      },
-      "application/dca-rft": {
-        source: "iana"
-      },
-      "application/dcd": {
-        source: "iana"
-      },
-      "application/dec-dx": {
-        source: "iana"
-      },
-      "application/dialog-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/dicom": {
-        source: "iana"
-      },
-      "application/dicom+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/dicom+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/dii": {
-        source: "iana"
-      },
-      "application/dit": {
-        source: "iana"
-      },
-      "application/dns": {
-        source: "iana"
-      },
-      "application/dns+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/dns-message": {
-        source: "iana"
-      },
-      "application/docbook+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["dbk"]
-      },
-      "application/dots+cbor": {
-        source: "iana"
-      },
-      "application/dskpp+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/dssc+der": {
-        source: "iana",
-        extensions: ["dssc"]
-      },
-      "application/dssc+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xdssc"]
-      },
-      "application/dvcs": {
-        source: "iana"
-      },
-      "application/ecmascript": {
-        source: "iana",
-        compressible: true,
-        extensions: ["es", "ecma"]
-      },
-      "application/edi-consent": {
-        source: "iana"
-      },
-      "application/edi-x12": {
-        source: "iana",
-        compressible: false
-      },
-      "application/edifact": {
-        source: "iana",
-        compressible: false
-      },
-      "application/efi": {
-        source: "iana"
-      },
-      "application/elm+json": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/elm+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/emergencycalldata.cap+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/emergencycalldata.comment+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/emergencycalldata.control+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/emergencycalldata.deviceinfo+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/emergencycalldata.ecall.msd": {
-        source: "iana"
-      },
-      "application/emergencycalldata.providerinfo+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/emergencycalldata.serviceinfo+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/emergencycalldata.subscriberinfo+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/emergencycalldata.veds+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/emma+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["emma"]
-      },
-      "application/emotionml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["emotionml"]
-      },
-      "application/encaprtp": {
-        source: "iana"
-      },
-      "application/epp+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/epub+zip": {
-        source: "iana",
-        compressible: false,
-        extensions: ["epub"]
-      },
-      "application/eshop": {
-        source: "iana"
-      },
-      "application/exi": {
-        source: "iana",
-        extensions: ["exi"]
-      },
-      "application/expect-ct-report+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/express": {
-        source: "iana",
-        extensions: ["exp"]
-      },
-      "application/fastinfoset": {
-        source: "iana"
-      },
-      "application/fastsoap": {
-        source: "iana"
-      },
-      "application/fdt+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["fdt"]
-      },
-      "application/fhir+json": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/fhir+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/fido.trusted-apps+json": {
-        compressible: true
-      },
-      "application/fits": {
-        source: "iana"
-      },
-      "application/flexfec": {
-        source: "iana"
-      },
-      "application/font-sfnt": {
-        source: "iana"
-      },
-      "application/font-tdpfr": {
-        source: "iana",
-        extensions: ["pfr"]
-      },
-      "application/font-woff": {
-        source: "iana",
-        compressible: false
-      },
-      "application/framework-attributes+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/geo+json": {
-        source: "iana",
-        compressible: true,
-        extensions: ["geojson"]
-      },
-      "application/geo+json-seq": {
-        source: "iana"
-      },
-      "application/geopackage+sqlite3": {
-        source: "iana"
-      },
-      "application/geoxacml+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/gltf-buffer": {
-        source: "iana"
-      },
-      "application/gml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["gml"]
-      },
-      "application/gpx+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["gpx"]
-      },
-      "application/gxf": {
-        source: "apache",
-        extensions: ["gxf"]
-      },
-      "application/gzip": {
-        source: "iana",
-        compressible: false,
-        extensions: ["gz"]
-      },
-      "application/h224": {
-        source: "iana"
-      },
-      "application/held+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/hjson": {
-        extensions: ["hjson"]
-      },
-      "application/http": {
-        source: "iana"
-      },
-      "application/hyperstudio": {
-        source: "iana",
-        extensions: ["stk"]
-      },
-      "application/ibe-key-request+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/ibe-pkg-reply+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/ibe-pp-data": {
-        source: "iana"
-      },
-      "application/iges": {
-        source: "iana"
-      },
-      "application/im-iscomposing+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/index": {
-        source: "iana"
-      },
-      "application/index.cmd": {
-        source: "iana"
-      },
-      "application/index.obj": {
-        source: "iana"
-      },
-      "application/index.response": {
-        source: "iana"
-      },
-      "application/index.vnd": {
-        source: "iana"
-      },
-      "application/inkml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["ink", "inkml"]
-      },
-      "application/iotp": {
-        source: "iana"
-      },
-      "application/ipfix": {
-        source: "iana",
-        extensions: ["ipfix"]
-      },
-      "application/ipp": {
-        source: "iana"
-      },
-      "application/isup": {
-        source: "iana"
-      },
-      "application/its+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["its"]
-      },
-      "application/java-archive": {
-        source: "apache",
-        compressible: false,
-        extensions: ["jar", "war", "ear"]
-      },
-      "application/java-serialized-object": {
-        source: "apache",
-        compressible: false,
-        extensions: ["ser"]
-      },
-      "application/java-vm": {
-        source: "apache",
-        compressible: false,
-        extensions: ["class"]
-      },
-      "application/javascript": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true,
-        extensions: ["js", "mjs"]
-      },
-      "application/jf2feed+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/jose": {
-        source: "iana"
-      },
-      "application/jose+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/jrd+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/jscalendar+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/json": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true,
-        extensions: ["json", "map"]
-      },
-      "application/json-patch+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/json-seq": {
-        source: "iana"
-      },
-      "application/json5": {
-        extensions: ["json5"]
-      },
-      "application/jsonml+json": {
-        source: "apache",
-        compressible: true,
-        extensions: ["jsonml"]
-      },
-      "application/jwk+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/jwk-set+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/jwt": {
-        source: "iana"
-      },
-      "application/kpml-request+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/kpml-response+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/ld+json": {
-        source: "iana",
-        compressible: true,
-        extensions: ["jsonld"]
-      },
-      "application/lgr+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["lgr"]
-      },
-      "application/link-format": {
-        source: "iana"
-      },
-      "application/load-control+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/lost+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["lostxml"]
-      },
-      "application/lostsync+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/lpf+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/lxf": {
-        source: "iana"
-      },
-      "application/mac-binhex40": {
-        source: "iana",
-        extensions: ["hqx"]
-      },
-      "application/mac-compactpro": {
-        source: "apache",
-        extensions: ["cpt"]
-      },
-      "application/macwriteii": {
-        source: "iana"
-      },
-      "application/mads+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mads"]
-      },
-      "application/manifest+json": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true,
-        extensions: ["webmanifest"]
-      },
-      "application/marc": {
-        source: "iana",
-        extensions: ["mrc"]
-      },
-      "application/marcxml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mrcx"]
-      },
-      "application/mathematica": {
-        source: "iana",
-        extensions: ["ma", "nb", "mb"]
-      },
-      "application/mathml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mathml"]
-      },
-      "application/mathml-content+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mathml-presentation+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-associated-procedure-description+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-deregister+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-envelope+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-msk+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-msk-response+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-protection-description+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-reception-report+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-register+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-register-response+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-schedule+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbms-user-service-description+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mbox": {
-        source: "iana",
-        extensions: ["mbox"]
-      },
-      "application/media-policy-dataset+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mpf"]
-      },
-      "application/media_control+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mediaservercontrol+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mscml"]
-      },
-      "application/merge-patch+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/metalink+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["metalink"]
-      },
-      "application/metalink4+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["meta4"]
-      },
-      "application/mets+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mets"]
-      },
-      "application/mf4": {
-        source: "iana"
-      },
-      "application/mikey": {
-        source: "iana"
-      },
-      "application/mipc": {
-        source: "iana"
-      },
-      "application/missing-blocks+cbor-seq": {
-        source: "iana"
-      },
-      "application/mmt-aei+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["maei"]
-      },
-      "application/mmt-usd+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["musd"]
-      },
-      "application/mods+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mods"]
-      },
-      "application/moss-keys": {
-        source: "iana"
-      },
-      "application/moss-signature": {
-        source: "iana"
-      },
-      "application/mosskey-data": {
-        source: "iana"
-      },
-      "application/mosskey-request": {
-        source: "iana"
-      },
-      "application/mp21": {
-        source: "iana",
-        extensions: ["m21", "mp21"]
-      },
-      "application/mp4": {
-        source: "iana",
-        extensions: ["mp4s", "m4p"]
-      },
-      "application/mpeg4-generic": {
-        source: "iana"
-      },
-      "application/mpeg4-iod": {
-        source: "iana"
-      },
-      "application/mpeg4-iod-xmt": {
-        source: "iana"
-      },
-      "application/mrb-consumer+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/mrb-publish+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/msc-ivr+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/msc-mixer+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/msword": {
-        source: "iana",
-        compressible: false,
-        extensions: ["doc", "dot"]
-      },
-      "application/mud+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/multipart-core": {
-        source: "iana"
-      },
-      "application/mxf": {
-        source: "iana",
-        extensions: ["mxf"]
-      },
-      "application/n-quads": {
-        source: "iana",
-        extensions: ["nq"]
-      },
-      "application/n-triples": {
-        source: "iana",
-        extensions: ["nt"]
-      },
-      "application/nasdata": {
-        source: "iana"
-      },
-      "application/news-checkgroups": {
-        source: "iana",
-        charset: "US-ASCII"
-      },
-      "application/news-groupinfo": {
-        source: "iana",
-        charset: "US-ASCII"
-      },
-      "application/news-transmission": {
-        source: "iana"
-      },
-      "application/nlsml+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/node": {
-        source: "iana",
-        extensions: ["cjs"]
-      },
-      "application/nss": {
-        source: "iana"
-      },
-      "application/oauth-authz-req+jwt": {
-        source: "iana"
-      },
-      "application/oblivious-dns-message": {
-        source: "iana"
-      },
-      "application/ocsp-request": {
-        source: "iana"
-      },
-      "application/ocsp-response": {
-        source: "iana"
-      },
-      "application/octet-stream": {
-        source: "iana",
-        compressible: false,
-        extensions: ["bin", "dms", "lrf", "mar", "so", "dist", "distz", "pkg", "bpk", "dump", "elc", "deploy", "exe", "dll", "deb", "dmg", "iso", "img", "msi", "msp", "msm", "buffer"]
-      },
-      "application/oda": {
-        source: "iana",
-        extensions: ["oda"]
-      },
-      "application/odm+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/odx": {
-        source: "iana"
-      },
-      "application/oebps-package+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["opf"]
-      },
-      "application/ogg": {
-        source: "iana",
-        compressible: false,
-        extensions: ["ogx"]
-      },
-      "application/omdoc+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["omdoc"]
-      },
-      "application/onenote": {
-        source: "apache",
-        extensions: ["onetoc", "onetoc2", "onetmp", "onepkg"]
-      },
-      "application/opc-nodeset+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/oscore": {
-        source: "iana"
-      },
-      "application/oxps": {
-        source: "iana",
-        extensions: ["oxps"]
-      },
-      "application/p21": {
-        source: "iana"
-      },
-      "application/p21+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/p2p-overlay+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["relo"]
-      },
-      "application/parityfec": {
-        source: "iana"
-      },
-      "application/passport": {
-        source: "iana"
-      },
-      "application/patch-ops-error+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xer"]
-      },
-      "application/pdf": {
-        source: "iana",
-        compressible: false,
-        extensions: ["pdf"]
-      },
-      "application/pdx": {
-        source: "iana"
-      },
-      "application/pem-certificate-chain": {
-        source: "iana"
-      },
-      "application/pgp-encrypted": {
-        source: "iana",
-        compressible: false,
-        extensions: ["pgp"]
-      },
-      "application/pgp-keys": {
-        source: "iana",
-        extensions: ["asc"]
-      },
-      "application/pgp-signature": {
-        source: "iana",
-        extensions: ["asc", "sig"]
-      },
-      "application/pics-rules": {
-        source: "apache",
-        extensions: ["prf"]
-      },
-      "application/pidf+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/pidf-diff+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/pkcs10": {
-        source: "iana",
-        extensions: ["p10"]
-      },
-      "application/pkcs12": {
-        source: "iana"
-      },
-      "application/pkcs7-mime": {
-        source: "iana",
-        extensions: ["p7m", "p7c"]
-      },
-      "application/pkcs7-signature": {
-        source: "iana",
-        extensions: ["p7s"]
-      },
-      "application/pkcs8": {
-        source: "iana",
-        extensions: ["p8"]
-      },
-      "application/pkcs8-encrypted": {
-        source: "iana"
-      },
-      "application/pkix-attr-cert": {
-        source: "iana",
-        extensions: ["ac"]
-      },
-      "application/pkix-cert": {
-        source: "iana",
-        extensions: ["cer"]
-      },
-      "application/pkix-crl": {
-        source: "iana",
-        extensions: ["crl"]
-      },
-      "application/pkix-pkipath": {
-        source: "iana",
-        extensions: ["pkipath"]
-      },
-      "application/pkixcmp": {
-        source: "iana",
-        extensions: ["pki"]
-      },
-      "application/pls+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["pls"]
-      },
-      "application/poc-settings+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/postscript": {
-        source: "iana",
-        compressible: true,
-        extensions: ["ai", "eps", "ps"]
-      },
-      "application/ppsp-tracker+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/problem+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/problem+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/provenance+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["provx"]
-      },
-      "application/prs.alvestrand.titrax-sheet": {
-        source: "iana"
-      },
-      "application/prs.cww": {
-        source: "iana",
-        extensions: ["cww"]
-      },
-      "application/prs.cyn": {
-        source: "iana",
-        charset: "7-BIT"
-      },
-      "application/prs.hpub+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/prs.nprend": {
-        source: "iana"
-      },
-      "application/prs.plucker": {
-        source: "iana"
-      },
-      "application/prs.rdf-xml-crypt": {
-        source: "iana"
-      },
-      "application/prs.xsf+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/pskc+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["pskcxml"]
-      },
-      "application/pvd+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/qsig": {
-        source: "iana"
-      },
-      "application/raml+yaml": {
-        compressible: true,
-        extensions: ["raml"]
-      },
-      "application/raptorfec": {
-        source: "iana"
-      },
-      "application/rdap+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/rdf+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rdf", "owl"]
-      },
-      "application/reginfo+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rif"]
-      },
-      "application/relax-ng-compact-syntax": {
-        source: "iana",
-        extensions: ["rnc"]
-      },
-      "application/remote-printing": {
-        source: "iana"
-      },
-      "application/reputon+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/resource-lists+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rl"]
-      },
-      "application/resource-lists-diff+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rld"]
-      },
-      "application/rfc+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/riscos": {
-        source: "iana"
-      },
-      "application/rlmi+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/rls-services+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rs"]
-      },
-      "application/route-apd+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rapd"]
-      },
-      "application/route-s-tsid+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["sls"]
-      },
-      "application/route-usd+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rusd"]
-      },
-      "application/rpki-ghostbusters": {
-        source: "iana",
-        extensions: ["gbr"]
-      },
-      "application/rpki-manifest": {
-        source: "iana",
-        extensions: ["mft"]
-      },
-      "application/rpki-publication": {
-        source: "iana"
-      },
-      "application/rpki-roa": {
-        source: "iana",
-        extensions: ["roa"]
-      },
-      "application/rpki-updown": {
-        source: "iana"
-      },
-      "application/rsd+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["rsd"]
-      },
-      "application/rss+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["rss"]
-      },
-      "application/rtf": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rtf"]
-      },
-      "application/rtploopback": {
-        source: "iana"
-      },
-      "application/rtx": {
-        source: "iana"
-      },
-      "application/samlassertion+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/samlmetadata+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/sarif+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/sarif-external-properties+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/sbe": {
-        source: "iana"
-      },
-      "application/sbml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["sbml"]
-      },
-      "application/scaip+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/scim+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/scvp-cv-request": {
-        source: "iana",
-        extensions: ["scq"]
-      },
-      "application/scvp-cv-response": {
-        source: "iana",
-        extensions: ["scs"]
-      },
-      "application/scvp-vp-request": {
-        source: "iana",
-        extensions: ["spq"]
-      },
-      "application/scvp-vp-response": {
-        source: "iana",
-        extensions: ["spp"]
-      },
-      "application/sdp": {
-        source: "iana",
-        extensions: ["sdp"]
-      },
-      "application/secevent+jwt": {
-        source: "iana"
-      },
-      "application/senml+cbor": {
-        source: "iana"
-      },
-      "application/senml+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/senml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["senmlx"]
-      },
-      "application/senml-etch+cbor": {
-        source: "iana"
-      },
-      "application/senml-etch+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/senml-exi": {
-        source: "iana"
-      },
-      "application/sensml+cbor": {
-        source: "iana"
-      },
-      "application/sensml+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/sensml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["sensmlx"]
-      },
-      "application/sensml-exi": {
-        source: "iana"
-      },
-      "application/sep+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/sep-exi": {
-        source: "iana"
-      },
-      "application/session-info": {
-        source: "iana"
-      },
-      "application/set-payment": {
-        source: "iana"
-      },
-      "application/set-payment-initiation": {
-        source: "iana",
-        extensions: ["setpay"]
-      },
-      "application/set-registration": {
-        source: "iana"
-      },
-      "application/set-registration-initiation": {
-        source: "iana",
-        extensions: ["setreg"]
-      },
-      "application/sgml": {
-        source: "iana"
-      },
-      "application/sgml-open-catalog": {
-        source: "iana"
-      },
-      "application/shf+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["shf"]
-      },
-      "application/sieve": {
-        source: "iana",
-        extensions: ["siv", "sieve"]
-      },
-      "application/simple-filter+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/simple-message-summary": {
-        source: "iana"
-      },
-      "application/simplesymbolcontainer": {
-        source: "iana"
-      },
-      "application/sipc": {
-        source: "iana"
-      },
-      "application/slate": {
-        source: "iana"
-      },
-      "application/smil": {
-        source: "iana"
-      },
-      "application/smil+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["smi", "smil"]
-      },
-      "application/smpte336m": {
-        source: "iana"
-      },
-      "application/soap+fastinfoset": {
-        source: "iana"
-      },
-      "application/soap+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/sparql-query": {
-        source: "iana",
-        extensions: ["rq"]
-      },
-      "application/sparql-results+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["srx"]
-      },
-      "application/spdx+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/spirits-event+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/sql": {
-        source: "iana"
-      },
-      "application/srgs": {
-        source: "iana",
-        extensions: ["gram"]
-      },
-      "application/srgs+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["grxml"]
-      },
-      "application/sru+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["sru"]
-      },
-      "application/ssdl+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["ssdl"]
-      },
-      "application/ssml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["ssml"]
-      },
-      "application/stix+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/swid+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["swidtag"]
-      },
-      "application/tamp-apex-update": {
-        source: "iana"
-      },
-      "application/tamp-apex-update-confirm": {
-        source: "iana"
-      },
-      "application/tamp-community-update": {
-        source: "iana"
-      },
-      "application/tamp-community-update-confirm": {
-        source: "iana"
-      },
-      "application/tamp-error": {
-        source: "iana"
-      },
-      "application/tamp-sequence-adjust": {
-        source: "iana"
-      },
-      "application/tamp-sequence-adjust-confirm": {
-        source: "iana"
-      },
-      "application/tamp-status-query": {
-        source: "iana"
-      },
-      "application/tamp-status-response": {
-        source: "iana"
-      },
-      "application/tamp-update": {
-        source: "iana"
-      },
-      "application/tamp-update-confirm": {
-        source: "iana"
-      },
-      "application/tar": {
-        compressible: true
-      },
-      "application/taxii+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/td+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/tei+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["tei", "teicorpus"]
-      },
-      "application/tetra_isi": {
-        source: "iana"
-      },
-      "application/thraud+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["tfi"]
-      },
-      "application/timestamp-query": {
-        source: "iana"
-      },
-      "application/timestamp-reply": {
-        source: "iana"
-      },
-      "application/timestamped-data": {
-        source: "iana",
-        extensions: ["tsd"]
-      },
-      "application/tlsrpt+gzip": {
-        source: "iana"
-      },
-      "application/tlsrpt+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/tnauthlist": {
-        source: "iana"
-      },
-      "application/token-introspection+jwt": {
-        source: "iana"
-      },
-      "application/toml": {
-        compressible: true,
-        extensions: ["toml"]
-      },
-      "application/trickle-ice-sdpfrag": {
-        source: "iana"
-      },
-      "application/trig": {
-        source: "iana",
-        extensions: ["trig"]
-      },
-      "application/ttml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["ttml"]
-      },
-      "application/tve-trigger": {
-        source: "iana"
-      },
-      "application/tzif": {
-        source: "iana"
-      },
-      "application/tzif-leap": {
-        source: "iana"
-      },
-      "application/ubjson": {
-        compressible: false,
-        extensions: ["ubj"]
-      },
-      "application/ulpfec": {
-        source: "iana"
-      },
-      "application/urc-grpsheet+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/urc-ressheet+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rsheet"]
-      },
-      "application/urc-targetdesc+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["td"]
-      },
-      "application/urc-uisocketdesc+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vcard+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vcard+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vemmi": {
-        source: "iana"
-      },
-      "application/vividence.scriptfile": {
-        source: "apache"
-      },
-      "application/vnd.1000minds.decision-model+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["1km"]
-      },
-      "application/vnd.3gpp-prose+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp-prose-pc3ch+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp-v2x-local-service-information": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.5gnas": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.access-transfer-events+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.bsf+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.gmop+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.gtpc": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.interworking-data": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.lpp": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.mc-signalling-ear": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.mcdata-affiliation-command+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcdata-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcdata-payload": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.mcdata-service-config+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcdata-signalling": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.mcdata-ue-config+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcdata-user-profile+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-affiliation-command+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-floor-request+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-location-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-mbms-usage-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-service-config+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-signed+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-ue-config+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-ue-init-config+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcptt-user-profile+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcvideo-affiliation-command+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcvideo-affiliation-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcvideo-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcvideo-location-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcvideo-mbms-usage-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcvideo-service-config+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcvideo-transmission-request+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcvideo-ue-config+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mcvideo-user-profile+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.mid-call+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.ngap": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.pfcp": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.pic-bw-large": {
-        source: "iana",
-        extensions: ["plb"]
-      },
-      "application/vnd.3gpp.pic-bw-small": {
-        source: "iana",
-        extensions: ["psb"]
-      },
-      "application/vnd.3gpp.pic-bw-var": {
-        source: "iana",
-        extensions: ["pvb"]
-      },
-      "application/vnd.3gpp.s1ap": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.sms": {
-        source: "iana"
-      },
-      "application/vnd.3gpp.sms+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.srvcc-ext+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.srvcc-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.state-and-event-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp.ussd+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp2.bcmcsinfo+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.3gpp2.sms": {
-        source: "iana"
-      },
-      "application/vnd.3gpp2.tcap": {
-        source: "iana",
-        extensions: ["tcap"]
-      },
-      "application/vnd.3lightssoftware.imagescal": {
-        source: "iana"
-      },
-      "application/vnd.3m.post-it-notes": {
-        source: "iana",
-        extensions: ["pwn"]
-      },
-      "application/vnd.accpac.simply.aso": {
-        source: "iana",
-        extensions: ["aso"]
-      },
-      "application/vnd.accpac.simply.imp": {
-        source: "iana",
-        extensions: ["imp"]
-      },
-      "application/vnd.acucobol": {
-        source: "iana",
-        extensions: ["acu"]
-      },
-      "application/vnd.acucorp": {
-        source: "iana",
-        extensions: ["atc", "acutc"]
-      },
-      "application/vnd.adobe.air-application-installer-package+zip": {
-        source: "apache",
-        compressible: false,
-        extensions: ["air"]
-      },
-      "application/vnd.adobe.flash.movie": {
-        source: "iana"
-      },
-      "application/vnd.adobe.formscentral.fcdt": {
-        source: "iana",
-        extensions: ["fcdt"]
-      },
-      "application/vnd.adobe.fxp": {
-        source: "iana",
-        extensions: ["fxp", "fxpl"]
-      },
-      "application/vnd.adobe.partial-upload": {
-        source: "iana"
-      },
-      "application/vnd.adobe.xdp+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xdp"]
-      },
-      "application/vnd.adobe.xfdf": {
-        source: "iana",
-        extensions: ["xfdf"]
-      },
-      "application/vnd.aether.imp": {
-        source: "iana"
-      },
-      "application/vnd.afpc.afplinedata": {
-        source: "iana"
-      },
-      "application/vnd.afpc.afplinedata-pagedef": {
-        source: "iana"
-      },
-      "application/vnd.afpc.cmoca-cmresource": {
-        source: "iana"
-      },
-      "application/vnd.afpc.foca-charset": {
-        source: "iana"
-      },
-      "application/vnd.afpc.foca-codedfont": {
-        source: "iana"
-      },
-      "application/vnd.afpc.foca-codepage": {
-        source: "iana"
-      },
-      "application/vnd.afpc.modca": {
-        source: "iana"
-      },
-      "application/vnd.afpc.modca-cmtable": {
-        source: "iana"
-      },
-      "application/vnd.afpc.modca-formdef": {
-        source: "iana"
-      },
-      "application/vnd.afpc.modca-mediummap": {
-        source: "iana"
-      },
-      "application/vnd.afpc.modca-objectcontainer": {
-        source: "iana"
-      },
-      "application/vnd.afpc.modca-overlay": {
-        source: "iana"
-      },
-      "application/vnd.afpc.modca-pagesegment": {
-        source: "iana"
-      },
-      "application/vnd.age": {
-        source: "iana",
-        extensions: ["age"]
-      },
-      "application/vnd.ah-barcode": {
-        source: "iana"
-      },
-      "application/vnd.ahead.space": {
-        source: "iana",
-        extensions: ["ahead"]
-      },
-      "application/vnd.airzip.filesecure.azf": {
-        source: "iana",
-        extensions: ["azf"]
-      },
-      "application/vnd.airzip.filesecure.azs": {
-        source: "iana",
-        extensions: ["azs"]
-      },
-      "application/vnd.amadeus+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.amazon.ebook": {
-        source: "apache",
-        extensions: ["azw"]
-      },
-      "application/vnd.amazon.mobi8-ebook": {
-        source: "iana"
-      },
-      "application/vnd.americandynamics.acc": {
-        source: "iana",
-        extensions: ["acc"]
-      },
-      "application/vnd.amiga.ami": {
-        source: "iana",
-        extensions: ["ami"]
-      },
-      "application/vnd.amundsen.maze+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.android.ota": {
-        source: "iana"
-      },
-      "application/vnd.android.package-archive": {
-        source: "apache",
-        compressible: false,
-        extensions: ["apk"]
-      },
-      "application/vnd.anki": {
-        source: "iana"
-      },
-      "application/vnd.anser-web-certificate-issue-initiation": {
-        source: "iana",
-        extensions: ["cii"]
-      },
-      "application/vnd.anser-web-funds-transfer-initiation": {
-        source: "apache",
-        extensions: ["fti"]
-      },
-      "application/vnd.antix.game-component": {
-        source: "iana",
-        extensions: ["atx"]
-      },
-      "application/vnd.apache.arrow.file": {
-        source: "iana"
-      },
-      "application/vnd.apache.arrow.stream": {
-        source: "iana"
-      },
-      "application/vnd.apache.thrift.binary": {
-        source: "iana"
-      },
-      "application/vnd.apache.thrift.compact": {
-        source: "iana"
-      },
-      "application/vnd.apache.thrift.json": {
-        source: "iana"
-      },
-      "application/vnd.api+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.aplextor.warrp+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.apothekende.reservation+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.apple.installer+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mpkg"]
-      },
-      "application/vnd.apple.keynote": {
-        source: "iana",
-        extensions: ["key"]
-      },
-      "application/vnd.apple.mpegurl": {
-        source: "iana",
-        extensions: ["m3u8"]
-      },
-      "application/vnd.apple.numbers": {
-        source: "iana",
-        extensions: ["numbers"]
-      },
-      "application/vnd.apple.pages": {
-        source: "iana",
-        extensions: ["pages"]
-      },
-      "application/vnd.apple.pkpass": {
-        compressible: false,
-        extensions: ["pkpass"]
-      },
-      "application/vnd.arastra.swi": {
-        source: "iana"
-      },
-      "application/vnd.aristanetworks.swi": {
-        source: "iana",
-        extensions: ["swi"]
-      },
-      "application/vnd.artisan+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.artsquare": {
-        source: "iana"
-      },
-      "application/vnd.astraea-software.iota": {
-        source: "iana",
-        extensions: ["iota"]
-      },
-      "application/vnd.audiograph": {
-        source: "iana",
-        extensions: ["aep"]
-      },
-      "application/vnd.autopackage": {
-        source: "iana"
-      },
-      "application/vnd.avalon+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.avistar+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.balsamiq.bmml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["bmml"]
-      },
-      "application/vnd.balsamiq.bmpr": {
-        source: "iana"
-      },
-      "application/vnd.banana-accounting": {
-        source: "iana"
-      },
-      "application/vnd.bbf.usp.error": {
-        source: "iana"
-      },
-      "application/vnd.bbf.usp.msg": {
-        source: "iana"
-      },
-      "application/vnd.bbf.usp.msg+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.bekitzur-stech+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.bint.med-content": {
-        source: "iana"
-      },
-      "application/vnd.biopax.rdf+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.blink-idb-value-wrapper": {
-        source: "iana"
-      },
-      "application/vnd.blueice.multipass": {
-        source: "iana",
-        extensions: ["mpm"]
-      },
-      "application/vnd.bluetooth.ep.oob": {
-        source: "iana"
-      },
-      "application/vnd.bluetooth.le.oob": {
-        source: "iana"
-      },
-      "application/vnd.bmi": {
-        source: "iana",
-        extensions: ["bmi"]
-      },
-      "application/vnd.bpf": {
-        source: "iana"
-      },
-      "application/vnd.bpf3": {
-        source: "iana"
-      },
-      "application/vnd.businessobjects": {
-        source: "iana",
-        extensions: ["rep"]
-      },
-      "application/vnd.byu.uapi+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.cab-jscript": {
-        source: "iana"
-      },
-      "application/vnd.canon-cpdl": {
-        source: "iana"
-      },
-      "application/vnd.canon-lips": {
-        source: "iana"
-      },
-      "application/vnd.capasystems-pg+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.cendio.thinlinc.clientconf": {
-        source: "iana"
-      },
-      "application/vnd.century-systems.tcp_stream": {
-        source: "iana"
-      },
-      "application/vnd.chemdraw+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["cdxml"]
-      },
-      "application/vnd.chess-pgn": {
-        source: "iana"
-      },
-      "application/vnd.chipnuts.karaoke-mmd": {
-        source: "iana",
-        extensions: ["mmd"]
-      },
-      "application/vnd.ciedi": {
-        source: "iana"
-      },
-      "application/vnd.cinderella": {
-        source: "iana",
-        extensions: ["cdy"]
-      },
-      "application/vnd.cirpack.isdn-ext": {
-        source: "iana"
-      },
-      "application/vnd.citationstyles.style+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["csl"]
-      },
-      "application/vnd.claymore": {
-        source: "iana",
-        extensions: ["cla"]
-      },
-      "application/vnd.cloanto.rp9": {
-        source: "iana",
-        extensions: ["rp9"]
-      },
-      "application/vnd.clonk.c4group": {
-        source: "iana",
-        extensions: ["c4g", "c4d", "c4f", "c4p", "c4u"]
-      },
-      "application/vnd.cluetrust.cartomobile-config": {
-        source: "iana",
-        extensions: ["c11amc"]
-      },
-      "application/vnd.cluetrust.cartomobile-config-pkg": {
-        source: "iana",
-        extensions: ["c11amz"]
-      },
-      "application/vnd.coffeescript": {
-        source: "iana"
-      },
-      "application/vnd.collabio.xodocuments.document": {
-        source: "iana"
-      },
-      "application/vnd.collabio.xodocuments.document-template": {
-        source: "iana"
-      },
-      "application/vnd.collabio.xodocuments.presentation": {
-        source: "iana"
-      },
-      "application/vnd.collabio.xodocuments.presentation-template": {
-        source: "iana"
-      },
-      "application/vnd.collabio.xodocuments.spreadsheet": {
-        source: "iana"
-      },
-      "application/vnd.collabio.xodocuments.spreadsheet-template": {
-        source: "iana"
-      },
-      "application/vnd.collection+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.collection.doc+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.collection.next+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.comicbook+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.comicbook-rar": {
-        source: "iana"
-      },
-      "application/vnd.commerce-battelle": {
-        source: "iana"
-      },
-      "application/vnd.commonspace": {
-        source: "iana",
-        extensions: ["csp"]
-      },
-      "application/vnd.contact.cmsg": {
-        source: "iana",
-        extensions: ["cdbcmsg"]
-      },
-      "application/vnd.coreos.ignition+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.cosmocaller": {
-        source: "iana",
-        extensions: ["cmc"]
-      },
-      "application/vnd.crick.clicker": {
-        source: "iana",
-        extensions: ["clkx"]
-      },
-      "application/vnd.crick.clicker.keyboard": {
-        source: "iana",
-        extensions: ["clkk"]
-      },
-      "application/vnd.crick.clicker.palette": {
-        source: "iana",
-        extensions: ["clkp"]
-      },
-      "application/vnd.crick.clicker.template": {
-        source: "iana",
-        extensions: ["clkt"]
-      },
-      "application/vnd.crick.clicker.wordbank": {
-        source: "iana",
-        extensions: ["clkw"]
-      },
-      "application/vnd.criticaltools.wbs+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["wbs"]
-      },
-      "application/vnd.cryptii.pipe+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.crypto-shade-file": {
-        source: "iana"
-      },
-      "application/vnd.cryptomator.encrypted": {
-        source: "iana"
-      },
-      "application/vnd.cryptomator.vault": {
-        source: "iana"
-      },
-      "application/vnd.ctc-posml": {
-        source: "iana",
-        extensions: ["pml"]
-      },
-      "application/vnd.ctct.ws+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.cups-pdf": {
-        source: "iana"
-      },
-      "application/vnd.cups-postscript": {
-        source: "iana"
-      },
-      "application/vnd.cups-ppd": {
-        source: "iana",
-        extensions: ["ppd"]
-      },
-      "application/vnd.cups-raster": {
-        source: "iana"
-      },
-      "application/vnd.cups-raw": {
-        source: "iana"
-      },
-      "application/vnd.curl": {
-        source: "iana"
-      },
-      "application/vnd.curl.car": {
-        source: "apache",
-        extensions: ["car"]
-      },
-      "application/vnd.curl.pcurl": {
-        source: "apache",
-        extensions: ["pcurl"]
-      },
-      "application/vnd.cyan.dean.root+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.cybank": {
-        source: "iana"
-      },
-      "application/vnd.cyclonedx+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.cyclonedx+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.d2l.coursepackage1p0+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.d3m-dataset": {
-        source: "iana"
-      },
-      "application/vnd.d3m-problem": {
-        source: "iana"
-      },
-      "application/vnd.dart": {
-        source: "iana",
-        compressible: true,
-        extensions: ["dart"]
-      },
-      "application/vnd.data-vision.rdz": {
-        source: "iana",
-        extensions: ["rdz"]
-      },
-      "application/vnd.datapackage+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dataresource+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dbf": {
-        source: "iana",
-        extensions: ["dbf"]
-      },
-      "application/vnd.debian.binary-package": {
-        source: "iana"
-      },
-      "application/vnd.dece.data": {
-        source: "iana",
-        extensions: ["uvf", "uvvf", "uvd", "uvvd"]
-      },
-      "application/vnd.dece.ttml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["uvt", "uvvt"]
-      },
-      "application/vnd.dece.unspecified": {
-        source: "iana",
-        extensions: ["uvx", "uvvx"]
-      },
-      "application/vnd.dece.zip": {
-        source: "iana",
-        extensions: ["uvz", "uvvz"]
-      },
-      "application/vnd.denovo.fcselayout-link": {
-        source: "iana",
-        extensions: ["fe_launch"]
-      },
-      "application/vnd.desmume.movie": {
-        source: "iana"
-      },
-      "application/vnd.dir-bi.plate-dl-nosuffix": {
-        source: "iana"
-      },
-      "application/vnd.dm.delegation+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dna": {
-        source: "iana",
-        extensions: ["dna"]
-      },
-      "application/vnd.document+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dolby.mlp": {
-        source: "apache",
-        extensions: ["mlp"]
-      },
-      "application/vnd.dolby.mobile.1": {
-        source: "iana"
-      },
-      "application/vnd.dolby.mobile.2": {
-        source: "iana"
-      },
-      "application/vnd.doremir.scorecloud-binary-document": {
-        source: "iana"
-      },
-      "application/vnd.dpgraph": {
-        source: "iana",
-        extensions: ["dpg"]
-      },
-      "application/vnd.dreamfactory": {
-        source: "iana",
-        extensions: ["dfac"]
-      },
-      "application/vnd.drive+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ds-keypoint": {
-        source: "apache",
-        extensions: ["kpxx"]
-      },
-      "application/vnd.dtg.local": {
-        source: "iana"
-      },
-      "application/vnd.dtg.local.flash": {
-        source: "iana"
-      },
-      "application/vnd.dtg.local.html": {
-        source: "iana"
-      },
-      "application/vnd.dvb.ait": {
-        source: "iana",
-        extensions: ["ait"]
-      },
-      "application/vnd.dvb.dvbisl+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dvb.dvbj": {
-        source: "iana"
-      },
-      "application/vnd.dvb.esgcontainer": {
-        source: "iana"
-      },
-      "application/vnd.dvb.ipdcdftnotifaccess": {
-        source: "iana"
-      },
-      "application/vnd.dvb.ipdcesgaccess": {
-        source: "iana"
-      },
-      "application/vnd.dvb.ipdcesgaccess2": {
-        source: "iana"
-      },
-      "application/vnd.dvb.ipdcesgpdd": {
-        source: "iana"
-      },
-      "application/vnd.dvb.ipdcroaming": {
-        source: "iana"
-      },
-      "application/vnd.dvb.iptv.alfec-base": {
-        source: "iana"
-      },
-      "application/vnd.dvb.iptv.alfec-enhancement": {
-        source: "iana"
-      },
-      "application/vnd.dvb.notif-aggregate-root+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dvb.notif-container+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dvb.notif-generic+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dvb.notif-ia-msglist+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dvb.notif-ia-registration-request+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dvb.notif-ia-registration-response+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dvb.notif-init+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.dvb.pfr": {
-        source: "iana"
-      },
-      "application/vnd.dvb.service": {
-        source: "iana",
-        extensions: ["svc"]
-      },
-      "application/vnd.dxr": {
-        source: "iana"
-      },
-      "application/vnd.dynageo": {
-        source: "iana",
-        extensions: ["geo"]
-      },
-      "application/vnd.dzr": {
-        source: "iana"
-      },
-      "application/vnd.easykaraoke.cdgdownload": {
-        source: "iana"
-      },
-      "application/vnd.ecdis-update": {
-        source: "iana"
-      },
-      "application/vnd.ecip.rlp": {
-        source: "iana"
-      },
-      "application/vnd.eclipse.ditto+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ecowin.chart": {
-        source: "iana",
-        extensions: ["mag"]
-      },
-      "application/vnd.ecowin.filerequest": {
-        source: "iana"
-      },
-      "application/vnd.ecowin.fileupdate": {
-        source: "iana"
-      },
-      "application/vnd.ecowin.series": {
-        source: "iana"
-      },
-      "application/vnd.ecowin.seriesrequest": {
-        source: "iana"
-      },
-      "application/vnd.ecowin.seriesupdate": {
-        source: "iana"
-      },
-      "application/vnd.efi.img": {
-        source: "iana"
-      },
-      "application/vnd.efi.iso": {
-        source: "iana"
-      },
-      "application/vnd.emclient.accessrequest+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.enliven": {
-        source: "iana",
-        extensions: ["nml"]
-      },
-      "application/vnd.enphase.envoy": {
-        source: "iana"
-      },
-      "application/vnd.eprints.data+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.epson.esf": {
-        source: "iana",
-        extensions: ["esf"]
-      },
-      "application/vnd.epson.msf": {
-        source: "iana",
-        extensions: ["msf"]
-      },
-      "application/vnd.epson.quickanime": {
-        source: "iana",
-        extensions: ["qam"]
-      },
-      "application/vnd.epson.salt": {
-        source: "iana",
-        extensions: ["slt"]
-      },
-      "application/vnd.epson.ssf": {
-        source: "iana",
-        extensions: ["ssf"]
-      },
-      "application/vnd.ericsson.quickcall": {
-        source: "iana"
-      },
-      "application/vnd.espass-espass+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.eszigno3+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["es3", "et3"]
-      },
-      "application/vnd.etsi.aoc+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.asic-e+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.etsi.asic-s+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.etsi.cug+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.iptvcommand+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.iptvdiscovery+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.iptvprofile+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.iptvsad-bc+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.iptvsad-cod+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.iptvsad-npvr+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.iptvservice+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.iptvsync+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.iptvueprofile+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.mcid+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.mheg5": {
-        source: "iana"
-      },
-      "application/vnd.etsi.overload-control-policy-dataset+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.pstn+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.sci+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.simservs+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.timestamp-token": {
-        source: "iana"
-      },
-      "application/vnd.etsi.tsl+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.etsi.tsl.der": {
-        source: "iana"
-      },
-      "application/vnd.eu.kasparian.car+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.eudora.data": {
-        source: "iana"
-      },
-      "application/vnd.evolv.ecig.profile": {
-        source: "iana"
-      },
-      "application/vnd.evolv.ecig.settings": {
-        source: "iana"
-      },
-      "application/vnd.evolv.ecig.theme": {
-        source: "iana"
-      },
-      "application/vnd.exstream-empower+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.exstream-package": {
-        source: "iana"
-      },
-      "application/vnd.ezpix-album": {
-        source: "iana",
-        extensions: ["ez2"]
-      },
-      "application/vnd.ezpix-package": {
-        source: "iana",
-        extensions: ["ez3"]
-      },
-      "application/vnd.f-secure.mobile": {
-        source: "iana"
-      },
-      "application/vnd.familysearch.gedcom+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.fastcopy-disk-image": {
-        source: "iana"
-      },
-      "application/vnd.fdf": {
-        source: "iana",
-        extensions: ["fdf"]
-      },
-      "application/vnd.fdsn.mseed": {
-        source: "iana",
-        extensions: ["mseed"]
-      },
-      "application/vnd.fdsn.seed": {
-        source: "iana",
-        extensions: ["seed", "dataless"]
-      },
-      "application/vnd.ffsns": {
-        source: "iana"
-      },
-      "application/vnd.ficlab.flb+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.filmit.zfc": {
-        source: "iana"
-      },
-      "application/vnd.fints": {
-        source: "iana"
-      },
-      "application/vnd.firemonkeys.cloudcell": {
-        source: "iana"
-      },
-      "application/vnd.flographit": {
-        source: "iana",
-        extensions: ["gph"]
-      },
-      "application/vnd.fluxtime.clip": {
-        source: "iana",
-        extensions: ["ftc"]
-      },
-      "application/vnd.font-fontforge-sfd": {
-        source: "iana"
-      },
-      "application/vnd.framemaker": {
-        source: "iana",
-        extensions: ["fm", "frame", "maker", "book"]
-      },
-      "application/vnd.frogans.fnc": {
-        source: "iana",
-        extensions: ["fnc"]
-      },
-      "application/vnd.frogans.ltf": {
-        source: "iana",
-        extensions: ["ltf"]
-      },
-      "application/vnd.fsc.weblaunch": {
-        source: "iana",
-        extensions: ["fsc"]
-      },
-      "application/vnd.fujifilm.fb.docuworks": {
-        source: "iana"
-      },
-      "application/vnd.fujifilm.fb.docuworks.binder": {
-        source: "iana"
-      },
-      "application/vnd.fujifilm.fb.docuworks.container": {
-        source: "iana"
-      },
-      "application/vnd.fujifilm.fb.jfi+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.fujitsu.oasys": {
-        source: "iana",
-        extensions: ["oas"]
-      },
-      "application/vnd.fujitsu.oasys2": {
-        source: "iana",
-        extensions: ["oa2"]
-      },
-      "application/vnd.fujitsu.oasys3": {
-        source: "iana",
-        extensions: ["oa3"]
-      },
-      "application/vnd.fujitsu.oasysgp": {
-        source: "iana",
-        extensions: ["fg5"]
-      },
-      "application/vnd.fujitsu.oasysprs": {
-        source: "iana",
-        extensions: ["bh2"]
-      },
-      "application/vnd.fujixerox.art-ex": {
-        source: "iana"
-      },
-      "application/vnd.fujixerox.art4": {
-        source: "iana"
-      },
-      "application/vnd.fujixerox.ddd": {
-        source: "iana",
-        extensions: ["ddd"]
-      },
-      "application/vnd.fujixerox.docuworks": {
-        source: "iana",
-        extensions: ["xdw"]
-      },
-      "application/vnd.fujixerox.docuworks.binder": {
-        source: "iana",
-        extensions: ["xbd"]
-      },
-      "application/vnd.fujixerox.docuworks.container": {
-        source: "iana"
-      },
-      "application/vnd.fujixerox.hbpl": {
-        source: "iana"
-      },
-      "application/vnd.fut-misnet": {
-        source: "iana"
-      },
-      "application/vnd.futoin+cbor": {
-        source: "iana"
-      },
-      "application/vnd.futoin+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.fuzzysheet": {
-        source: "iana",
-        extensions: ["fzs"]
-      },
-      "application/vnd.genomatix.tuxedo": {
-        source: "iana",
-        extensions: ["txd"]
-      },
-      "application/vnd.gentics.grd+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.geo+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.geocube+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.geogebra.file": {
-        source: "iana",
-        extensions: ["ggb"]
-      },
-      "application/vnd.geogebra.slides": {
-        source: "iana"
-      },
-      "application/vnd.geogebra.tool": {
-        source: "iana",
-        extensions: ["ggt"]
-      },
-      "application/vnd.geometry-explorer": {
-        source: "iana",
-        extensions: ["gex", "gre"]
-      },
-      "application/vnd.geonext": {
-        source: "iana",
-        extensions: ["gxt"]
-      },
-      "application/vnd.geoplan": {
-        source: "iana",
-        extensions: ["g2w"]
-      },
-      "application/vnd.geospace": {
-        source: "iana",
-        extensions: ["g3w"]
-      },
-      "application/vnd.gerber": {
-        source: "iana"
-      },
-      "application/vnd.globalplatform.card-content-mgt": {
-        source: "iana"
-      },
-      "application/vnd.globalplatform.card-content-mgt-response": {
-        source: "iana"
-      },
-      "application/vnd.gmx": {
-        source: "iana",
-        extensions: ["gmx"]
-      },
-      "application/vnd.google-apps.document": {
-        compressible: false,
-        extensions: ["gdoc"]
-      },
-      "application/vnd.google-apps.presentation": {
-        compressible: false,
-        extensions: ["gslides"]
-      },
-      "application/vnd.google-apps.spreadsheet": {
-        compressible: false,
-        extensions: ["gsheet"]
-      },
-      "application/vnd.google-earth.kml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["kml"]
-      },
-      "application/vnd.google-earth.kmz": {
-        source: "iana",
-        compressible: false,
-        extensions: ["kmz"]
-      },
-      "application/vnd.gov.sk.e-form+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.gov.sk.e-form+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.gov.sk.xmldatacontainer+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.grafeq": {
-        source: "iana",
-        extensions: ["gqf", "gqs"]
-      },
-      "application/vnd.gridmp": {
-        source: "iana"
-      },
-      "application/vnd.groove-account": {
-        source: "iana",
-        extensions: ["gac"]
-      },
-      "application/vnd.groove-help": {
-        source: "iana",
-        extensions: ["ghf"]
-      },
-      "application/vnd.groove-identity-message": {
-        source: "iana",
-        extensions: ["gim"]
-      },
-      "application/vnd.groove-injector": {
-        source: "iana",
-        extensions: ["grv"]
-      },
-      "application/vnd.groove-tool-message": {
-        source: "iana",
-        extensions: ["gtm"]
-      },
-      "application/vnd.groove-tool-template": {
-        source: "iana",
-        extensions: ["tpl"]
-      },
-      "application/vnd.groove-vcard": {
-        source: "iana",
-        extensions: ["vcg"]
-      },
-      "application/vnd.hal+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.hal+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["hal"]
-      },
-      "application/vnd.handheld-entertainment+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["zmm"]
-      },
-      "application/vnd.hbci": {
-        source: "iana",
-        extensions: ["hbci"]
-      },
-      "application/vnd.hc+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.hcl-bireports": {
-        source: "iana"
-      },
-      "application/vnd.hdt": {
-        source: "iana"
-      },
-      "application/vnd.heroku+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.hhe.lesson-player": {
-        source: "iana",
-        extensions: ["les"]
-      },
-      "application/vnd.hl7cda+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/vnd.hl7v2+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/vnd.hp-hpgl": {
-        source: "iana",
-        extensions: ["hpgl"]
-      },
-      "application/vnd.hp-hpid": {
-        source: "iana",
-        extensions: ["hpid"]
-      },
-      "application/vnd.hp-hps": {
-        source: "iana",
-        extensions: ["hps"]
-      },
-      "application/vnd.hp-jlyt": {
-        source: "iana",
-        extensions: ["jlt"]
-      },
-      "application/vnd.hp-pcl": {
-        source: "iana",
-        extensions: ["pcl"]
-      },
-      "application/vnd.hp-pclxl": {
-        source: "iana",
-        extensions: ["pclxl"]
-      },
-      "application/vnd.httphone": {
-        source: "iana"
-      },
-      "application/vnd.hydrostatix.sof-data": {
-        source: "iana",
-        extensions: ["sfd-hdstx"]
-      },
-      "application/vnd.hyper+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.hyper-item+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.hyperdrive+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.hzn-3d-crossword": {
-        source: "iana"
-      },
-      "application/vnd.ibm.afplinedata": {
-        source: "iana"
-      },
-      "application/vnd.ibm.electronic-media": {
-        source: "iana"
-      },
-      "application/vnd.ibm.minipay": {
-        source: "iana",
-        extensions: ["mpy"]
-      },
-      "application/vnd.ibm.modcap": {
-        source: "iana",
-        extensions: ["afp", "listafp", "list3820"]
-      },
-      "application/vnd.ibm.rights-management": {
-        source: "iana",
-        extensions: ["irm"]
-      },
-      "application/vnd.ibm.secure-container": {
-        source: "iana",
-        extensions: ["sc"]
-      },
-      "application/vnd.iccprofile": {
-        source: "iana",
-        extensions: ["icc", "icm"]
-      },
-      "application/vnd.ieee.1905": {
-        source: "iana"
-      },
-      "application/vnd.igloader": {
-        source: "iana",
-        extensions: ["igl"]
-      },
-      "application/vnd.imagemeter.folder+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.imagemeter.image+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.immervision-ivp": {
-        source: "iana",
-        extensions: ["ivp"]
-      },
-      "application/vnd.immervision-ivu": {
-        source: "iana",
-        extensions: ["ivu"]
-      },
-      "application/vnd.ims.imsccv1p1": {
-        source: "iana"
-      },
-      "application/vnd.ims.imsccv1p2": {
-        source: "iana"
-      },
-      "application/vnd.ims.imsccv1p3": {
-        source: "iana"
-      },
-      "application/vnd.ims.lis.v2.result+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ims.lti.v2.toolconsumerprofile+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ims.lti.v2.toolproxy+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ims.lti.v2.toolproxy.id+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ims.lti.v2.toolsettings+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ims.lti.v2.toolsettings.simple+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.informedcontrol.rms+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.informix-visionary": {
-        source: "iana"
-      },
-      "application/vnd.infotech.project": {
-        source: "iana"
-      },
-      "application/vnd.infotech.project+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.innopath.wamp.notification": {
-        source: "iana"
-      },
-      "application/vnd.insors.igm": {
-        source: "iana",
-        extensions: ["igm"]
-      },
-      "application/vnd.intercon.formnet": {
-        source: "iana",
-        extensions: ["xpw", "xpx"]
-      },
-      "application/vnd.intergeo": {
-        source: "iana",
-        extensions: ["i2g"]
-      },
-      "application/vnd.intertrust.digibox": {
-        source: "iana"
-      },
-      "application/vnd.intertrust.nncp": {
-        source: "iana"
-      },
-      "application/vnd.intu.qbo": {
-        source: "iana",
-        extensions: ["qbo"]
-      },
-      "application/vnd.intu.qfx": {
-        source: "iana",
-        extensions: ["qfx"]
-      },
-      "application/vnd.iptc.g2.catalogitem+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.iptc.g2.conceptitem+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.iptc.g2.knowledgeitem+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.iptc.g2.newsitem+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.iptc.g2.newsmessage+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.iptc.g2.packageitem+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.iptc.g2.planningitem+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ipunplugged.rcprofile": {
-        source: "iana",
-        extensions: ["rcprofile"]
-      },
-      "application/vnd.irepository.package+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["irp"]
-      },
-      "application/vnd.is-xpr": {
-        source: "iana",
-        extensions: ["xpr"]
-      },
-      "application/vnd.isac.fcs": {
-        source: "iana",
-        extensions: ["fcs"]
-      },
-      "application/vnd.iso11783-10+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.jam": {
-        source: "iana",
-        extensions: ["jam"]
-      },
-      "application/vnd.japannet-directory-service": {
-        source: "iana"
-      },
-      "application/vnd.japannet-jpnstore-wakeup": {
-        source: "iana"
-      },
-      "application/vnd.japannet-payment-wakeup": {
-        source: "iana"
-      },
-      "application/vnd.japannet-registration": {
-        source: "iana"
-      },
-      "application/vnd.japannet-registration-wakeup": {
-        source: "iana"
-      },
-      "application/vnd.japannet-setstore-wakeup": {
-        source: "iana"
-      },
-      "application/vnd.japannet-verification": {
-        source: "iana"
-      },
-      "application/vnd.japannet-verification-wakeup": {
-        source: "iana"
-      },
-      "application/vnd.jcp.javame.midlet-rms": {
-        source: "iana",
-        extensions: ["rms"]
-      },
-      "application/vnd.jisp": {
-        source: "iana",
-        extensions: ["jisp"]
-      },
-      "application/vnd.joost.joda-archive": {
-        source: "iana",
-        extensions: ["joda"]
-      },
-      "application/vnd.jsk.isdn-ngn": {
-        source: "iana"
-      },
-      "application/vnd.kahootz": {
-        source: "iana",
-        extensions: ["ktz", "ktr"]
-      },
-      "application/vnd.kde.karbon": {
-        source: "iana",
-        extensions: ["karbon"]
-      },
-      "application/vnd.kde.kchart": {
-        source: "iana",
-        extensions: ["chrt"]
-      },
-      "application/vnd.kde.kformula": {
-        source: "iana",
-        extensions: ["kfo"]
-      },
-      "application/vnd.kde.kivio": {
-        source: "iana",
-        extensions: ["flw"]
-      },
-      "application/vnd.kde.kontour": {
-        source: "iana",
-        extensions: ["kon"]
-      },
-      "application/vnd.kde.kpresenter": {
-        source: "iana",
-        extensions: ["kpr", "kpt"]
-      },
-      "application/vnd.kde.kspread": {
-        source: "iana",
-        extensions: ["ksp"]
-      },
-      "application/vnd.kde.kword": {
-        source: "iana",
-        extensions: ["kwd", "kwt"]
-      },
-      "application/vnd.kenameaapp": {
-        source: "iana",
-        extensions: ["htke"]
-      },
-      "application/vnd.kidspiration": {
-        source: "iana",
-        extensions: ["kia"]
-      },
-      "application/vnd.kinar": {
-        source: "iana",
-        extensions: ["kne", "knp"]
-      },
-      "application/vnd.koan": {
-        source: "iana",
-        extensions: ["skp", "skd", "skt", "skm"]
-      },
-      "application/vnd.kodak-descriptor": {
-        source: "iana",
-        extensions: ["sse"]
-      },
-      "application/vnd.las": {
-        source: "iana"
-      },
-      "application/vnd.las.las+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.las.las+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["lasxml"]
-      },
-      "application/vnd.laszip": {
-        source: "iana"
-      },
-      "application/vnd.leap+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.liberty-request+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.llamagraphics.life-balance.desktop": {
-        source: "iana",
-        extensions: ["lbd"]
-      },
-      "application/vnd.llamagraphics.life-balance.exchange+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["lbe"]
-      },
-      "application/vnd.logipipe.circuit+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.loom": {
-        source: "iana"
-      },
-      "application/vnd.lotus-1-2-3": {
-        source: "iana",
-        extensions: ["123"]
-      },
-      "application/vnd.lotus-approach": {
-        source: "iana",
-        extensions: ["apr"]
-      },
-      "application/vnd.lotus-freelance": {
-        source: "iana",
-        extensions: ["pre"]
-      },
-      "application/vnd.lotus-notes": {
-        source: "iana",
-        extensions: ["nsf"]
-      },
-      "application/vnd.lotus-organizer": {
-        source: "iana",
-        extensions: ["org"]
-      },
-      "application/vnd.lotus-screencam": {
-        source: "iana",
-        extensions: ["scm"]
-      },
-      "application/vnd.lotus-wordpro": {
-        source: "iana",
-        extensions: ["lwp"]
-      },
-      "application/vnd.macports.portpkg": {
-        source: "iana",
-        extensions: ["portpkg"]
-      },
-      "application/vnd.mapbox-vector-tile": {
-        source: "iana",
-        extensions: ["mvt"]
-      },
-      "application/vnd.marlin.drm.actiontoken+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.marlin.drm.conftoken+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.marlin.drm.license+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.marlin.drm.mdcf": {
-        source: "iana"
-      },
-      "application/vnd.mason+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.maxar.archive.3tz+zip": {
-        source: "iana",
-        compressible: false
-      },
-      "application/vnd.maxmind.maxmind-db": {
-        source: "iana"
-      },
-      "application/vnd.mcd": {
-        source: "iana",
-        extensions: ["mcd"]
-      },
-      "application/vnd.medcalcdata": {
-        source: "iana",
-        extensions: ["mc1"]
-      },
-      "application/vnd.mediastation.cdkey": {
-        source: "iana",
-        extensions: ["cdkey"]
-      },
-      "application/vnd.meridian-slingshot": {
-        source: "iana"
-      },
-      "application/vnd.mfer": {
-        source: "iana",
-        extensions: ["mwf"]
-      },
-      "application/vnd.mfmp": {
-        source: "iana",
-        extensions: ["mfm"]
-      },
-      "application/vnd.micro+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.micrografx.flo": {
-        source: "iana",
-        extensions: ["flo"]
-      },
-      "application/vnd.micrografx.igx": {
-        source: "iana",
-        extensions: ["igx"]
-      },
-      "application/vnd.microsoft.portable-executable": {
-        source: "iana"
-      },
-      "application/vnd.microsoft.windows.thumbnail-cache": {
-        source: "iana"
-      },
-      "application/vnd.miele+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.mif": {
-        source: "iana",
-        extensions: ["mif"]
-      },
-      "application/vnd.minisoft-hp3000-save": {
-        source: "iana"
-      },
-      "application/vnd.mitsubishi.misty-guard.trustweb": {
-        source: "iana"
-      },
-      "application/vnd.mobius.daf": {
-        source: "iana",
-        extensions: ["daf"]
-      },
-      "application/vnd.mobius.dis": {
-        source: "iana",
-        extensions: ["dis"]
-      },
-      "application/vnd.mobius.mbk": {
-        source: "iana",
-        extensions: ["mbk"]
-      },
-      "application/vnd.mobius.mqy": {
-        source: "iana",
-        extensions: ["mqy"]
-      },
-      "application/vnd.mobius.msl": {
-        source: "iana",
-        extensions: ["msl"]
-      },
-      "application/vnd.mobius.plc": {
-        source: "iana",
-        extensions: ["plc"]
-      },
-      "application/vnd.mobius.txf": {
-        source: "iana",
-        extensions: ["txf"]
-      },
-      "application/vnd.mophun.application": {
-        source: "iana",
-        extensions: ["mpn"]
-      },
-      "application/vnd.mophun.certificate": {
-        source: "iana",
-        extensions: ["mpc"]
-      },
-      "application/vnd.motorola.flexsuite": {
-        source: "iana"
-      },
-      "application/vnd.motorola.flexsuite.adsi": {
-        source: "iana"
-      },
-      "application/vnd.motorola.flexsuite.fis": {
-        source: "iana"
-      },
-      "application/vnd.motorola.flexsuite.gotap": {
-        source: "iana"
-      },
-      "application/vnd.motorola.flexsuite.kmr": {
-        source: "iana"
-      },
-      "application/vnd.motorola.flexsuite.ttc": {
-        source: "iana"
-      },
-      "application/vnd.motorola.flexsuite.wem": {
-        source: "iana"
-      },
-      "application/vnd.motorola.iprm": {
-        source: "iana"
-      },
-      "application/vnd.mozilla.xul+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xul"]
-      },
-      "application/vnd.ms-3mfdocument": {
-        source: "iana"
-      },
-      "application/vnd.ms-artgalry": {
-        source: "iana",
-        extensions: ["cil"]
-      },
-      "application/vnd.ms-asf": {
-        source: "iana"
-      },
-      "application/vnd.ms-cab-compressed": {
-        source: "iana",
-        extensions: ["cab"]
-      },
-      "application/vnd.ms-color.iccprofile": {
-        source: "apache"
-      },
-      "application/vnd.ms-excel": {
-        source: "iana",
-        compressible: false,
-        extensions: ["xls", "xlm", "xla", "xlc", "xlt", "xlw"]
-      },
-      "application/vnd.ms-excel.addin.macroenabled.12": {
-        source: "iana",
-        extensions: ["xlam"]
-      },
-      "application/vnd.ms-excel.sheet.binary.macroenabled.12": {
-        source: "iana",
-        extensions: ["xlsb"]
-      },
-      "application/vnd.ms-excel.sheet.macroenabled.12": {
-        source: "iana",
-        extensions: ["xlsm"]
-      },
-      "application/vnd.ms-excel.template.macroenabled.12": {
-        source: "iana",
-        extensions: ["xltm"]
-      },
-      "application/vnd.ms-fontobject": {
-        source: "iana",
-        compressible: true,
-        extensions: ["eot"]
-      },
-      "application/vnd.ms-htmlhelp": {
-        source: "iana",
-        extensions: ["chm"]
-      },
-      "application/vnd.ms-ims": {
-        source: "iana",
-        extensions: ["ims"]
-      },
-      "application/vnd.ms-lrm": {
-        source: "iana",
-        extensions: ["lrm"]
-      },
-      "application/vnd.ms-office.activex+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ms-officetheme": {
-        source: "iana",
-        extensions: ["thmx"]
-      },
-      "application/vnd.ms-opentype": {
-        source: "apache",
-        compressible: true
-      },
-      "application/vnd.ms-outlook": {
-        compressible: false,
-        extensions: ["msg"]
-      },
-      "application/vnd.ms-package.obfuscated-opentype": {
-        source: "apache"
-      },
-      "application/vnd.ms-pki.seccat": {
-        source: "apache",
-        extensions: ["cat"]
-      },
-      "application/vnd.ms-pki.stl": {
-        source: "apache",
-        extensions: ["stl"]
-      },
-      "application/vnd.ms-playready.initiator+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ms-powerpoint": {
-        source: "iana",
-        compressible: false,
-        extensions: ["ppt", "pps", "pot"]
-      },
-      "application/vnd.ms-powerpoint.addin.macroenabled.12": {
-        source: "iana",
-        extensions: ["ppam"]
-      },
-      "application/vnd.ms-powerpoint.presentation.macroenabled.12": {
-        source: "iana",
-        extensions: ["pptm"]
-      },
-      "application/vnd.ms-powerpoint.slide.macroenabled.12": {
-        source: "iana",
-        extensions: ["sldm"]
-      },
-      "application/vnd.ms-powerpoint.slideshow.macroenabled.12": {
-        source: "iana",
-        extensions: ["ppsm"]
-      },
-      "application/vnd.ms-powerpoint.template.macroenabled.12": {
-        source: "iana",
-        extensions: ["potm"]
-      },
-      "application/vnd.ms-printdevicecapabilities+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ms-printing.printticket+xml": {
-        source: "apache",
-        compressible: true
-      },
-      "application/vnd.ms-printschematicket+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ms-project": {
-        source: "iana",
-        extensions: ["mpp", "mpt"]
-      },
-      "application/vnd.ms-tnef": {
-        source: "iana"
-      },
-      "application/vnd.ms-windows.devicepairing": {
-        source: "iana"
-      },
-      "application/vnd.ms-windows.nwprinting.oob": {
-        source: "iana"
-      },
-      "application/vnd.ms-windows.printerpairing": {
-        source: "iana"
-      },
-      "application/vnd.ms-windows.wsd.oob": {
-        source: "iana"
-      },
-      "application/vnd.ms-wmdrm.lic-chlg-req": {
-        source: "iana"
-      },
-      "application/vnd.ms-wmdrm.lic-resp": {
-        source: "iana"
-      },
-      "application/vnd.ms-wmdrm.meter-chlg-req": {
-        source: "iana"
-      },
-      "application/vnd.ms-wmdrm.meter-resp": {
-        source: "iana"
-      },
-      "application/vnd.ms-word.document.macroenabled.12": {
-        source: "iana",
-        extensions: ["docm"]
-      },
-      "application/vnd.ms-word.template.macroenabled.12": {
-        source: "iana",
-        extensions: ["dotm"]
-      },
-      "application/vnd.ms-works": {
-        source: "iana",
-        extensions: ["wps", "wks", "wcm", "wdb"]
-      },
-      "application/vnd.ms-wpl": {
-        source: "iana",
-        extensions: ["wpl"]
-      },
-      "application/vnd.ms-xpsdocument": {
-        source: "iana",
-        compressible: false,
-        extensions: ["xps"]
-      },
-      "application/vnd.msa-disk-image": {
-        source: "iana"
-      },
-      "application/vnd.mseq": {
-        source: "iana",
-        extensions: ["mseq"]
-      },
-      "application/vnd.msign": {
-        source: "iana"
-      },
-      "application/vnd.multiad.creator": {
-        source: "iana"
-      },
-      "application/vnd.multiad.creator.cif": {
-        source: "iana"
-      },
-      "application/vnd.music-niff": {
-        source: "iana"
-      },
-      "application/vnd.musician": {
-        source: "iana",
-        extensions: ["mus"]
-      },
-      "application/vnd.muvee.style": {
-        source: "iana",
-        extensions: ["msty"]
-      },
-      "application/vnd.mynfc": {
-        source: "iana",
-        extensions: ["taglet"]
-      },
-      "application/vnd.nacamar.ybrid+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.ncd.control": {
-        source: "iana"
-      },
-      "application/vnd.ncd.reference": {
-        source: "iana"
-      },
-      "application/vnd.nearst.inv+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.nebumind.line": {
-        source: "iana"
-      },
-      "application/vnd.nervana": {
-        source: "iana"
-      },
-      "application/vnd.netfpx": {
-        source: "iana"
-      },
-      "application/vnd.neurolanguage.nlu": {
-        source: "iana",
-        extensions: ["nlu"]
-      },
-      "application/vnd.nimn": {
-        source: "iana"
-      },
-      "application/vnd.nintendo.nitro.rom": {
-        source: "iana"
-      },
-      "application/vnd.nintendo.snes.rom": {
-        source: "iana"
-      },
-      "application/vnd.nitf": {
-        source: "iana",
-        extensions: ["ntf", "nitf"]
-      },
-      "application/vnd.noblenet-directory": {
-        source: "iana",
-        extensions: ["nnd"]
-      },
-      "application/vnd.noblenet-sealer": {
-        source: "iana",
-        extensions: ["nns"]
-      },
-      "application/vnd.noblenet-web": {
-        source: "iana",
-        extensions: ["nnw"]
-      },
-      "application/vnd.nokia.catalogs": {
-        source: "iana"
-      },
-      "application/vnd.nokia.conml+wbxml": {
-        source: "iana"
-      },
-      "application/vnd.nokia.conml+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.nokia.iptv.config+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.nokia.isds-radio-presets": {
-        source: "iana"
-      },
-      "application/vnd.nokia.landmark+wbxml": {
-        source: "iana"
-      },
-      "application/vnd.nokia.landmark+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.nokia.landmarkcollection+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.nokia.n-gage.ac+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["ac"]
-      },
-      "application/vnd.nokia.n-gage.data": {
-        source: "iana",
-        extensions: ["ngdat"]
-      },
-      "application/vnd.nokia.n-gage.symbian.install": {
-        source: "iana",
-        extensions: ["n-gage"]
-      },
-      "application/vnd.nokia.ncd": {
-        source: "iana"
-      },
-      "application/vnd.nokia.pcd+wbxml": {
-        source: "iana"
-      },
-      "application/vnd.nokia.pcd+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.nokia.radio-preset": {
-        source: "iana",
-        extensions: ["rpst"]
-      },
-      "application/vnd.nokia.radio-presets": {
-        source: "iana",
-        extensions: ["rpss"]
-      },
-      "application/vnd.novadigm.edm": {
-        source: "iana",
-        extensions: ["edm"]
-      },
-      "application/vnd.novadigm.edx": {
-        source: "iana",
-        extensions: ["edx"]
-      },
-      "application/vnd.novadigm.ext": {
-        source: "iana",
-        extensions: ["ext"]
-      },
-      "application/vnd.ntt-local.content-share": {
-        source: "iana"
-      },
-      "application/vnd.ntt-local.file-transfer": {
-        source: "iana"
-      },
-      "application/vnd.ntt-local.ogw_remote-access": {
-        source: "iana"
-      },
-      "application/vnd.ntt-local.sip-ta_remote": {
-        source: "iana"
-      },
-      "application/vnd.ntt-local.sip-ta_tcp_stream": {
-        source: "iana"
-      },
-      "application/vnd.oasis.opendocument.chart": {
-        source: "iana",
-        extensions: ["odc"]
-      },
-      "application/vnd.oasis.opendocument.chart-template": {
-        source: "iana",
-        extensions: ["otc"]
-      },
-      "application/vnd.oasis.opendocument.database": {
-        source: "iana",
-        extensions: ["odb"]
-      },
-      "application/vnd.oasis.opendocument.formula": {
-        source: "iana",
-        extensions: ["odf"]
-      },
-      "application/vnd.oasis.opendocument.formula-template": {
-        source: "iana",
-        extensions: ["odft"]
-      },
-      "application/vnd.oasis.opendocument.graphics": {
-        source: "iana",
-        compressible: false,
-        extensions: ["odg"]
-      },
-      "application/vnd.oasis.opendocument.graphics-template": {
-        source: "iana",
-        extensions: ["otg"]
-      },
-      "application/vnd.oasis.opendocument.image": {
-        source: "iana",
-        extensions: ["odi"]
-      },
-      "application/vnd.oasis.opendocument.image-template": {
-        source: "iana",
-        extensions: ["oti"]
-      },
-      "application/vnd.oasis.opendocument.presentation": {
-        source: "iana",
-        compressible: false,
-        extensions: ["odp"]
-      },
-      "application/vnd.oasis.opendocument.presentation-template": {
-        source: "iana",
-        extensions: ["otp"]
-      },
-      "application/vnd.oasis.opendocument.spreadsheet": {
-        source: "iana",
-        compressible: false,
-        extensions: ["ods"]
-      },
-      "application/vnd.oasis.opendocument.spreadsheet-template": {
-        source: "iana",
-        extensions: ["ots"]
-      },
-      "application/vnd.oasis.opendocument.text": {
-        source: "iana",
-        compressible: false,
-        extensions: ["odt"]
-      },
-      "application/vnd.oasis.opendocument.text-master": {
-        source: "iana",
-        extensions: ["odm"]
-      },
-      "application/vnd.oasis.opendocument.text-template": {
-        source: "iana",
-        extensions: ["ott"]
-      },
-      "application/vnd.oasis.opendocument.text-web": {
-        source: "iana",
-        extensions: ["oth"]
-      },
-      "application/vnd.obn": {
-        source: "iana"
-      },
-      "application/vnd.ocf+cbor": {
-        source: "iana"
-      },
-      "application/vnd.oci.image.manifest.v1+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oftn.l10n+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oipf.contentaccessdownload+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oipf.contentaccessstreaming+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oipf.cspg-hexbinary": {
-        source: "iana"
-      },
-      "application/vnd.oipf.dae.svg+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oipf.dae.xhtml+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oipf.mippvcontrolmessage+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oipf.pae.gem": {
-        source: "iana"
-      },
-      "application/vnd.oipf.spdiscovery+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oipf.spdlist+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oipf.ueprofile+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oipf.userprofile+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.olpc-sugar": {
-        source: "iana",
-        extensions: ["xo"]
-      },
-      "application/vnd.oma-scws-config": {
-        source: "iana"
-      },
-      "application/vnd.oma-scws-http-request": {
-        source: "iana"
-      },
-      "application/vnd.oma-scws-http-response": {
-        source: "iana"
-      },
-      "application/vnd.oma.bcast.associated-procedure-parameter+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.bcast.drm-trigger+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.bcast.imd+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.bcast.ltkm": {
-        source: "iana"
-      },
-      "application/vnd.oma.bcast.notification+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.bcast.provisioningtrigger": {
-        source: "iana"
-      },
-      "application/vnd.oma.bcast.sgboot": {
-        source: "iana"
-      },
-      "application/vnd.oma.bcast.sgdd+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.bcast.sgdu": {
-        source: "iana"
-      },
-      "application/vnd.oma.bcast.simple-symbol-container": {
-        source: "iana"
-      },
-      "application/vnd.oma.bcast.smartcard-trigger+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.bcast.sprov+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.bcast.stkm": {
-        source: "iana"
-      },
-      "application/vnd.oma.cab-address-book+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.cab-feature-handler+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.cab-pcc+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.cab-subs-invite+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.cab-user-prefs+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.dcd": {
-        source: "iana"
-      },
-      "application/vnd.oma.dcdc": {
-        source: "iana"
-      },
-      "application/vnd.oma.dd2+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["dd2"]
-      },
-      "application/vnd.oma.drm.risd+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.group-usage-list+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.lwm2m+cbor": {
-        source: "iana"
-      },
-      "application/vnd.oma.lwm2m+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.lwm2m+tlv": {
-        source: "iana"
-      },
-      "application/vnd.oma.pal+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.poc.detailed-progress-report+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.poc.final-report+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.poc.groups+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.poc.invocation-descriptor+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.poc.optimized-progress-report+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.push": {
-        source: "iana"
-      },
-      "application/vnd.oma.scidm.messages+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oma.xcap-directory+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.omads-email+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/vnd.omads-file+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/vnd.omads-folder+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/vnd.omaloc-supl-init": {
-        source: "iana"
-      },
-      "application/vnd.onepager": {
-        source: "iana"
-      },
-      "application/vnd.onepagertamp": {
-        source: "iana"
-      },
-      "application/vnd.onepagertamx": {
-        source: "iana"
-      },
-      "application/vnd.onepagertat": {
-        source: "iana"
-      },
-      "application/vnd.onepagertatp": {
-        source: "iana"
-      },
-      "application/vnd.onepagertatx": {
-        source: "iana"
-      },
-      "application/vnd.openblox.game+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["obgx"]
-      },
-      "application/vnd.openblox.game-binary": {
-        source: "iana"
-      },
-      "application/vnd.openeye.oeb": {
-        source: "iana"
-      },
-      "application/vnd.openofficeorg.extension": {
-        source: "apache",
-        extensions: ["oxt"]
-      },
-      "application/vnd.openstreetmap.data+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["osm"]
-      },
-      "application/vnd.opentimestamps.ots": {
-        source: "iana"
-      },
-      "application/vnd.openxmlformats-officedocument.custom-properties+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.customxmlproperties+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.drawing+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.drawingml.chart+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.drawingml.chartshapes+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.drawingml.diagramcolors+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.drawingml.diagramdata+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.drawingml.diagramlayout+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.drawingml.diagramstyle+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.extended-properties+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.commentauthors+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.comments+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.handoutmaster+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.notesmaster+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.notesslide+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation": {
-        source: "iana",
-        compressible: false,
-        extensions: ["pptx"]
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.presprops+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.slide": {
-        source: "iana",
-        extensions: ["sldx"]
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.slide+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.slidelayout+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.slidemaster+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.slideshow": {
-        source: "iana",
-        extensions: ["ppsx"]
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.slideshow.main+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.slideupdateinfo+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.tablestyles+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.tags+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.template": {
-        source: "iana",
-        extensions: ["potx"]
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.template.main+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.presentationml.viewprops+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.calcchain+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.chartsheet+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.connections+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.dialogsheet+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.externallink+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotcachedefinition+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.pivotcacherecords+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.pivottable+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.querytable+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.revisionheaders+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.revisionlog+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sharedstrings+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
-        source: "iana",
-        compressible: false,
-        extensions: ["xlsx"]
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheetmetadata+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.table+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.tablesinglecells+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.template": {
-        source: "iana",
-        extensions: ["xltx"]
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.template.main+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.usernames+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.volatiledependencies+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.theme+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.themeoverride+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.vmldrawing": {
-        source: "iana"
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.comments+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": {
-        source: "iana",
-        compressible: false,
-        extensions: ["docx"]
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document.glossary+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.fonttable+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.footnotes+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.settings+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.template": {
-        source: "iana",
-        extensions: ["dotx"]
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.template.main+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.websettings+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-package.core-properties+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-package.digital-signature-xmlsignature+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.openxmlformats-package.relationships+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oracle.resource+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.orange.indata": {
-        source: "iana"
-      },
-      "application/vnd.osa.netdeploy": {
-        source: "iana"
-      },
-      "application/vnd.osgeo.mapguide.package": {
-        source: "iana",
-        extensions: ["mgp"]
-      },
-      "application/vnd.osgi.bundle": {
-        source: "iana"
-      },
-      "application/vnd.osgi.dp": {
-        source: "iana",
-        extensions: ["dp"]
-      },
-      "application/vnd.osgi.subsystem": {
-        source: "iana",
-        extensions: ["esa"]
-      },
-      "application/vnd.otps.ct-kip+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.oxli.countgraph": {
-        source: "iana"
-      },
-      "application/vnd.pagerduty+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.palm": {
-        source: "iana",
-        extensions: ["pdb", "pqa", "oprc"]
-      },
-      "application/vnd.panoply": {
-        source: "iana"
-      },
-      "application/vnd.paos.xml": {
-        source: "iana"
-      },
-      "application/vnd.patentdive": {
-        source: "iana"
-      },
-      "application/vnd.patientecommsdoc": {
-        source: "iana"
-      },
-      "application/vnd.pawaafile": {
-        source: "iana",
-        extensions: ["paw"]
-      },
-      "application/vnd.pcos": {
-        source: "iana"
-      },
-      "application/vnd.pg.format": {
-        source: "iana",
-        extensions: ["str"]
-      },
-      "application/vnd.pg.osasli": {
-        source: "iana",
-        extensions: ["ei6"]
-      },
-      "application/vnd.piaccess.application-licence": {
-        source: "iana"
-      },
-      "application/vnd.picsel": {
-        source: "iana",
-        extensions: ["efif"]
-      },
-      "application/vnd.pmi.widget": {
-        source: "iana",
-        extensions: ["wg"]
-      },
-      "application/vnd.poc.group-advertisement+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.pocketlearn": {
-        source: "iana",
-        extensions: ["plf"]
-      },
-      "application/vnd.powerbuilder6": {
-        source: "iana",
-        extensions: ["pbd"]
-      },
-      "application/vnd.powerbuilder6-s": {
-        source: "iana"
-      },
-      "application/vnd.powerbuilder7": {
-        source: "iana"
-      },
-      "application/vnd.powerbuilder7-s": {
-        source: "iana"
-      },
-      "application/vnd.powerbuilder75": {
-        source: "iana"
-      },
-      "application/vnd.powerbuilder75-s": {
-        source: "iana"
-      },
-      "application/vnd.preminet": {
-        source: "iana"
-      },
-      "application/vnd.previewsystems.box": {
-        source: "iana",
-        extensions: ["box"]
-      },
-      "application/vnd.proteus.magazine": {
-        source: "iana",
-        extensions: ["mgz"]
-      },
-      "application/vnd.psfs": {
-        source: "iana"
-      },
-      "application/vnd.publishare-delta-tree": {
-        source: "iana",
-        extensions: ["qps"]
-      },
-      "application/vnd.pvi.ptid1": {
-        source: "iana",
-        extensions: ["ptid"]
-      },
-      "application/vnd.pwg-multiplexed": {
-        source: "iana"
-      },
-      "application/vnd.pwg-xhtml-print+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.qualcomm.brew-app-res": {
-        source: "iana"
-      },
-      "application/vnd.quarantainenet": {
-        source: "iana"
-      },
-      "application/vnd.quark.quarkxpress": {
-        source: "iana",
-        extensions: ["qxd", "qxt", "qwd", "qwt", "qxl", "qxb"]
-      },
-      "application/vnd.quobject-quoxdocument": {
-        source: "iana"
-      },
-      "application/vnd.radisys.moml+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-audit+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-audit-conf+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-audit-conn+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-audit-dialog+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-audit-stream+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-conf+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-dialog+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-dialog-base+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-dialog-fax-detect+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-dialog-fax-sendrecv+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-dialog-group+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-dialog-speech+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.radisys.msml-dialog-transform+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.rainstor.data": {
-        source: "iana"
-      },
-      "application/vnd.rapid": {
-        source: "iana"
-      },
-      "application/vnd.rar": {
-        source: "iana",
-        extensions: ["rar"]
-      },
-      "application/vnd.realvnc.bed": {
-        source: "iana",
-        extensions: ["bed"]
-      },
-      "application/vnd.recordare.musicxml": {
-        source: "iana",
-        extensions: ["mxl"]
-      },
-      "application/vnd.recordare.musicxml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["musicxml"]
-      },
-      "application/vnd.renlearn.rlprint": {
-        source: "iana"
-      },
-      "application/vnd.resilient.logic": {
-        source: "iana"
-      },
-      "application/vnd.restful+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.rig.cryptonote": {
-        source: "iana",
-        extensions: ["cryptonote"]
-      },
-      "application/vnd.rim.cod": {
-        source: "apache",
-        extensions: ["cod"]
-      },
-      "application/vnd.rn-realmedia": {
-        source: "apache",
-        extensions: ["rm"]
-      },
-      "application/vnd.rn-realmedia-vbr": {
-        source: "apache",
-        extensions: ["rmvb"]
-      },
-      "application/vnd.route66.link66+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["link66"]
-      },
-      "application/vnd.rs-274x": {
-        source: "iana"
-      },
-      "application/vnd.ruckus.download": {
-        source: "iana"
-      },
-      "application/vnd.s3sms": {
-        source: "iana"
-      },
-      "application/vnd.sailingtracker.track": {
-        source: "iana",
-        extensions: ["st"]
-      },
-      "application/vnd.sar": {
-        source: "iana"
-      },
-      "application/vnd.sbm.cid": {
-        source: "iana"
-      },
-      "application/vnd.sbm.mid2": {
-        source: "iana"
-      },
-      "application/vnd.scribus": {
-        source: "iana"
-      },
-      "application/vnd.sealed.3df": {
-        source: "iana"
-      },
-      "application/vnd.sealed.csf": {
-        source: "iana"
-      },
-      "application/vnd.sealed.doc": {
-        source: "iana"
-      },
-      "application/vnd.sealed.eml": {
-        source: "iana"
-      },
-      "application/vnd.sealed.mht": {
-        source: "iana"
-      },
-      "application/vnd.sealed.net": {
-        source: "iana"
-      },
-      "application/vnd.sealed.ppt": {
-        source: "iana"
-      },
-      "application/vnd.sealed.tiff": {
-        source: "iana"
-      },
-      "application/vnd.sealed.xls": {
-        source: "iana"
-      },
-      "application/vnd.sealedmedia.softseal.html": {
-        source: "iana"
-      },
-      "application/vnd.sealedmedia.softseal.pdf": {
-        source: "iana"
-      },
-      "application/vnd.seemail": {
-        source: "iana",
-        extensions: ["see"]
-      },
-      "application/vnd.seis+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.sema": {
-        source: "iana",
-        extensions: ["sema"]
-      },
-      "application/vnd.semd": {
-        source: "iana",
-        extensions: ["semd"]
-      },
-      "application/vnd.semf": {
-        source: "iana",
-        extensions: ["semf"]
-      },
-      "application/vnd.shade-save-file": {
-        source: "iana"
-      },
-      "application/vnd.shana.informed.formdata": {
-        source: "iana",
-        extensions: ["ifm"]
-      },
-      "application/vnd.shana.informed.formtemplate": {
-        source: "iana",
-        extensions: ["itp"]
-      },
-      "application/vnd.shana.informed.interchange": {
-        source: "iana",
-        extensions: ["iif"]
-      },
-      "application/vnd.shana.informed.package": {
-        source: "iana",
-        extensions: ["ipk"]
-      },
-      "application/vnd.shootproof+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.shopkick+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.shp": {
-        source: "iana"
-      },
-      "application/vnd.shx": {
-        source: "iana"
-      },
-      "application/vnd.sigrok.session": {
-        source: "iana"
-      },
-      "application/vnd.simtech-mindmapper": {
-        source: "iana",
-        extensions: ["twd", "twds"]
-      },
-      "application/vnd.siren+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.smaf": {
-        source: "iana",
-        extensions: ["mmf"]
-      },
-      "application/vnd.smart.notebook": {
-        source: "iana"
-      },
-      "application/vnd.smart.teacher": {
-        source: "iana",
-        extensions: ["teacher"]
-      },
-      "application/vnd.snesdev-page-table": {
-        source: "iana"
-      },
-      "application/vnd.software602.filler.form+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["fo"]
-      },
-      "application/vnd.software602.filler.form-xml-zip": {
-        source: "iana"
-      },
-      "application/vnd.solent.sdkm+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["sdkm", "sdkd"]
-      },
-      "application/vnd.spotfire.dxp": {
-        source: "iana",
-        extensions: ["dxp"]
-      },
-      "application/vnd.spotfire.sfs": {
-        source: "iana",
-        extensions: ["sfs"]
-      },
-      "application/vnd.sqlite3": {
-        source: "iana"
-      },
-      "application/vnd.sss-cod": {
-        source: "iana"
-      },
-      "application/vnd.sss-dtf": {
-        source: "iana"
-      },
-      "application/vnd.sss-ntf": {
-        source: "iana"
-      },
-      "application/vnd.stardivision.calc": {
-        source: "apache",
-        extensions: ["sdc"]
-      },
-      "application/vnd.stardivision.draw": {
-        source: "apache",
-        extensions: ["sda"]
-      },
-      "application/vnd.stardivision.impress": {
-        source: "apache",
-        extensions: ["sdd"]
-      },
-      "application/vnd.stardivision.math": {
-        source: "apache",
-        extensions: ["smf"]
-      },
-      "application/vnd.stardivision.writer": {
-        source: "apache",
-        extensions: ["sdw", "vor"]
-      },
-      "application/vnd.stardivision.writer-global": {
-        source: "apache",
-        extensions: ["sgl"]
-      },
-      "application/vnd.stepmania.package": {
-        source: "iana",
-        extensions: ["smzip"]
-      },
-      "application/vnd.stepmania.stepchart": {
-        source: "iana",
-        extensions: ["sm"]
-      },
-      "application/vnd.street-stream": {
-        source: "iana"
-      },
-      "application/vnd.sun.wadl+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["wadl"]
-      },
-      "application/vnd.sun.xml.calc": {
-        source: "apache",
-        extensions: ["sxc"]
-      },
-      "application/vnd.sun.xml.calc.template": {
-        source: "apache",
-        extensions: ["stc"]
-      },
-      "application/vnd.sun.xml.draw": {
-        source: "apache",
-        extensions: ["sxd"]
-      },
-      "application/vnd.sun.xml.draw.template": {
-        source: "apache",
-        extensions: ["std"]
-      },
-      "application/vnd.sun.xml.impress": {
-        source: "apache",
-        extensions: ["sxi"]
-      },
-      "application/vnd.sun.xml.impress.template": {
-        source: "apache",
-        extensions: ["sti"]
-      },
-      "application/vnd.sun.xml.math": {
-        source: "apache",
-        extensions: ["sxm"]
-      },
-      "application/vnd.sun.xml.writer": {
-        source: "apache",
-        extensions: ["sxw"]
-      },
-      "application/vnd.sun.xml.writer.global": {
-        source: "apache",
-        extensions: ["sxg"]
-      },
-      "application/vnd.sun.xml.writer.template": {
-        source: "apache",
-        extensions: ["stw"]
-      },
-      "application/vnd.sus-calendar": {
-        source: "iana",
-        extensions: ["sus", "susp"]
-      },
-      "application/vnd.svd": {
-        source: "iana",
-        extensions: ["svd"]
-      },
-      "application/vnd.swiftview-ics": {
-        source: "iana"
-      },
-      "application/vnd.sycle+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.syft+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.symbian.install": {
-        source: "apache",
-        extensions: ["sis", "sisx"]
-      },
-      "application/vnd.syncml+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true,
-        extensions: ["xsm"]
-      },
-      "application/vnd.syncml.dm+wbxml": {
-        source: "iana",
-        charset: "UTF-8",
-        extensions: ["bdm"]
-      },
-      "application/vnd.syncml.dm+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true,
-        extensions: ["xdm"]
-      },
-      "application/vnd.syncml.dm.notification": {
-        source: "iana"
-      },
-      "application/vnd.syncml.dmddf+wbxml": {
-        source: "iana"
-      },
-      "application/vnd.syncml.dmddf+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true,
-        extensions: ["ddf"]
-      },
-      "application/vnd.syncml.dmtnds+wbxml": {
-        source: "iana"
-      },
-      "application/vnd.syncml.dmtnds+xml": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true
-      },
-      "application/vnd.syncml.ds.notification": {
-        source: "iana"
-      },
-      "application/vnd.tableschema+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.tao.intent-module-archive": {
-        source: "iana",
-        extensions: ["tao"]
-      },
-      "application/vnd.tcpdump.pcap": {
-        source: "iana",
-        extensions: ["pcap", "cap", "dmp"]
-      },
-      "application/vnd.think-cell.ppttc+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.tmd.mediaflex.api+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.tml": {
-        source: "iana"
-      },
-      "application/vnd.tmobile-livetv": {
-        source: "iana",
-        extensions: ["tmo"]
-      },
-      "application/vnd.tri.onesource": {
-        source: "iana"
-      },
-      "application/vnd.trid.tpt": {
-        source: "iana",
-        extensions: ["tpt"]
-      },
-      "application/vnd.triscape.mxs": {
-        source: "iana",
-        extensions: ["mxs"]
-      },
-      "application/vnd.trueapp": {
-        source: "iana",
-        extensions: ["tra"]
-      },
-      "application/vnd.truedoc": {
-        source: "iana"
-      },
-      "application/vnd.ubisoft.webplayer": {
-        source: "iana"
-      },
-      "application/vnd.ufdl": {
-        source: "iana",
-        extensions: ["ufd", "ufdl"]
-      },
-      "application/vnd.uiq.theme": {
-        source: "iana",
-        extensions: ["utz"]
-      },
-      "application/vnd.umajin": {
-        source: "iana",
-        extensions: ["umj"]
-      },
-      "application/vnd.unity": {
-        source: "iana",
-        extensions: ["unityweb"]
-      },
-      "application/vnd.uoml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["uoml"]
-      },
-      "application/vnd.uplanet.alert": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.alert-wbxml": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.bearer-choice": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.bearer-choice-wbxml": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.cacheop": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.cacheop-wbxml": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.channel": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.channel-wbxml": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.list": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.list-wbxml": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.listcmd": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.listcmd-wbxml": {
-        source: "iana"
-      },
-      "application/vnd.uplanet.signal": {
-        source: "iana"
-      },
-      "application/vnd.uri-map": {
-        source: "iana"
-      },
-      "application/vnd.valve.source.material": {
-        source: "iana"
-      },
-      "application/vnd.vcx": {
-        source: "iana",
-        extensions: ["vcx"]
-      },
-      "application/vnd.vd-study": {
-        source: "iana"
-      },
-      "application/vnd.vectorworks": {
-        source: "iana"
-      },
-      "application/vnd.vel+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.verimatrix.vcas": {
-        source: "iana"
-      },
-      "application/vnd.veritone.aion+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.veryant.thin": {
-        source: "iana"
-      },
-      "application/vnd.ves.encrypted": {
-        source: "iana"
-      },
-      "application/vnd.vidsoft.vidconference": {
-        source: "iana"
-      },
-      "application/vnd.visio": {
-        source: "iana",
-        extensions: ["vsd", "vst", "vss", "vsw"]
-      },
-      "application/vnd.visionary": {
-        source: "iana",
-        extensions: ["vis"]
-      },
-      "application/vnd.vividence.scriptfile": {
-        source: "iana"
-      },
-      "application/vnd.vsf": {
-        source: "iana",
-        extensions: ["vsf"]
-      },
-      "application/vnd.wap.sic": {
-        source: "iana"
-      },
-      "application/vnd.wap.slc": {
-        source: "iana"
-      },
-      "application/vnd.wap.wbxml": {
-        source: "iana",
-        charset: "UTF-8",
-        extensions: ["wbxml"]
-      },
-      "application/vnd.wap.wmlc": {
-        source: "iana",
-        extensions: ["wmlc"]
-      },
-      "application/vnd.wap.wmlscriptc": {
-        source: "iana",
-        extensions: ["wmlsc"]
-      },
-      "application/vnd.webturbo": {
-        source: "iana",
-        extensions: ["wtb"]
-      },
-      "application/vnd.wfa.dpp": {
-        source: "iana"
-      },
-      "application/vnd.wfa.p2p": {
-        source: "iana"
-      },
-      "application/vnd.wfa.wsc": {
-        source: "iana"
-      },
-      "application/vnd.windows.devicepairing": {
-        source: "iana"
-      },
-      "application/vnd.wmc": {
-        source: "iana"
-      },
-      "application/vnd.wmf.bootstrap": {
-        source: "iana"
-      },
-      "application/vnd.wolfram.mathematica": {
-        source: "iana"
-      },
-      "application/vnd.wolfram.mathematica.package": {
-        source: "iana"
-      },
-      "application/vnd.wolfram.player": {
-        source: "iana",
-        extensions: ["nbp"]
-      },
-      "application/vnd.wordperfect": {
-        source: "iana",
-        extensions: ["wpd"]
-      },
-      "application/vnd.wqd": {
-        source: "iana",
-        extensions: ["wqd"]
-      },
-      "application/vnd.wrq-hp3000-labelled": {
-        source: "iana"
-      },
-      "application/vnd.wt.stf": {
-        source: "iana",
-        extensions: ["stf"]
-      },
-      "application/vnd.wv.csp+wbxml": {
-        source: "iana"
-      },
-      "application/vnd.wv.csp+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.wv.ssp+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.xacml+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.xara": {
-        source: "iana",
-        extensions: ["xar"]
-      },
-      "application/vnd.xfdl": {
-        source: "iana",
-        extensions: ["xfdl"]
-      },
-      "application/vnd.xfdl.webform": {
-        source: "iana"
-      },
-      "application/vnd.xmi+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vnd.xmpie.cpkg": {
-        source: "iana"
-      },
-      "application/vnd.xmpie.dpkg": {
-        source: "iana"
-      },
-      "application/vnd.xmpie.plan": {
-        source: "iana"
-      },
-      "application/vnd.xmpie.ppkg": {
-        source: "iana"
-      },
-      "application/vnd.xmpie.xlim": {
-        source: "iana"
-      },
-      "application/vnd.yamaha.hv-dic": {
-        source: "iana",
-        extensions: ["hvd"]
-      },
-      "application/vnd.yamaha.hv-script": {
-        source: "iana",
-        extensions: ["hvs"]
-      },
-      "application/vnd.yamaha.hv-voice": {
-        source: "iana",
-        extensions: ["hvp"]
-      },
-      "application/vnd.yamaha.openscoreformat": {
-        source: "iana",
-        extensions: ["osf"]
-      },
-      "application/vnd.yamaha.openscoreformat.osfpvg+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["osfpvg"]
-      },
-      "application/vnd.yamaha.remote-setup": {
-        source: "iana"
-      },
-      "application/vnd.yamaha.smaf-audio": {
-        source: "iana",
-        extensions: ["saf"]
-      },
-      "application/vnd.yamaha.smaf-phrase": {
-        source: "iana",
-        extensions: ["spf"]
-      },
-      "application/vnd.yamaha.through-ngn": {
-        source: "iana"
-      },
-      "application/vnd.yamaha.tunnel-udpencap": {
-        source: "iana"
-      },
-      "application/vnd.yaoweme": {
-        source: "iana"
-      },
-      "application/vnd.yellowriver-custom-menu": {
-        source: "iana",
-        extensions: ["cmp"]
-      },
-      "application/vnd.youtube.yt": {
-        source: "iana"
-      },
-      "application/vnd.zul": {
-        source: "iana",
-        extensions: ["zir", "zirz"]
-      },
-      "application/vnd.zzazz.deck+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["zaz"]
-      },
-      "application/voicexml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["vxml"]
-      },
-      "application/voucher-cms+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/vq-rtcpxr": {
-        source: "iana"
-      },
-      "application/wasm": {
-        source: "iana",
-        compressible: true,
-        extensions: ["wasm"]
-      },
-      "application/watcherinfo+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["wif"]
-      },
-      "application/webpush-options+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/whoispp-query": {
-        source: "iana"
-      },
-      "application/whoispp-response": {
-        source: "iana"
-      },
-      "application/widget": {
-        source: "iana",
-        extensions: ["wgt"]
-      },
-      "application/winhlp": {
-        source: "apache",
-        extensions: ["hlp"]
-      },
-      "application/wita": {
-        source: "iana"
-      },
-      "application/wordperfect5.1": {
-        source: "iana"
-      },
-      "application/wsdl+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["wsdl"]
-      },
-      "application/wspolicy+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["wspolicy"]
-      },
-      "application/x-7z-compressed": {
-        source: "apache",
-        compressible: false,
-        extensions: ["7z"]
-      },
-      "application/x-abiword": {
-        source: "apache",
-        extensions: ["abw"]
-      },
-      "application/x-ace-compressed": {
-        source: "apache",
-        extensions: ["ace"]
-      },
-      "application/x-amf": {
-        source: "apache"
-      },
-      "application/x-apple-diskimage": {
-        source: "apache",
-        extensions: ["dmg"]
-      },
-      "application/x-arj": {
-        compressible: false,
-        extensions: ["arj"]
-      },
-      "application/x-authorware-bin": {
-        source: "apache",
-        extensions: ["aab", "x32", "u32", "vox"]
-      },
-      "application/x-authorware-map": {
-        source: "apache",
-        extensions: ["aam"]
-      },
-      "application/x-authorware-seg": {
-        source: "apache",
-        extensions: ["aas"]
-      },
-      "application/x-bcpio": {
-        source: "apache",
-        extensions: ["bcpio"]
-      },
-      "application/x-bdoc": {
-        compressible: false,
-        extensions: ["bdoc"]
-      },
-      "application/x-bittorrent": {
-        source: "apache",
-        extensions: ["torrent"]
-      },
-      "application/x-blorb": {
-        source: "apache",
-        extensions: ["blb", "blorb"]
-      },
-      "application/x-bzip": {
-        source: "apache",
-        compressible: false,
-        extensions: ["bz"]
-      },
-      "application/x-bzip2": {
-        source: "apache",
-        compressible: false,
-        extensions: ["bz2", "boz"]
-      },
-      "application/x-cbr": {
-        source: "apache",
-        extensions: ["cbr", "cba", "cbt", "cbz", "cb7"]
-      },
-      "application/x-cdlink": {
-        source: "apache",
-        extensions: ["vcd"]
-      },
-      "application/x-cfs-compressed": {
-        source: "apache",
-        extensions: ["cfs"]
-      },
-      "application/x-chat": {
-        source: "apache",
-        extensions: ["chat"]
-      },
-      "application/x-chess-pgn": {
-        source: "apache",
-        extensions: ["pgn"]
-      },
-      "application/x-chrome-extension": {
-        extensions: ["crx"]
-      },
-      "application/x-cocoa": {
-        source: "nginx",
-        extensions: ["cco"]
-      },
-      "application/x-compress": {
-        source: "apache"
-      },
-      "application/x-conference": {
-        source: "apache",
-        extensions: ["nsc"]
-      },
-      "application/x-cpio": {
-        source: "apache",
-        extensions: ["cpio"]
-      },
-      "application/x-csh": {
-        source: "apache",
-        extensions: ["csh"]
-      },
-      "application/x-deb": {
-        compressible: false
-      },
-      "application/x-debian-package": {
-        source: "apache",
-        extensions: ["deb", "udeb"]
-      },
-      "application/x-dgc-compressed": {
-        source: "apache",
-        extensions: ["dgc"]
-      },
-      "application/x-director": {
-        source: "apache",
-        extensions: ["dir", "dcr", "dxr", "cst", "cct", "cxt", "w3d", "fgd", "swa"]
-      },
-      "application/x-doom": {
-        source: "apache",
-        extensions: ["wad"]
-      },
-      "application/x-dtbncx+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["ncx"]
-      },
-      "application/x-dtbook+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["dtb"]
-      },
-      "application/x-dtbresource+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["res"]
-      },
-      "application/x-dvi": {
-        source: "apache",
-        compressible: false,
-        extensions: ["dvi"]
-      },
-      "application/x-envoy": {
-        source: "apache",
-        extensions: ["evy"]
-      },
-      "application/x-eva": {
-        source: "apache",
-        extensions: ["eva"]
-      },
-      "application/x-font-bdf": {
-        source: "apache",
-        extensions: ["bdf"]
-      },
-      "application/x-font-dos": {
-        source: "apache"
-      },
-      "application/x-font-framemaker": {
-        source: "apache"
-      },
-      "application/x-font-ghostscript": {
-        source: "apache",
-        extensions: ["gsf"]
-      },
-      "application/x-font-libgrx": {
-        source: "apache"
-      },
-      "application/x-font-linux-psf": {
-        source: "apache",
-        extensions: ["psf"]
-      },
-      "application/x-font-pcf": {
-        source: "apache",
-        extensions: ["pcf"]
-      },
-      "application/x-font-snf": {
-        source: "apache",
-        extensions: ["snf"]
-      },
-      "application/x-font-speedo": {
-        source: "apache"
-      },
-      "application/x-font-sunos-news": {
-        source: "apache"
-      },
-      "application/x-font-type1": {
-        source: "apache",
-        extensions: ["pfa", "pfb", "pfm", "afm"]
-      },
-      "application/x-font-vfont": {
-        source: "apache"
-      },
-      "application/x-freearc": {
-        source: "apache",
-        extensions: ["arc"]
-      },
-      "application/x-futuresplash": {
-        source: "apache",
-        extensions: ["spl"]
-      },
-      "application/x-gca-compressed": {
-        source: "apache",
-        extensions: ["gca"]
-      },
-      "application/x-glulx": {
-        source: "apache",
-        extensions: ["ulx"]
-      },
-      "application/x-gnumeric": {
-        source: "apache",
-        extensions: ["gnumeric"]
-      },
-      "application/x-gramps-xml": {
-        source: "apache",
-        extensions: ["gramps"]
-      },
-      "application/x-gtar": {
-        source: "apache",
-        extensions: ["gtar"]
-      },
-      "application/x-gzip": {
-        source: "apache"
-      },
-      "application/x-hdf": {
-        source: "apache",
-        extensions: ["hdf"]
-      },
-      "application/x-httpd-php": {
-        compressible: true,
-        extensions: ["php"]
-      },
-      "application/x-install-instructions": {
-        source: "apache",
-        extensions: ["install"]
-      },
-      "application/x-iso9660-image": {
-        source: "apache",
-        extensions: ["iso"]
-      },
-      "application/x-iwork-keynote-sffkey": {
-        extensions: ["key"]
-      },
-      "application/x-iwork-numbers-sffnumbers": {
-        extensions: ["numbers"]
-      },
-      "application/x-iwork-pages-sffpages": {
-        extensions: ["pages"]
-      },
-      "application/x-java-archive-diff": {
-        source: "nginx",
-        extensions: ["jardiff"]
-      },
-      "application/x-java-jnlp-file": {
-        source: "apache",
-        compressible: false,
-        extensions: ["jnlp"]
-      },
-      "application/x-javascript": {
-        compressible: true
-      },
-      "application/x-keepass2": {
-        extensions: ["kdbx"]
-      },
-      "application/x-latex": {
-        source: "apache",
-        compressible: false,
-        extensions: ["latex"]
-      },
-      "application/x-lua-bytecode": {
-        extensions: ["luac"]
-      },
-      "application/x-lzh-compressed": {
-        source: "apache",
-        extensions: ["lzh", "lha"]
-      },
-      "application/x-makeself": {
-        source: "nginx",
-        extensions: ["run"]
-      },
-      "application/x-mie": {
-        source: "apache",
-        extensions: ["mie"]
-      },
-      "application/x-mobipocket-ebook": {
-        source: "apache",
-        extensions: ["prc", "mobi"]
-      },
-      "application/x-mpegurl": {
-        compressible: false
-      },
-      "application/x-ms-application": {
-        source: "apache",
-        extensions: ["application"]
-      },
-      "application/x-ms-shortcut": {
-        source: "apache",
-        extensions: ["lnk"]
-      },
-      "application/x-ms-wmd": {
-        source: "apache",
-        extensions: ["wmd"]
-      },
-      "application/x-ms-wmz": {
-        source: "apache",
-        extensions: ["wmz"]
-      },
-      "application/x-ms-xbap": {
-        source: "apache",
-        extensions: ["xbap"]
-      },
-      "application/x-msaccess": {
-        source: "apache",
-        extensions: ["mdb"]
-      },
-      "application/x-msbinder": {
-        source: "apache",
-        extensions: ["obd"]
-      },
-      "application/x-mscardfile": {
-        source: "apache",
-        extensions: ["crd"]
-      },
-      "application/x-msclip": {
-        source: "apache",
-        extensions: ["clp"]
-      },
-      "application/x-msdos-program": {
-        extensions: ["exe"]
-      },
-      "application/x-msdownload": {
-        source: "apache",
-        extensions: ["exe", "dll", "com", "bat", "msi"]
-      },
-      "application/x-msmediaview": {
-        source: "apache",
-        extensions: ["mvb", "m13", "m14"]
-      },
-      "application/x-msmetafile": {
-        source: "apache",
-        extensions: ["wmf", "wmz", "emf", "emz"]
-      },
-      "application/x-msmoney": {
-        source: "apache",
-        extensions: ["mny"]
-      },
-      "application/x-mspublisher": {
-        source: "apache",
-        extensions: ["pub"]
-      },
-      "application/x-msschedule": {
-        source: "apache",
-        extensions: ["scd"]
-      },
-      "application/x-msterminal": {
-        source: "apache",
-        extensions: ["trm"]
-      },
-      "application/x-mswrite": {
-        source: "apache",
-        extensions: ["wri"]
-      },
-      "application/x-netcdf": {
-        source: "apache",
-        extensions: ["nc", "cdf"]
-      },
-      "application/x-ns-proxy-autoconfig": {
-        compressible: true,
-        extensions: ["pac"]
-      },
-      "application/x-nzb": {
-        source: "apache",
-        extensions: ["nzb"]
-      },
-      "application/x-perl": {
-        source: "nginx",
-        extensions: ["pl", "pm"]
-      },
-      "application/x-pilot": {
-        source: "nginx",
-        extensions: ["prc", "pdb"]
-      },
-      "application/x-pkcs12": {
-        source: "apache",
-        compressible: false,
-        extensions: ["p12", "pfx"]
-      },
-      "application/x-pkcs7-certificates": {
-        source: "apache",
-        extensions: ["p7b", "spc"]
-      },
-      "application/x-pkcs7-certreqresp": {
-        source: "apache",
-        extensions: ["p7r"]
-      },
-      "application/x-pki-message": {
-        source: "iana"
-      },
-      "application/x-rar-compressed": {
-        source: "apache",
-        compressible: false,
-        extensions: ["rar"]
-      },
-      "application/x-redhat-package-manager": {
-        source: "nginx",
-        extensions: ["rpm"]
-      },
-      "application/x-research-info-systems": {
-        source: "apache",
-        extensions: ["ris"]
-      },
-      "application/x-sea": {
-        source: "nginx",
-        extensions: ["sea"]
-      },
-      "application/x-sh": {
-        source: "apache",
-        compressible: true,
-        extensions: ["sh"]
-      },
-      "application/x-shar": {
-        source: "apache",
-        extensions: ["shar"]
-      },
-      "application/x-shockwave-flash": {
-        source: "apache",
-        compressible: false,
-        extensions: ["swf"]
-      },
-      "application/x-silverlight-app": {
-        source: "apache",
-        extensions: ["xap"]
-      },
-      "application/x-sql": {
-        source: "apache",
-        extensions: ["sql"]
-      },
-      "application/x-stuffit": {
-        source: "apache",
-        compressible: false,
-        extensions: ["sit"]
-      },
-      "application/x-stuffitx": {
-        source: "apache",
-        extensions: ["sitx"]
-      },
-      "application/x-subrip": {
-        source: "apache",
-        extensions: ["srt"]
-      },
-      "application/x-sv4cpio": {
-        source: "apache",
-        extensions: ["sv4cpio"]
-      },
-      "application/x-sv4crc": {
-        source: "apache",
-        extensions: ["sv4crc"]
-      },
-      "application/x-t3vm-image": {
-        source: "apache",
-        extensions: ["t3"]
-      },
-      "application/x-tads": {
-        source: "apache",
-        extensions: ["gam"]
-      },
-      "application/x-tar": {
-        source: "apache",
-        compressible: true,
-        extensions: ["tar"]
-      },
-      "application/x-tcl": {
-        source: "apache",
-        extensions: ["tcl", "tk"]
-      },
-      "application/x-tex": {
-        source: "apache",
-        extensions: ["tex"]
-      },
-      "application/x-tex-tfm": {
-        source: "apache",
-        extensions: ["tfm"]
-      },
-      "application/x-texinfo": {
-        source: "apache",
-        extensions: ["texinfo", "texi"]
-      },
-      "application/x-tgif": {
-        source: "apache",
-        extensions: ["obj"]
-      },
-      "application/x-ustar": {
-        source: "apache",
-        extensions: ["ustar"]
-      },
-      "application/x-virtualbox-hdd": {
-        compressible: true,
-        extensions: ["hdd"]
-      },
-      "application/x-virtualbox-ova": {
-        compressible: true,
-        extensions: ["ova"]
-      },
-      "application/x-virtualbox-ovf": {
-        compressible: true,
-        extensions: ["ovf"]
-      },
-      "application/x-virtualbox-vbox": {
-        compressible: true,
-        extensions: ["vbox"]
-      },
-      "application/x-virtualbox-vbox-extpack": {
-        compressible: false,
-        extensions: ["vbox-extpack"]
-      },
-      "application/x-virtualbox-vdi": {
-        compressible: true,
-        extensions: ["vdi"]
-      },
-      "application/x-virtualbox-vhd": {
-        compressible: true,
-        extensions: ["vhd"]
-      },
-      "application/x-virtualbox-vmdk": {
-        compressible: true,
-        extensions: ["vmdk"]
-      },
-      "application/x-wais-source": {
-        source: "apache",
-        extensions: ["src"]
-      },
-      "application/x-web-app-manifest+json": {
-        compressible: true,
-        extensions: ["webapp"]
-      },
-      "application/x-www-form-urlencoded": {
-        source: "iana",
-        compressible: true
-      },
-      "application/x-x509-ca-cert": {
-        source: "iana",
-        extensions: ["der", "crt", "pem"]
-      },
-      "application/x-x509-ca-ra-cert": {
-        source: "iana"
-      },
-      "application/x-x509-next-ca-cert": {
-        source: "iana"
-      },
-      "application/x-xfig": {
-        source: "apache",
-        extensions: ["fig"]
-      },
-      "application/x-xliff+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["xlf"]
-      },
-      "application/x-xpinstall": {
-        source: "apache",
-        compressible: false,
-        extensions: ["xpi"]
-      },
-      "application/x-xz": {
-        source: "apache",
-        extensions: ["xz"]
-      },
-      "application/x-zmachine": {
-        source: "apache",
-        extensions: ["z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8"]
-      },
-      "application/x400-bp": {
-        source: "iana"
-      },
-      "application/xacml+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/xaml+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["xaml"]
-      },
-      "application/xcap-att+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xav"]
-      },
-      "application/xcap-caps+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xca"]
-      },
-      "application/xcap-diff+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xdf"]
-      },
-      "application/xcap-el+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xel"]
-      },
-      "application/xcap-error+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/xcap-ns+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xns"]
-      },
-      "application/xcon-conference-info+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/xcon-conference-info-diff+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/xenc+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xenc"]
-      },
-      "application/xhtml+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xhtml", "xht"]
-      },
-      "application/xhtml-voice+xml": {
-        source: "apache",
-        compressible: true
-      },
-      "application/xliff+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xlf"]
-      },
-      "application/xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xml", "xsl", "xsd", "rng"]
-      },
-      "application/xml-dtd": {
-        source: "iana",
-        compressible: true,
-        extensions: ["dtd"]
-      },
-      "application/xml-external-parsed-entity": {
-        source: "iana"
-      },
-      "application/xml-patch+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/xmpp+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/xop+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xop"]
-      },
-      "application/xproc+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["xpl"]
-      },
-      "application/xslt+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xsl", "xslt"]
-      },
-      "application/xspf+xml": {
-        source: "apache",
-        compressible: true,
-        extensions: ["xspf"]
-      },
-      "application/xv+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["mxml", "xhvml", "xvml", "xvm"]
-      },
-      "application/yang": {
-        source: "iana",
-        extensions: ["yang"]
-      },
-      "application/yang-data+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/yang-data+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/yang-patch+json": {
-        source: "iana",
-        compressible: true
-      },
-      "application/yang-patch+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "application/yin+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["yin"]
-      },
-      "application/zip": {
-        source: "iana",
-        compressible: false,
-        extensions: ["zip"]
-      },
-      "application/zlib": {
-        source: "iana"
-      },
-      "application/zstd": {
-        source: "iana"
-      },
-      "audio/1d-interleaved-parityfec": {
-        source: "iana"
-      },
-      "audio/32kadpcm": {
-        source: "iana"
-      },
-      "audio/3gpp": {
-        source: "iana",
-        compressible: false,
-        extensions: ["3gpp"]
-      },
-      "audio/3gpp2": {
-        source: "iana"
-      },
-      "audio/aac": {
-        source: "iana"
-      },
-      "audio/ac3": {
-        source: "iana"
-      },
-      "audio/adpcm": {
-        source: "apache",
-        extensions: ["adp"]
-      },
-      "audio/amr": {
-        source: "iana",
-        extensions: ["amr"]
-      },
-      "audio/amr-wb": {
-        source: "iana"
-      },
-      "audio/amr-wb+": {
-        source: "iana"
-      },
-      "audio/aptx": {
-        source: "iana"
-      },
-      "audio/asc": {
-        source: "iana"
-      },
-      "audio/atrac-advanced-lossless": {
-        source: "iana"
-      },
-      "audio/atrac-x": {
-        source: "iana"
-      },
-      "audio/atrac3": {
-        source: "iana"
-      },
-      "audio/basic": {
-        source: "iana",
-        compressible: false,
-        extensions: ["au", "snd"]
-      },
-      "audio/bv16": {
-        source: "iana"
-      },
-      "audio/bv32": {
-        source: "iana"
-      },
-      "audio/clearmode": {
-        source: "iana"
-      },
-      "audio/cn": {
-        source: "iana"
-      },
-      "audio/dat12": {
-        source: "iana"
-      },
-      "audio/dls": {
-        source: "iana"
-      },
-      "audio/dsr-es201108": {
-        source: "iana"
-      },
-      "audio/dsr-es202050": {
-        source: "iana"
-      },
-      "audio/dsr-es202211": {
-        source: "iana"
-      },
-      "audio/dsr-es202212": {
-        source: "iana"
-      },
-      "audio/dv": {
-        source: "iana"
-      },
-      "audio/dvi4": {
-        source: "iana"
-      },
-      "audio/eac3": {
-        source: "iana"
-      },
-      "audio/encaprtp": {
-        source: "iana"
-      },
-      "audio/evrc": {
-        source: "iana"
-      },
-      "audio/evrc-qcp": {
-        source: "iana"
-      },
-      "audio/evrc0": {
-        source: "iana"
-      },
-      "audio/evrc1": {
-        source: "iana"
-      },
-      "audio/evrcb": {
-        source: "iana"
-      },
-      "audio/evrcb0": {
-        source: "iana"
-      },
-      "audio/evrcb1": {
-        source: "iana"
-      },
-      "audio/evrcnw": {
-        source: "iana"
-      },
-      "audio/evrcnw0": {
-        source: "iana"
-      },
-      "audio/evrcnw1": {
-        source: "iana"
-      },
-      "audio/evrcwb": {
-        source: "iana"
-      },
-      "audio/evrcwb0": {
-        source: "iana"
-      },
-      "audio/evrcwb1": {
-        source: "iana"
-      },
-      "audio/evs": {
-        source: "iana"
-      },
-      "audio/flexfec": {
-        source: "iana"
-      },
-      "audio/fwdred": {
-        source: "iana"
-      },
-      "audio/g711-0": {
-        source: "iana"
-      },
-      "audio/g719": {
-        source: "iana"
-      },
-      "audio/g722": {
-        source: "iana"
-      },
-      "audio/g7221": {
-        source: "iana"
-      },
-      "audio/g723": {
-        source: "iana"
-      },
-      "audio/g726-16": {
-        source: "iana"
-      },
-      "audio/g726-24": {
-        source: "iana"
-      },
-      "audio/g726-32": {
-        source: "iana"
-      },
-      "audio/g726-40": {
-        source: "iana"
-      },
-      "audio/g728": {
-        source: "iana"
-      },
-      "audio/g729": {
-        source: "iana"
-      },
-      "audio/g7291": {
-        source: "iana"
-      },
-      "audio/g729d": {
-        source: "iana"
-      },
-      "audio/g729e": {
-        source: "iana"
-      },
-      "audio/gsm": {
-        source: "iana"
-      },
-      "audio/gsm-efr": {
-        source: "iana"
-      },
-      "audio/gsm-hr-08": {
-        source: "iana"
-      },
-      "audio/ilbc": {
-        source: "iana"
-      },
-      "audio/ip-mr_v2.5": {
-        source: "iana"
-      },
-      "audio/isac": {
-        source: "apache"
-      },
-      "audio/l16": {
-        source: "iana"
-      },
-      "audio/l20": {
-        source: "iana"
-      },
-      "audio/l24": {
-        source: "iana",
-        compressible: false
-      },
-      "audio/l8": {
-        source: "iana"
-      },
-      "audio/lpc": {
-        source: "iana"
-      },
-      "audio/melp": {
-        source: "iana"
-      },
-      "audio/melp1200": {
-        source: "iana"
-      },
-      "audio/melp2400": {
-        source: "iana"
-      },
-      "audio/melp600": {
-        source: "iana"
-      },
-      "audio/mhas": {
-        source: "iana"
-      },
-      "audio/midi": {
-        source: "apache",
-        extensions: ["mid", "midi", "kar", "rmi"]
-      },
-      "audio/mobile-xmf": {
-        source: "iana",
-        extensions: ["mxmf"]
-      },
-      "audio/mp3": {
-        compressible: false,
-        extensions: ["mp3"]
-      },
-      "audio/mp4": {
-        source: "iana",
-        compressible: false,
-        extensions: ["m4a", "mp4a"]
-      },
-      "audio/mp4a-latm": {
-        source: "iana"
-      },
-      "audio/mpa": {
-        source: "iana"
-      },
-      "audio/mpa-robust": {
-        source: "iana"
-      },
-      "audio/mpeg": {
-        source: "iana",
-        compressible: false,
-        extensions: ["mpga", "mp2", "mp2a", "mp3", "m2a", "m3a"]
-      },
-      "audio/mpeg4-generic": {
-        source: "iana"
-      },
-      "audio/musepack": {
-        source: "apache"
-      },
-      "audio/ogg": {
-        source: "iana",
-        compressible: false,
-        extensions: ["oga", "ogg", "spx", "opus"]
-      },
-      "audio/opus": {
-        source: "iana"
-      },
-      "audio/parityfec": {
-        source: "iana"
-      },
-      "audio/pcma": {
-        source: "iana"
-      },
-      "audio/pcma-wb": {
-        source: "iana"
-      },
-      "audio/pcmu": {
-        source: "iana"
-      },
-      "audio/pcmu-wb": {
-        source: "iana"
-      },
-      "audio/prs.sid": {
-        source: "iana"
-      },
-      "audio/qcelp": {
-        source: "iana"
-      },
-      "audio/raptorfec": {
-        source: "iana"
-      },
-      "audio/red": {
-        source: "iana"
-      },
-      "audio/rtp-enc-aescm128": {
-        source: "iana"
-      },
-      "audio/rtp-midi": {
-        source: "iana"
-      },
-      "audio/rtploopback": {
-        source: "iana"
-      },
-      "audio/rtx": {
-        source: "iana"
-      },
-      "audio/s3m": {
-        source: "apache",
-        extensions: ["s3m"]
-      },
-      "audio/scip": {
-        source: "iana"
-      },
-      "audio/silk": {
-        source: "apache",
-        extensions: ["sil"]
-      },
-      "audio/smv": {
-        source: "iana"
-      },
-      "audio/smv-qcp": {
-        source: "iana"
-      },
-      "audio/smv0": {
-        source: "iana"
-      },
-      "audio/sofa": {
-        source: "iana"
-      },
-      "audio/sp-midi": {
-        source: "iana"
-      },
-      "audio/speex": {
-        source: "iana"
-      },
-      "audio/t140c": {
-        source: "iana"
-      },
-      "audio/t38": {
-        source: "iana"
-      },
-      "audio/telephone-event": {
-        source: "iana"
-      },
-      "audio/tetra_acelp": {
-        source: "iana"
-      },
-      "audio/tetra_acelp_bb": {
-        source: "iana"
-      },
-      "audio/tone": {
-        source: "iana"
-      },
-      "audio/tsvcis": {
-        source: "iana"
-      },
-      "audio/uemclip": {
-        source: "iana"
-      },
-      "audio/ulpfec": {
-        source: "iana"
-      },
-      "audio/usac": {
-        source: "iana"
-      },
-      "audio/vdvi": {
-        source: "iana"
-      },
-      "audio/vmr-wb": {
-        source: "iana"
-      },
-      "audio/vnd.3gpp.iufp": {
-        source: "iana"
-      },
-      "audio/vnd.4sb": {
-        source: "iana"
-      },
-      "audio/vnd.audiokoz": {
-        source: "iana"
-      },
-      "audio/vnd.celp": {
-        source: "iana"
-      },
-      "audio/vnd.cisco.nse": {
-        source: "iana"
-      },
-      "audio/vnd.cmles.radio-events": {
-        source: "iana"
-      },
-      "audio/vnd.cns.anp1": {
-        source: "iana"
-      },
-      "audio/vnd.cns.inf1": {
-        source: "iana"
-      },
-      "audio/vnd.dece.audio": {
-        source: "iana",
-        extensions: ["uva", "uvva"]
-      },
-      "audio/vnd.digital-winds": {
-        source: "iana",
-        extensions: ["eol"]
-      },
-      "audio/vnd.dlna.adts": {
-        source: "iana"
-      },
-      "audio/vnd.dolby.heaac.1": {
-        source: "iana"
-      },
-      "audio/vnd.dolby.heaac.2": {
-        source: "iana"
-      },
-      "audio/vnd.dolby.mlp": {
-        source: "iana"
-      },
-      "audio/vnd.dolby.mps": {
-        source: "iana"
-      },
-      "audio/vnd.dolby.pl2": {
-        source: "iana"
-      },
-      "audio/vnd.dolby.pl2x": {
-        source: "iana"
-      },
-      "audio/vnd.dolby.pl2z": {
-        source: "iana"
-      },
-      "audio/vnd.dolby.pulse.1": {
-        source: "iana"
-      },
-      "audio/vnd.dra": {
-        source: "iana",
-        extensions: ["dra"]
-      },
-      "audio/vnd.dts": {
-        source: "iana",
-        extensions: ["dts"]
-      },
-      "audio/vnd.dts.hd": {
-        source: "iana",
-        extensions: ["dtshd"]
-      },
-      "audio/vnd.dts.uhd": {
-        source: "iana"
-      },
-      "audio/vnd.dvb.file": {
-        source: "iana"
-      },
-      "audio/vnd.everad.plj": {
-        source: "iana"
-      },
-      "audio/vnd.hns.audio": {
-        source: "iana"
-      },
-      "audio/vnd.lucent.voice": {
-        source: "iana",
-        extensions: ["lvp"]
-      },
-      "audio/vnd.ms-playready.media.pya": {
-        source: "iana",
-        extensions: ["pya"]
-      },
-      "audio/vnd.nokia.mobile-xmf": {
-        source: "iana"
-      },
-      "audio/vnd.nortel.vbk": {
-        source: "iana"
-      },
-      "audio/vnd.nuera.ecelp4800": {
-        source: "iana",
-        extensions: ["ecelp4800"]
-      },
-      "audio/vnd.nuera.ecelp7470": {
-        source: "iana",
-        extensions: ["ecelp7470"]
-      },
-      "audio/vnd.nuera.ecelp9600": {
-        source: "iana",
-        extensions: ["ecelp9600"]
-      },
-      "audio/vnd.octel.sbc": {
-        source: "iana"
-      },
-      "audio/vnd.presonus.multitrack": {
-        source: "iana"
-      },
-      "audio/vnd.qcelp": {
-        source: "iana"
-      },
-      "audio/vnd.rhetorex.32kadpcm": {
-        source: "iana"
-      },
-      "audio/vnd.rip": {
-        source: "iana",
-        extensions: ["rip"]
-      },
-      "audio/vnd.rn-realaudio": {
-        compressible: false
-      },
-      "audio/vnd.sealedmedia.softseal.mpeg": {
-        source: "iana"
-      },
-      "audio/vnd.vmx.cvsd": {
-        source: "iana"
-      },
-      "audio/vnd.wave": {
-        compressible: false
-      },
-      "audio/vorbis": {
-        source: "iana",
-        compressible: false
-      },
-      "audio/vorbis-config": {
-        source: "iana"
-      },
-      "audio/wav": {
-        compressible: false,
-        extensions: ["wav"]
-      },
-      "audio/wave": {
-        compressible: false,
-        extensions: ["wav"]
-      },
-      "audio/webm": {
-        source: "apache",
-        compressible: false,
-        extensions: ["weba"]
-      },
-      "audio/x-aac": {
-        source: "apache",
-        compressible: false,
-        extensions: ["aac"]
-      },
-      "audio/x-aiff": {
-        source: "apache",
-        extensions: ["aif", "aiff", "aifc"]
-      },
-      "audio/x-caf": {
-        source: "apache",
-        compressible: false,
-        extensions: ["caf"]
-      },
-      "audio/x-flac": {
-        source: "apache",
-        extensions: ["flac"]
-      },
-      "audio/x-m4a": {
-        source: "nginx",
-        extensions: ["m4a"]
-      },
-      "audio/x-matroska": {
-        source: "apache",
-        extensions: ["mka"]
-      },
-      "audio/x-mpegurl": {
-        source: "apache",
-        extensions: ["m3u"]
-      },
-      "audio/x-ms-wax": {
-        source: "apache",
-        extensions: ["wax"]
-      },
-      "audio/x-ms-wma": {
-        source: "apache",
-        extensions: ["wma"]
-      },
-      "audio/x-pn-realaudio": {
-        source: "apache",
-        extensions: ["ram", "ra"]
-      },
-      "audio/x-pn-realaudio-plugin": {
-        source: "apache",
-        extensions: ["rmp"]
-      },
-      "audio/x-realaudio": {
-        source: "nginx",
-        extensions: ["ra"]
-      },
-      "audio/x-tta": {
-        source: "apache"
-      },
-      "audio/x-wav": {
-        source: "apache",
-        extensions: ["wav"]
-      },
-      "audio/xm": {
-        source: "apache",
-        extensions: ["xm"]
-      },
-      "chemical/x-cdx": {
-        source: "apache",
-        extensions: ["cdx"]
-      },
-      "chemical/x-cif": {
-        source: "apache",
-        extensions: ["cif"]
-      },
-      "chemical/x-cmdf": {
-        source: "apache",
-        extensions: ["cmdf"]
-      },
-      "chemical/x-cml": {
-        source: "apache",
-        extensions: ["cml"]
-      },
-      "chemical/x-csml": {
-        source: "apache",
-        extensions: ["csml"]
-      },
-      "chemical/x-pdb": {
-        source: "apache"
-      },
-      "chemical/x-xyz": {
-        source: "apache",
-        extensions: ["xyz"]
-      },
-      "font/collection": {
-        source: "iana",
-        extensions: ["ttc"]
-      },
-      "font/otf": {
-        source: "iana",
-        compressible: true,
-        extensions: ["otf"]
-      },
-      "font/sfnt": {
-        source: "iana"
-      },
-      "font/ttf": {
-        source: "iana",
-        compressible: true,
-        extensions: ["ttf"]
-      },
-      "font/woff": {
-        source: "iana",
-        extensions: ["woff"]
-      },
-      "font/woff2": {
-        source: "iana",
-        extensions: ["woff2"]
-      },
-      "image/aces": {
-        source: "iana",
-        extensions: ["exr"]
-      },
-      "image/apng": {
-        compressible: false,
-        extensions: ["apng"]
-      },
-      "image/avci": {
-        source: "iana",
-        extensions: ["avci"]
-      },
-      "image/avcs": {
-        source: "iana",
-        extensions: ["avcs"]
-      },
-      "image/avif": {
-        source: "iana",
-        compressible: false,
-        extensions: ["avif"]
-      },
-      "image/bmp": {
-        source: "iana",
-        compressible: true,
-        extensions: ["bmp"]
-      },
-      "image/cgm": {
-        source: "iana",
-        extensions: ["cgm"]
-      },
-      "image/dicom-rle": {
-        source: "iana",
-        extensions: ["drle"]
-      },
-      "image/emf": {
-        source: "iana",
-        extensions: ["emf"]
-      },
-      "image/fits": {
-        source: "iana",
-        extensions: ["fits"]
-      },
-      "image/g3fax": {
-        source: "iana",
-        extensions: ["g3"]
-      },
-      "image/gif": {
-        source: "iana",
-        compressible: false,
-        extensions: ["gif"]
-      },
-      "image/heic": {
-        source: "iana",
-        extensions: ["heic"]
-      },
-      "image/heic-sequence": {
-        source: "iana",
-        extensions: ["heics"]
-      },
-      "image/heif": {
-        source: "iana",
-        extensions: ["heif"]
-      },
-      "image/heif-sequence": {
-        source: "iana",
-        extensions: ["heifs"]
-      },
-      "image/hej2k": {
-        source: "iana",
-        extensions: ["hej2"]
-      },
-      "image/hsj2": {
-        source: "iana",
-        extensions: ["hsj2"]
-      },
-      "image/ief": {
-        source: "iana",
-        extensions: ["ief"]
-      },
-      "image/jls": {
-        source: "iana",
-        extensions: ["jls"]
-      },
-      "image/jp2": {
-        source: "iana",
-        compressible: false,
-        extensions: ["jp2", "jpg2"]
-      },
-      "image/jpeg": {
-        source: "iana",
-        compressible: false,
-        extensions: ["jpeg", "jpg", "jpe"]
-      },
-      "image/jph": {
-        source: "iana",
-        extensions: ["jph"]
-      },
-      "image/jphc": {
-        source: "iana",
-        extensions: ["jhc"]
-      },
-      "image/jpm": {
-        source: "iana",
-        compressible: false,
-        extensions: ["jpm"]
-      },
-      "image/jpx": {
-        source: "iana",
-        compressible: false,
-        extensions: ["jpx", "jpf"]
-      },
-      "image/jxr": {
-        source: "iana",
-        extensions: ["jxr"]
-      },
-      "image/jxra": {
-        source: "iana",
-        extensions: ["jxra"]
-      },
-      "image/jxrs": {
-        source: "iana",
-        extensions: ["jxrs"]
-      },
-      "image/jxs": {
-        source: "iana",
-        extensions: ["jxs"]
-      },
-      "image/jxsc": {
-        source: "iana",
-        extensions: ["jxsc"]
-      },
-      "image/jxsi": {
-        source: "iana",
-        extensions: ["jxsi"]
-      },
-      "image/jxss": {
-        source: "iana",
-        extensions: ["jxss"]
-      },
-      "image/ktx": {
-        source: "iana",
-        extensions: ["ktx"]
-      },
-      "image/ktx2": {
-        source: "iana",
-        extensions: ["ktx2"]
-      },
-      "image/naplps": {
-        source: "iana"
-      },
-      "image/pjpeg": {
-        compressible: false
-      },
-      "image/png": {
-        source: "iana",
-        compressible: false,
-        extensions: ["png"]
-      },
-      "image/prs.btif": {
-        source: "iana",
-        extensions: ["btif"]
-      },
-      "image/prs.pti": {
-        source: "iana",
-        extensions: ["pti"]
-      },
-      "image/pwg-raster": {
-        source: "iana"
-      },
-      "image/sgi": {
-        source: "apache",
-        extensions: ["sgi"]
-      },
-      "image/svg+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["svg", "svgz"]
-      },
-      "image/t38": {
-        source: "iana",
-        extensions: ["t38"]
-      },
-      "image/tiff": {
-        source: "iana",
-        compressible: false,
-        extensions: ["tif", "tiff"]
-      },
-      "image/tiff-fx": {
-        source: "iana",
-        extensions: ["tfx"]
-      },
-      "image/vnd.adobe.photoshop": {
-        source: "iana",
-        compressible: true,
-        extensions: ["psd"]
-      },
-      "image/vnd.airzip.accelerator.azv": {
-        source: "iana",
-        extensions: ["azv"]
-      },
-      "image/vnd.cns.inf2": {
-        source: "iana"
-      },
-      "image/vnd.dece.graphic": {
-        source: "iana",
-        extensions: ["uvi", "uvvi", "uvg", "uvvg"]
-      },
-      "image/vnd.djvu": {
-        source: "iana",
-        extensions: ["djvu", "djv"]
-      },
-      "image/vnd.dvb.subtitle": {
-        source: "iana",
-        extensions: ["sub"]
-      },
-      "image/vnd.dwg": {
-        source: "iana",
-        extensions: ["dwg"]
-      },
-      "image/vnd.dxf": {
-        source: "iana",
-        extensions: ["dxf"]
-      },
-      "image/vnd.fastbidsheet": {
-        source: "iana",
-        extensions: ["fbs"]
-      },
-      "image/vnd.fpx": {
-        source: "iana",
-        extensions: ["fpx"]
-      },
-      "image/vnd.fst": {
-        source: "iana",
-        extensions: ["fst"]
-      },
-      "image/vnd.fujixerox.edmics-mmr": {
-        source: "iana",
-        extensions: ["mmr"]
-      },
-      "image/vnd.fujixerox.edmics-rlc": {
-        source: "iana",
-        extensions: ["rlc"]
-      },
-      "image/vnd.globalgraphics.pgb": {
-        source: "iana"
-      },
-      "image/vnd.microsoft.icon": {
-        source: "iana",
-        compressible: true,
-        extensions: ["ico"]
-      },
-      "image/vnd.mix": {
-        source: "iana"
-      },
-      "image/vnd.mozilla.apng": {
-        source: "iana"
-      },
-      "image/vnd.ms-dds": {
-        compressible: true,
-        extensions: ["dds"]
-      },
-      "image/vnd.ms-modi": {
-        source: "iana",
-        extensions: ["mdi"]
-      },
-      "image/vnd.ms-photo": {
-        source: "apache",
-        extensions: ["wdp"]
-      },
-      "image/vnd.net-fpx": {
-        source: "iana",
-        extensions: ["npx"]
-      },
-      "image/vnd.pco.b16": {
-        source: "iana",
-        extensions: ["b16"]
-      },
-      "image/vnd.radiance": {
-        source: "iana"
-      },
-      "image/vnd.sealed.png": {
-        source: "iana"
-      },
-      "image/vnd.sealedmedia.softseal.gif": {
-        source: "iana"
-      },
-      "image/vnd.sealedmedia.softseal.jpg": {
-        source: "iana"
-      },
-      "image/vnd.svf": {
-        source: "iana"
-      },
-      "image/vnd.tencent.tap": {
-        source: "iana",
-        extensions: ["tap"]
-      },
-      "image/vnd.valve.source.texture": {
-        source: "iana",
-        extensions: ["vtf"]
-      },
-      "image/vnd.wap.wbmp": {
-        source: "iana",
-        extensions: ["wbmp"]
-      },
-      "image/vnd.xiff": {
-        source: "iana",
-        extensions: ["xif"]
-      },
-      "image/vnd.zbrush.pcx": {
-        source: "iana",
-        extensions: ["pcx"]
-      },
-      "image/webp": {
-        source: "apache",
-        extensions: ["webp"]
-      },
-      "image/wmf": {
-        source: "iana",
-        extensions: ["wmf"]
-      },
-      "image/x-3ds": {
-        source: "apache",
-        extensions: ["3ds"]
-      },
-      "image/x-cmu-raster": {
-        source: "apache",
-        extensions: ["ras"]
-      },
-      "image/x-cmx": {
-        source: "apache",
-        extensions: ["cmx"]
-      },
-      "image/x-freehand": {
-        source: "apache",
-        extensions: ["fh", "fhc", "fh4", "fh5", "fh7"]
-      },
-      "image/x-icon": {
-        source: "apache",
-        compressible: true,
-        extensions: ["ico"]
-      },
-      "image/x-jng": {
-        source: "nginx",
-        extensions: ["jng"]
-      },
-      "image/x-mrsid-image": {
-        source: "apache",
-        extensions: ["sid"]
-      },
-      "image/x-ms-bmp": {
-        source: "nginx",
-        compressible: true,
-        extensions: ["bmp"]
-      },
-      "image/x-pcx": {
-        source: "apache",
-        extensions: ["pcx"]
-      },
-      "image/x-pict": {
-        source: "apache",
-        extensions: ["pic", "pct"]
-      },
-      "image/x-portable-anymap": {
-        source: "apache",
-        extensions: ["pnm"]
-      },
-      "image/x-portable-bitmap": {
-        source: "apache",
-        extensions: ["pbm"]
-      },
-      "image/x-portable-graymap": {
-        source: "apache",
-        extensions: ["pgm"]
-      },
-      "image/x-portable-pixmap": {
-        source: "apache",
-        extensions: ["ppm"]
-      },
-      "image/x-rgb": {
-        source: "apache",
-        extensions: ["rgb"]
-      },
-      "image/x-tga": {
-        source: "apache",
-        extensions: ["tga"]
-      },
-      "image/x-xbitmap": {
-        source: "apache",
-        extensions: ["xbm"]
-      },
-      "image/x-xcf": {
-        compressible: false
-      },
-      "image/x-xpixmap": {
-        source: "apache",
-        extensions: ["xpm"]
-      },
-      "image/x-xwindowdump": {
-        source: "apache",
-        extensions: ["xwd"]
-      },
-      "message/cpim": {
-        source: "iana"
-      },
-      "message/delivery-status": {
-        source: "iana"
-      },
-      "message/disposition-notification": {
-        source: "iana",
-        extensions: [
-          "disposition-notification"
-        ]
-      },
-      "message/external-body": {
-        source: "iana"
-      },
-      "message/feedback-report": {
-        source: "iana"
-      },
-      "message/global": {
-        source: "iana",
-        extensions: ["u8msg"]
-      },
-      "message/global-delivery-status": {
-        source: "iana",
-        extensions: ["u8dsn"]
-      },
-      "message/global-disposition-notification": {
-        source: "iana",
-        extensions: ["u8mdn"]
-      },
-      "message/global-headers": {
-        source: "iana",
-        extensions: ["u8hdr"]
-      },
-      "message/http": {
-        source: "iana",
-        compressible: false
-      },
-      "message/imdn+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "message/news": {
-        source: "iana"
-      },
-      "message/partial": {
-        source: "iana",
-        compressible: false
-      },
-      "message/rfc822": {
-        source: "iana",
-        compressible: true,
-        extensions: ["eml", "mime"]
-      },
-      "message/s-http": {
-        source: "iana"
-      },
-      "message/sip": {
-        source: "iana"
-      },
-      "message/sipfrag": {
-        source: "iana"
-      },
-      "message/tracking-status": {
-        source: "iana"
-      },
-      "message/vnd.si.simp": {
-        source: "iana"
-      },
-      "message/vnd.wfa.wsc": {
-        source: "iana",
-        extensions: ["wsc"]
-      },
-      "model/3mf": {
-        source: "iana",
-        extensions: ["3mf"]
-      },
-      "model/e57": {
-        source: "iana"
-      },
-      "model/gltf+json": {
-        source: "iana",
-        compressible: true,
-        extensions: ["gltf"]
-      },
-      "model/gltf-binary": {
-        source: "iana",
-        compressible: true,
-        extensions: ["glb"]
-      },
-      "model/iges": {
-        source: "iana",
-        compressible: false,
-        extensions: ["igs", "iges"]
-      },
-      "model/mesh": {
-        source: "iana",
-        compressible: false,
-        extensions: ["msh", "mesh", "silo"]
-      },
-      "model/mtl": {
-        source: "iana",
-        extensions: ["mtl"]
-      },
-      "model/obj": {
-        source: "iana",
-        extensions: ["obj"]
-      },
-      "model/step": {
-        source: "iana"
-      },
-      "model/step+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["stpx"]
-      },
-      "model/step+zip": {
-        source: "iana",
-        compressible: false,
-        extensions: ["stpz"]
-      },
-      "model/step-xml+zip": {
-        source: "iana",
-        compressible: false,
-        extensions: ["stpxz"]
-      },
-      "model/stl": {
-        source: "iana",
-        extensions: ["stl"]
-      },
-      "model/vnd.collada+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["dae"]
-      },
-      "model/vnd.dwf": {
-        source: "iana",
-        extensions: ["dwf"]
-      },
-      "model/vnd.flatland.3dml": {
-        source: "iana"
-      },
-      "model/vnd.gdl": {
-        source: "iana",
-        extensions: ["gdl"]
-      },
-      "model/vnd.gs-gdl": {
-        source: "apache"
-      },
-      "model/vnd.gs.gdl": {
-        source: "iana"
-      },
-      "model/vnd.gtw": {
-        source: "iana",
-        extensions: ["gtw"]
-      },
-      "model/vnd.moml+xml": {
-        source: "iana",
-        compressible: true
-      },
-      "model/vnd.mts": {
-        source: "iana",
-        extensions: ["mts"]
-      },
-      "model/vnd.opengex": {
-        source: "iana",
-        extensions: ["ogex"]
-      },
-      "model/vnd.parasolid.transmit.binary": {
-        source: "iana",
-        extensions: ["x_b"]
-      },
-      "model/vnd.parasolid.transmit.text": {
-        source: "iana",
-        extensions: ["x_t"]
-      },
-      "model/vnd.pytha.pyox": {
-        source: "iana"
-      },
-      "model/vnd.rosette.annotated-data-model": {
-        source: "iana"
-      },
-      "model/vnd.sap.vds": {
-        source: "iana",
-        extensions: ["vds"]
-      },
-      "model/vnd.usdz+zip": {
-        source: "iana",
-        compressible: false,
-        extensions: ["usdz"]
-      },
-      "model/vnd.valve.source.compiled-map": {
-        source: "iana",
-        extensions: ["bsp"]
-      },
-      "model/vnd.vtu": {
-        source: "iana",
-        extensions: ["vtu"]
-      },
-      "model/vrml": {
-        source: "iana",
-        compressible: false,
-        extensions: ["wrl", "vrml"]
-      },
-      "model/x3d+binary": {
-        source: "apache",
-        compressible: false,
-        extensions: ["x3db", "x3dbz"]
-      },
-      "model/x3d+fastinfoset": {
-        source: "iana",
-        extensions: ["x3db"]
-      },
-      "model/x3d+vrml": {
-        source: "apache",
-        compressible: false,
-        extensions: ["x3dv", "x3dvz"]
-      },
-      "model/x3d+xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["x3d", "x3dz"]
-      },
-      "model/x3d-vrml": {
-        source: "iana",
-        extensions: ["x3dv"]
-      },
-      "multipart/alternative": {
-        source: "iana",
-        compressible: false
-      },
-      "multipart/appledouble": {
-        source: "iana"
-      },
-      "multipart/byteranges": {
-        source: "iana"
-      },
-      "multipart/digest": {
-        source: "iana"
-      },
-      "multipart/encrypted": {
-        source: "iana",
-        compressible: false
-      },
-      "multipart/form-data": {
-        source: "iana",
-        compressible: false
-      },
-      "multipart/header-set": {
-        source: "iana"
-      },
-      "multipart/mixed": {
-        source: "iana"
-      },
-      "multipart/multilingual": {
-        source: "iana"
-      },
-      "multipart/parallel": {
-        source: "iana"
-      },
-      "multipart/related": {
-        source: "iana",
-        compressible: false
-      },
-      "multipart/report": {
-        source: "iana"
-      },
-      "multipart/signed": {
-        source: "iana",
-        compressible: false
-      },
-      "multipart/vnd.bint.med-plus": {
-        source: "iana"
-      },
-      "multipart/voice-message": {
-        source: "iana"
-      },
-      "multipart/x-mixed-replace": {
-        source: "iana"
-      },
-      "text/1d-interleaved-parityfec": {
-        source: "iana"
-      },
-      "text/cache-manifest": {
-        source: "iana",
-        compressible: true,
-        extensions: ["appcache", "manifest"]
-      },
-      "text/calendar": {
-        source: "iana",
-        extensions: ["ics", "ifb"]
-      },
-      "text/calender": {
-        compressible: true
-      },
-      "text/cmd": {
-        compressible: true
-      },
-      "text/coffeescript": {
-        extensions: ["coffee", "litcoffee"]
-      },
-      "text/cql": {
-        source: "iana"
-      },
-      "text/cql-expression": {
-        source: "iana"
-      },
-      "text/cql-identifier": {
-        source: "iana"
-      },
-      "text/css": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true,
-        extensions: ["css"]
-      },
-      "text/csv": {
-        source: "iana",
-        compressible: true,
-        extensions: ["csv"]
-      },
-      "text/csv-schema": {
-        source: "iana"
-      },
-      "text/directory": {
-        source: "iana"
-      },
-      "text/dns": {
-        source: "iana"
-      },
-      "text/ecmascript": {
-        source: "iana"
-      },
-      "text/encaprtp": {
-        source: "iana"
-      },
-      "text/enriched": {
-        source: "iana"
-      },
-      "text/fhirpath": {
-        source: "iana"
-      },
-      "text/flexfec": {
-        source: "iana"
-      },
-      "text/fwdred": {
-        source: "iana"
-      },
-      "text/gff3": {
-        source: "iana"
-      },
-      "text/grammar-ref-list": {
-        source: "iana"
-      },
-      "text/html": {
-        source: "iana",
-        compressible: true,
-        extensions: ["html", "htm", "shtml"]
-      },
-      "text/jade": {
-        extensions: ["jade"]
-      },
-      "text/javascript": {
-        source: "iana",
-        compressible: true
-      },
-      "text/jcr-cnd": {
-        source: "iana"
-      },
-      "text/jsx": {
-        compressible: true,
-        extensions: ["jsx"]
-      },
-      "text/less": {
-        compressible: true,
-        extensions: ["less"]
-      },
-      "text/markdown": {
-        source: "iana",
-        compressible: true,
-        extensions: ["markdown", "md"]
-      },
-      "text/mathml": {
-        source: "nginx",
-        extensions: ["mml"]
-      },
-      "text/mdx": {
-        compressible: true,
-        extensions: ["mdx"]
-      },
-      "text/mizar": {
-        source: "iana"
-      },
-      "text/n3": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true,
-        extensions: ["n3"]
-      },
-      "text/parameters": {
-        source: "iana",
-        charset: "UTF-8"
-      },
-      "text/parityfec": {
-        source: "iana"
-      },
-      "text/plain": {
-        source: "iana",
-        compressible: true,
-        extensions: ["txt", "text", "conf", "def", "list", "log", "in", "ini"]
-      },
-      "text/provenance-notation": {
-        source: "iana",
-        charset: "UTF-8"
-      },
-      "text/prs.fallenstein.rst": {
-        source: "iana"
-      },
-      "text/prs.lines.tag": {
-        source: "iana",
-        extensions: ["dsc"]
-      },
-      "text/prs.prop.logic": {
-        source: "iana"
-      },
-      "text/raptorfec": {
-        source: "iana"
-      },
-      "text/red": {
-        source: "iana"
-      },
-      "text/rfc822-headers": {
-        source: "iana"
-      },
-      "text/richtext": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rtx"]
-      },
-      "text/rtf": {
-        source: "iana",
-        compressible: true,
-        extensions: ["rtf"]
-      },
-      "text/rtp-enc-aescm128": {
-        source: "iana"
-      },
-      "text/rtploopback": {
-        source: "iana"
-      },
-      "text/rtx": {
-        source: "iana"
-      },
-      "text/sgml": {
-        source: "iana",
-        extensions: ["sgml", "sgm"]
-      },
-      "text/shaclc": {
-        source: "iana"
-      },
-      "text/shex": {
-        source: "iana",
-        extensions: ["shex"]
-      },
-      "text/slim": {
-        extensions: ["slim", "slm"]
-      },
-      "text/spdx": {
-        source: "iana",
-        extensions: ["spdx"]
-      },
-      "text/strings": {
-        source: "iana"
-      },
-      "text/stylus": {
-        extensions: ["stylus", "styl"]
-      },
-      "text/t140": {
-        source: "iana"
-      },
-      "text/tab-separated-values": {
-        source: "iana",
-        compressible: true,
-        extensions: ["tsv"]
-      },
-      "text/troff": {
-        source: "iana",
-        extensions: ["t", "tr", "roff", "man", "me", "ms"]
-      },
-      "text/turtle": {
-        source: "iana",
-        charset: "UTF-8",
-        extensions: ["ttl"]
-      },
-      "text/ulpfec": {
-        source: "iana"
-      },
-      "text/uri-list": {
-        source: "iana",
-        compressible: true,
-        extensions: ["uri", "uris", "urls"]
-      },
-      "text/vcard": {
-        source: "iana",
-        compressible: true,
-        extensions: ["vcard"]
-      },
-      "text/vnd.a": {
-        source: "iana"
-      },
-      "text/vnd.abc": {
-        source: "iana"
-      },
-      "text/vnd.ascii-art": {
-        source: "iana"
-      },
-      "text/vnd.curl": {
-        source: "iana",
-        extensions: ["curl"]
-      },
-      "text/vnd.curl.dcurl": {
-        source: "apache",
-        extensions: ["dcurl"]
-      },
-      "text/vnd.curl.mcurl": {
-        source: "apache",
-        extensions: ["mcurl"]
-      },
-      "text/vnd.curl.scurl": {
-        source: "apache",
-        extensions: ["scurl"]
-      },
-      "text/vnd.debian.copyright": {
-        source: "iana",
-        charset: "UTF-8"
-      },
-      "text/vnd.dmclientscript": {
-        source: "iana"
-      },
-      "text/vnd.dvb.subtitle": {
-        source: "iana",
-        extensions: ["sub"]
-      },
-      "text/vnd.esmertec.theme-descriptor": {
-        source: "iana",
-        charset: "UTF-8"
-      },
-      "text/vnd.familysearch.gedcom": {
-        source: "iana",
-        extensions: ["ged"]
-      },
-      "text/vnd.ficlab.flt": {
-        source: "iana"
-      },
-      "text/vnd.fly": {
-        source: "iana",
-        extensions: ["fly"]
-      },
-      "text/vnd.fmi.flexstor": {
-        source: "iana",
-        extensions: ["flx"]
-      },
-      "text/vnd.gml": {
-        source: "iana"
-      },
-      "text/vnd.graphviz": {
-        source: "iana",
-        extensions: ["gv"]
-      },
-      "text/vnd.hans": {
-        source: "iana"
-      },
-      "text/vnd.hgl": {
-        source: "iana"
-      },
-      "text/vnd.in3d.3dml": {
-        source: "iana",
-        extensions: ["3dml"]
-      },
-      "text/vnd.in3d.spot": {
-        source: "iana",
-        extensions: ["spot"]
-      },
-      "text/vnd.iptc.newsml": {
-        source: "iana"
-      },
-      "text/vnd.iptc.nitf": {
-        source: "iana"
-      },
-      "text/vnd.latex-z": {
-        source: "iana"
-      },
-      "text/vnd.motorola.reflex": {
-        source: "iana"
-      },
-      "text/vnd.ms-mediapackage": {
-        source: "iana"
-      },
-      "text/vnd.net2phone.commcenter.command": {
-        source: "iana"
-      },
-      "text/vnd.radisys.msml-basic-layout": {
-        source: "iana"
-      },
-      "text/vnd.senx.warpscript": {
-        source: "iana"
-      },
-      "text/vnd.si.uricatalogue": {
-        source: "iana"
-      },
-      "text/vnd.sosi": {
-        source: "iana"
-      },
-      "text/vnd.sun.j2me.app-descriptor": {
-        source: "iana",
-        charset: "UTF-8",
-        extensions: ["jad"]
-      },
-      "text/vnd.trolltech.linguist": {
-        source: "iana",
-        charset: "UTF-8"
-      },
-      "text/vnd.wap.si": {
-        source: "iana"
-      },
-      "text/vnd.wap.sl": {
-        source: "iana"
-      },
-      "text/vnd.wap.wml": {
-        source: "iana",
-        extensions: ["wml"]
-      },
-      "text/vnd.wap.wmlscript": {
-        source: "iana",
-        extensions: ["wmls"]
-      },
-      "text/vtt": {
-        source: "iana",
-        charset: "UTF-8",
-        compressible: true,
-        extensions: ["vtt"]
-      },
-      "text/x-asm": {
-        source: "apache",
-        extensions: ["s", "asm"]
-      },
-      "text/x-c": {
-        source: "apache",
-        extensions: ["c", "cc", "cxx", "cpp", "h", "hh", "dic"]
-      },
-      "text/x-component": {
-        source: "nginx",
-        extensions: ["htc"]
-      },
-      "text/x-fortran": {
-        source: "apache",
-        extensions: ["f", "for", "f77", "f90"]
-      },
-      "text/x-gwt-rpc": {
-        compressible: true
-      },
-      "text/x-handlebars-template": {
-        extensions: ["hbs"]
-      },
-      "text/x-java-source": {
-        source: "apache",
-        extensions: ["java"]
-      },
-      "text/x-jquery-tmpl": {
-        compressible: true
-      },
-      "text/x-lua": {
-        extensions: ["lua"]
-      },
-      "text/x-markdown": {
-        compressible: true,
-        extensions: ["mkd"]
-      },
-      "text/x-nfo": {
-        source: "apache",
-        extensions: ["nfo"]
-      },
-      "text/x-opml": {
-        source: "apache",
-        extensions: ["opml"]
-      },
-      "text/x-org": {
-        compressible: true,
-        extensions: ["org"]
-      },
-      "text/x-pascal": {
-        source: "apache",
-        extensions: ["p", "pas"]
-      },
-      "text/x-processing": {
-        compressible: true,
-        extensions: ["pde"]
-      },
-      "text/x-sass": {
-        extensions: ["sass"]
-      },
-      "text/x-scss": {
-        extensions: ["scss"]
-      },
-      "text/x-setext": {
-        source: "apache",
-        extensions: ["etx"]
-      },
-      "text/x-sfv": {
-        source: "apache",
-        extensions: ["sfv"]
-      },
-      "text/x-suse-ymp": {
-        compressible: true,
-        extensions: ["ymp"]
-      },
-      "text/x-uuencode": {
-        source: "apache",
-        extensions: ["uu"]
-      },
-      "text/x-vcalendar": {
-        source: "apache",
-        extensions: ["vcs"]
-      },
-      "text/x-vcard": {
-        source: "apache",
-        extensions: ["vcf"]
-      },
-      "text/xml": {
-        source: "iana",
-        compressible: true,
-        extensions: ["xml"]
-      },
-      "text/xml-external-parsed-entity": {
-        source: "iana"
-      },
-      "text/yaml": {
-        compressible: true,
-        extensions: ["yaml", "yml"]
-      },
-      "video/1d-interleaved-parityfec": {
-        source: "iana"
-      },
-      "video/3gpp": {
-        source: "iana",
-        extensions: ["3gp", "3gpp"]
-      },
-      "video/3gpp-tt": {
-        source: "iana"
-      },
-      "video/3gpp2": {
-        source: "iana",
-        extensions: ["3g2"]
-      },
-      "video/av1": {
-        source: "iana"
-      },
-      "video/bmpeg": {
-        source: "iana"
-      },
-      "video/bt656": {
-        source: "iana"
-      },
-      "video/celb": {
-        source: "iana"
-      },
-      "video/dv": {
-        source: "iana"
-      },
-      "video/encaprtp": {
-        source: "iana"
-      },
-      "video/ffv1": {
-        source: "iana"
-      },
-      "video/flexfec": {
-        source: "iana"
-      },
-      "video/h261": {
-        source: "iana",
-        extensions: ["h261"]
-      },
-      "video/h263": {
-        source: "iana",
-        extensions: ["h263"]
-      },
-      "video/h263-1998": {
-        source: "iana"
-      },
-      "video/h263-2000": {
-        source: "iana"
-      },
-      "video/h264": {
-        source: "iana",
-        extensions: ["h264"]
-      },
-      "video/h264-rcdo": {
-        source: "iana"
-      },
-      "video/h264-svc": {
-        source: "iana"
-      },
-      "video/h265": {
-        source: "iana"
-      },
-      "video/iso.segment": {
-        source: "iana",
-        extensions: ["m4s"]
-      },
-      "video/jpeg": {
-        source: "iana",
-        extensions: ["jpgv"]
-      },
-      "video/jpeg2000": {
-        source: "iana"
-      },
-      "video/jpm": {
-        source: "apache",
-        extensions: ["jpm", "jpgm"]
-      },
-      "video/jxsv": {
-        source: "iana"
-      },
-      "video/mj2": {
-        source: "iana",
-        extensions: ["mj2", "mjp2"]
-      },
-      "video/mp1s": {
-        source: "iana"
-      },
-      "video/mp2p": {
-        source: "iana"
-      },
-      "video/mp2t": {
-        source: "iana",
-        extensions: ["ts"]
-      },
-      "video/mp4": {
-        source: "iana",
-        compressible: false,
-        extensions: ["mp4", "mp4v", "mpg4"]
-      },
-      "video/mp4v-es": {
-        source: "iana"
-      },
-      "video/mpeg": {
-        source: "iana",
-        compressible: false,
-        extensions: ["mpeg", "mpg", "mpe", "m1v", "m2v"]
-      },
-      "video/mpeg4-generic": {
-        source: "iana"
-      },
-      "video/mpv": {
-        source: "iana"
-      },
-      "video/nv": {
-        source: "iana"
-      },
-      "video/ogg": {
-        source: "iana",
-        compressible: false,
-        extensions: ["ogv"]
-      },
-      "video/parityfec": {
-        source: "iana"
-      },
-      "video/pointer": {
-        source: "iana"
-      },
-      "video/quicktime": {
-        source: "iana",
-        compressible: false,
-        extensions: ["qt", "mov"]
-      },
-      "video/raptorfec": {
-        source: "iana"
-      },
-      "video/raw": {
-        source: "iana"
-      },
-      "video/rtp-enc-aescm128": {
-        source: "iana"
-      },
-      "video/rtploopback": {
-        source: "iana"
-      },
-      "video/rtx": {
-        source: "iana"
-      },
-      "video/scip": {
-        source: "iana"
-      },
-      "video/smpte291": {
-        source: "iana"
-      },
-      "video/smpte292m": {
-        source: "iana"
-      },
-      "video/ulpfec": {
-        source: "iana"
-      },
-      "video/vc1": {
-        source: "iana"
-      },
-      "video/vc2": {
-        source: "iana"
-      },
-      "video/vnd.cctv": {
-        source: "iana"
-      },
-      "video/vnd.dece.hd": {
-        source: "iana",
-        extensions: ["uvh", "uvvh"]
-      },
-      "video/vnd.dece.mobile": {
-        source: "iana",
-        extensions: ["uvm", "uvvm"]
-      },
-      "video/vnd.dece.mp4": {
-        source: "iana"
-      },
-      "video/vnd.dece.pd": {
-        source: "iana",
-        extensions: ["uvp", "uvvp"]
-      },
-      "video/vnd.dece.sd": {
-        source: "iana",
-        extensions: ["uvs", "uvvs"]
-      },
-      "video/vnd.dece.video": {
-        source: "iana",
-        extensions: ["uvv", "uvvv"]
-      },
-      "video/vnd.directv.mpeg": {
-        source: "iana"
-      },
-      "video/vnd.directv.mpeg-tts": {
-        source: "iana"
-      },
-      "video/vnd.dlna.mpeg-tts": {
-        source: "iana"
-      },
-      "video/vnd.dvb.file": {
-        source: "iana",
-        extensions: ["dvb"]
-      },
-      "video/vnd.fvt": {
-        source: "iana",
-        extensions: ["fvt"]
-      },
-      "video/vnd.hns.video": {
-        source: "iana"
-      },
-      "video/vnd.iptvforum.1dparityfec-1010": {
-        source: "iana"
-      },
-      "video/vnd.iptvforum.1dparityfec-2005": {
-        source: "iana"
-      },
-      "video/vnd.iptvforum.2dparityfec-1010": {
-        source: "iana"
-      },
-      "video/vnd.iptvforum.2dparityfec-2005": {
-        source: "iana"
-      },
-      "video/vnd.iptvforum.ttsavc": {
-        source: "iana"
-      },
-      "video/vnd.iptvforum.ttsmpeg2": {
-        source: "iana"
-      },
-      "video/vnd.motorola.video": {
-        source: "iana"
-      },
-      "video/vnd.motorola.videop": {
-        source: "iana"
-      },
-      "video/vnd.mpegurl": {
-        source: "iana",
-        extensions: ["mxu", "m4u"]
-      },
-      "video/vnd.ms-playready.media.pyv": {
-        source: "iana",
-        extensions: ["pyv"]
-      },
-      "video/vnd.nokia.interleaved-multimedia": {
-        source: "iana"
-      },
-      "video/vnd.nokia.mp4vr": {
-        source: "iana"
-      },
-      "video/vnd.nokia.videovoip": {
-        source: "iana"
-      },
-      "video/vnd.objectvideo": {
-        source: "iana"
-      },
-      "video/vnd.radgamettools.bink": {
-        source: "iana"
-      },
-      "video/vnd.radgamettools.smacker": {
-        source: "iana"
-      },
-      "video/vnd.sealed.mpeg1": {
-        source: "iana"
-      },
-      "video/vnd.sealed.mpeg4": {
-        source: "iana"
-      },
-      "video/vnd.sealed.swf": {
-        source: "iana"
-      },
-      "video/vnd.sealedmedia.softseal.mov": {
-        source: "iana"
-      },
-      "video/vnd.uvvu.mp4": {
-        source: "iana",
-        extensions: ["uvu", "uvvu"]
-      },
-      "video/vnd.vivo": {
-        source: "iana",
-        extensions: ["viv"]
-      },
-      "video/vnd.youtube.yt": {
-        source: "iana"
-      },
-      "video/vp8": {
-        source: "iana"
-      },
-      "video/vp9": {
-        source: "iana"
-      },
-      "video/webm": {
-        source: "apache",
-        compressible: false,
-        extensions: ["webm"]
-      },
-      "video/x-f4v": {
-        source: "apache",
-        extensions: ["f4v"]
-      },
-      "video/x-fli": {
-        source: "apache",
-        extensions: ["fli"]
-      },
-      "video/x-flv": {
-        source: "apache",
-        compressible: false,
-        extensions: ["flv"]
-      },
-      "video/x-m4v": {
-        source: "apache",
-        extensions: ["m4v"]
-      },
-      "video/x-matroska": {
-        source: "apache",
-        compressible: false,
-        extensions: ["mkv", "mk3d", "mks"]
-      },
-      "video/x-mng": {
-        source: "apache",
-        extensions: ["mng"]
-      },
-      "video/x-ms-asf": {
-        source: "apache",
-        extensions: ["asf", "asx"]
-      },
-      "video/x-ms-vob": {
-        source: "apache",
-        extensions: ["vob"]
-      },
-      "video/x-ms-wm": {
-        source: "apache",
-        extensions: ["wm"]
-      },
-      "video/x-ms-wmv": {
-        source: "apache",
-        compressible: false,
-        extensions: ["wmv"]
-      },
-      "video/x-ms-wmx": {
-        source: "apache",
-        extensions: ["wmx"]
-      },
-      "video/x-ms-wvx": {
-        source: "apache",
-        extensions: ["wvx"]
-      },
-      "video/x-msvideo": {
-        source: "apache",
-        extensions: ["avi"]
-      },
-      "video/x-sgi-movie": {
-        source: "apache",
-        extensions: ["movie"]
-      },
-      "video/x-smv": {
-        source: "apache",
-        extensions: ["smv"]
-      },
-      "x-conference/x-cooltalk": {
-        source: "apache",
-        extensions: ["ice"]
-      },
-      "x-shader/x-fragment": {
-        compressible: true
-      },
-      "x-shader/x-vertex": {
-        compressible: true
-      }
-    };
-  }
-});
-
-// node_modules/mime-db/index.js
-var require_mime_db = __commonJS({
-  "node_modules/mime-db/index.js"(exports2, module2) {
-    module2.exports = require_db();
-  }
-});
-
-// node_modules/mime-types/index.js
-var require_mime_types = __commonJS({
-  "node_modules/mime-types/index.js"(exports2) {
-    "use strict";
-    var db = require_mime_db();
-    var extname = require("path").extname;
-    var EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
-    var TEXT_TYPE_REGEXP = /^text\//i;
-    exports2.charset = charset;
-    exports2.charsets = { lookup: charset };
-    exports2.contentType = contentType;
-    exports2.extension = extension;
-    exports2.extensions = /* @__PURE__ */ Object.create(null);
-    exports2.lookup = lookup;
-    exports2.types = /* @__PURE__ */ Object.create(null);
-    populateMaps(exports2.extensions, exports2.types);
-    function charset(type) {
-      if (!type || typeof type !== "string") {
-        return false;
-      }
-      var match = EXTRACT_TYPE_REGEXP.exec(type);
-      var mime = match && db[match[1].toLowerCase()];
-      if (mime && mime.charset) {
-        return mime.charset;
-      }
-      if (match && TEXT_TYPE_REGEXP.test(match[1])) {
-        return "UTF-8";
-      }
-      return false;
-    }
-    function contentType(str) {
-      if (!str || typeof str !== "string") {
-        return false;
-      }
-      var mime = str.indexOf("/") === -1 ? exports2.lookup(str) : str;
-      if (!mime) {
-        return false;
-      }
-      if (mime.indexOf("charset") === -1) {
-        var charset2 = exports2.charset(mime);
-        if (charset2) mime += "; charset=" + charset2.toLowerCase();
-      }
-      return mime;
-    }
-    function extension(type) {
-      if (!type || typeof type !== "string") {
-        return false;
-      }
-      var match = EXTRACT_TYPE_REGEXP.exec(type);
-      var exts = match && exports2.extensions[match[1].toLowerCase()];
-      if (!exts || !exts.length) {
-        return false;
-      }
-      return exts[0];
-    }
-    function lookup(path) {
-      if (!path || typeof path !== "string") {
-        return false;
-      }
-      var extension2 = extname("x." + path).toLowerCase().substr(1);
-      if (!extension2) {
-        return false;
-      }
-      return exports2.types[extension2] || false;
-    }
-    function populateMaps(extensions, types) {
-      var preference = ["nginx", "apache", void 0, "iana"];
-      Object.keys(db).forEach(function forEachMimeType(type) {
-        var mime = db[type];
-        var exts = mime.extensions;
-        if (!exts || !exts.length) {
-          return;
-        }
-        extensions[type] = exts;
-        for (var i = 0; i < exts.length; i++) {
-          var extension2 = exts[i];
-          if (types[extension2]) {
-            var from = preference.indexOf(db[types[extension2]].source);
-            var to = preference.indexOf(mime.source);
-            if (types[extension2] !== "application/octet-stream" && (from > to || from === to && types[extension2].substr(0, 12) === "application/")) {
-              continue;
-            }
-          }
-          types[extension2] = type;
-        }
-      });
-    }
-  }
-});
-
-// node_modules/accepts/index.js
-var require_accepts = __commonJS({
-  "node_modules/accepts/index.js"(exports2, module2) {
-    "use strict";
-    var Negotiator = require_negotiator();
-    var mime = require_mime_types();
-    module2.exports = Accepts;
-    function Accepts(req) {
-      if (!(this instanceof Accepts)) {
-        return new Accepts(req);
-      }
-      this.headers = req.headers;
-      this.negotiator = new Negotiator(req);
-    }
-    Accepts.prototype.type = Accepts.prototype.types = function(types_) {
-      var types = types_;
-      if (types && !Array.isArray(types)) {
-        types = new Array(arguments.length);
-        for (var i = 0; i < types.length; i++) {
-          types[i] = arguments[i];
-        }
-      }
-      if (!types || types.length === 0) {
-        return this.negotiator.mediaTypes();
-      }
-      if (!this.headers.accept) {
-        return types[0];
-      }
-      var mimes = types.map(extToMime);
-      var accepts = this.negotiator.mediaTypes(mimes.filter(validMime));
-      var first = accepts[0];
-      return first ? types[mimes.indexOf(first)] : false;
-    };
-    Accepts.prototype.encoding = Accepts.prototype.encodings = function(encodings_) {
-      var encodings = encodings_;
-      if (encodings && !Array.isArray(encodings)) {
-        encodings = new Array(arguments.length);
-        for (var i = 0; i < encodings.length; i++) {
-          encodings[i] = arguments[i];
-        }
-      }
-      if (!encodings || encodings.length === 0) {
-        return this.negotiator.encodings();
-      }
-      return this.negotiator.encodings(encodings)[0] || false;
-    };
-    Accepts.prototype.charset = Accepts.prototype.charsets = function(charsets_) {
-      var charsets = charsets_;
-      if (charsets && !Array.isArray(charsets)) {
-        charsets = new Array(arguments.length);
-        for (var i = 0; i < charsets.length; i++) {
-          charsets[i] = arguments[i];
-        }
-      }
-      if (!charsets || charsets.length === 0) {
-        return this.negotiator.charsets();
-      }
-      return this.negotiator.charsets(charsets)[0] || false;
-    };
-    Accepts.prototype.lang = Accepts.prototype.langs = Accepts.prototype.language = Accepts.prototype.languages = function(languages_) {
-      var languages = languages_;
-      if (languages && !Array.isArray(languages)) {
-        languages = new Array(arguments.length);
-        for (var i = 0; i < languages.length; i++) {
-          languages[i] = arguments[i];
-        }
-      }
-      if (!languages || languages.length === 0) {
-        return this.negotiator.languages();
-      }
-      return this.negotiator.languages(languages)[0] || false;
-    };
-    function extToMime(type) {
-      return type.indexOf("/") === -1 ? mime.lookup(type) : type;
-    }
-    function validMime(type) {
-      return typeof type === "string";
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/depd/lib/compat/callsite-tostring.js
-var require_callsite_tostring = __commonJS({
-  "node_modules/serve-index/node_modules/depd/lib/compat/callsite-tostring.js"(exports2, module2) {
-    "use strict";
-    module2.exports = callSiteToString2;
-    function callSiteFileLocation(callSite) {
-      var fileName;
-      var fileLocation = "";
-      if (callSite.isNative()) {
-        fileLocation = "native";
-      } else if (callSite.isEval()) {
-        fileName = callSite.getScriptNameOrSourceURL();
-        if (!fileName) {
-          fileLocation = callSite.getEvalOrigin();
-        }
-      } else {
-        fileName = callSite.getFileName();
-      }
-      if (fileName) {
-        fileLocation += fileName;
-        var lineNumber = callSite.getLineNumber();
-        if (lineNumber != null) {
-          fileLocation += ":" + lineNumber;
-          var columnNumber = callSite.getColumnNumber();
-          if (columnNumber) {
-            fileLocation += ":" + columnNumber;
-          }
-        }
-      }
-      return fileLocation || "unknown source";
-    }
-    function callSiteToString2(callSite) {
-      var addSuffix = true;
-      var fileLocation = callSiteFileLocation(callSite);
-      var functionName = callSite.getFunctionName();
-      var isConstructor = callSite.isConstructor();
-      var isMethodCall = !(callSite.isToplevel() || isConstructor);
-      var line = "";
-      if (isMethodCall) {
-        var methodName = callSite.getMethodName();
-        var typeName = getConstructorName(callSite);
-        if (functionName) {
-          if (typeName && functionName.indexOf(typeName) !== 0) {
-            line += typeName + ".";
-          }
-          line += functionName;
-          if (methodName && functionName.lastIndexOf("." + methodName) !== functionName.length - methodName.length - 1) {
-            line += " [as " + methodName + "]";
-          }
-        } else {
-          line += typeName + "." + (methodName || "<anonymous>");
-        }
-      } else if (isConstructor) {
-        line += "new " + (functionName || "<anonymous>");
-      } else if (functionName) {
-        line += functionName;
-      } else {
-        addSuffix = false;
-        line += fileLocation;
-      }
-      if (addSuffix) {
-        line += " (" + fileLocation + ")";
-      }
-      return line;
-    }
-    function getConstructorName(obj) {
-      var receiver = obj.receiver;
-      return receiver.constructor && receiver.constructor.name || null;
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/depd/lib/compat/event-listener-count.js
-var require_event_listener_count = __commonJS({
-  "node_modules/serve-index/node_modules/depd/lib/compat/event-listener-count.js"(exports2, module2) {
-    "use strict";
-    module2.exports = eventListenerCount2;
-    function eventListenerCount2(emitter, type) {
-      return emitter.listeners(type).length;
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/depd/lib/compat/index.js
-var require_compat2 = __commonJS({
-  "node_modules/serve-index/node_modules/depd/lib/compat/index.js"(exports2, module2) {
-    "use strict";
-    var EventEmitter = require("events").EventEmitter;
-    lazyProperty(module2.exports, "callSiteToString", function callSiteToString2() {
-      var limit = Error.stackTraceLimit;
-      var obj = {};
-      var prep = Error.prepareStackTrace;
-      function prepareObjectStackTrace2(obj2, stack3) {
-        return stack3;
-      }
-      Error.prepareStackTrace = prepareObjectStackTrace2;
-      Error.stackTraceLimit = 2;
-      Error.captureStackTrace(obj);
-      var stack2 = obj.stack.slice();
-      Error.prepareStackTrace = prep;
-      Error.stackTraceLimit = limit;
-      return stack2[0].toString ? toString : require_callsite_tostring();
-    });
-    lazyProperty(module2.exports, "eventListenerCount", function eventListenerCount2() {
-      return EventEmitter.listenerCount || require_event_listener_count();
-    });
-    function lazyProperty(obj, prop, getter) {
-      function get() {
-        var val = getter();
-        Object.defineProperty(obj, prop, {
-          configurable: true,
-          enumerable: true,
-          value: val
-        });
-        return val;
-      }
-      Object.defineProperty(obj, prop, {
-        configurable: true,
-        enumerable: true,
-        get
-      });
-    }
-    function toString(obj) {
-      return obj.toString();
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/depd/index.js
-var require_depd2 = __commonJS({
-  "node_modules/serve-index/node_modules/depd/index.js"(exports, module) {
-    var callSiteToString = require_compat2().callSiteToString;
-    var eventListenerCount = require_compat2().eventListenerCount;
-    var relative = require("path").relative;
-    module.exports = depd;
-    var basePath = process.cwd();
-    function containsNamespace(str, namespace) {
-      var vals = str.split(/[ ,]+/);
-      var ns = String(namespace).toLowerCase();
-      for (var i = 0; i < vals.length; i++) {
-        var val = vals[i];
-        if (val && (val === "*" || val.toLowerCase() === ns)) {
-          return true;
-        }
-      }
-      return false;
-    }
-    function convertDataDescriptorToAccessor(obj, prop, message2) {
-      var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
-      var value = descriptor.value;
-      descriptor.get = function getter() {
-        return value;
-      };
-      if (descriptor.writable) {
-        descriptor.set = function setter(val) {
-          return value = val;
-        };
-      }
-      delete descriptor.value;
-      delete descriptor.writable;
-      Object.defineProperty(obj, prop, descriptor);
-      return descriptor;
-    }
-    function createArgumentsString(arity) {
-      var str = "";
-      for (var i = 0; i < arity; i++) {
-        str += ", arg" + i;
-      }
-      return str.substr(2);
-    }
-    function createStackString(stack2) {
-      var str = this.name + ": " + this.namespace;
-      if (this.message) {
-        str += " deprecated " + this.message;
-      }
-      for (var i = 0; i < stack2.length; i++) {
-        str += "\n    at " + callSiteToString(stack2[i]);
-      }
-      return str;
-    }
-    function depd(namespace) {
-      if (!namespace) {
-        throw new TypeError("argument namespace is required");
-      }
-      var stack2 = getStack();
-      var site2 = callSiteLocation(stack2[1]);
-      var file = site2[0];
-      function deprecate2(message2) {
-        log.call(deprecate2, message2);
-      }
-      deprecate2._file = file;
-      deprecate2._ignored = isignored(namespace);
-      deprecate2._namespace = namespace;
-      deprecate2._traced = istraced(namespace);
-      deprecate2._warned = /* @__PURE__ */ Object.create(null);
-      deprecate2.function = wrapfunction;
-      deprecate2.property = wrapproperty;
-      return deprecate2;
-    }
-    function isignored(namespace) {
-      if (process.noDeprecation) {
-        return true;
-      }
-      var str = process.env.NO_DEPRECATION || "";
-      return containsNamespace(str, namespace);
-    }
-    function istraced(namespace) {
-      if (process.traceDeprecation) {
-        return true;
-      }
-      var str = process.env.TRACE_DEPRECATION || "";
-      return containsNamespace(str, namespace);
-    }
-    function log(message2, site2) {
-      var haslisteners = eventListenerCount(process, "deprecation") !== 0;
-      if (!haslisteners && this._ignored) {
-        return;
-      }
-      var caller;
-      var callFile;
-      var callSite;
-      var depSite;
-      var i = 0;
-      var seen = false;
-      var stack2 = getStack();
-      var file = this._file;
-      if (site2) {
-        depSite = site2;
-        callSite = callSiteLocation(stack2[1]);
-        callSite.name = depSite.name;
-        file = callSite[0];
-      } else {
-        i = 2;
-        depSite = callSiteLocation(stack2[i]);
-        callSite = depSite;
-      }
-      for (; i < stack2.length; i++) {
-        caller = callSiteLocation(stack2[i]);
-        callFile = caller[0];
-        if (callFile === file) {
-          seen = true;
-        } else if (callFile === this._file) {
-          file = this._file;
-        } else if (seen) {
-          break;
-        }
-      }
-      var key = caller ? depSite.join(":") + "__" + caller.join(":") : void 0;
-      if (key !== void 0 && key in this._warned) {
-        return;
-      }
-      this._warned[key] = true;
-      var msg = message2;
-      if (!msg) {
-        msg = callSite === depSite || !callSite.name ? defaultMessage(depSite) : defaultMessage(callSite);
-      }
-      if (haslisteners) {
-        var err = DeprecationError(this._namespace, msg, stack2.slice(i));
-        process.emit("deprecation", err);
-        return;
-      }
-      var format = process.stderr.isTTY ? formatColor : formatPlain;
-      var output = format.call(this, msg, caller, stack2.slice(i));
-      process.stderr.write(output + "\n", "utf8");
-    }
-    function callSiteLocation(callSite) {
-      var file = callSite.getFileName() || "<anonymous>";
-      var line = callSite.getLineNumber();
-      var colm = callSite.getColumnNumber();
-      if (callSite.isEval()) {
-        file = callSite.getEvalOrigin() + ", " + file;
-      }
-      var site2 = [file, line, colm];
-      site2.callSite = callSite;
-      site2.name = callSite.getFunctionName();
-      return site2;
-    }
-    function defaultMessage(site2) {
-      var callSite = site2.callSite;
-      var funcName = site2.name;
-      if (!funcName) {
-        funcName = "<anonymous@" + formatLocation(site2) + ">";
-      }
-      var context = callSite.getThis();
-      var typeName = context && callSite.getTypeName();
-      if (typeName === "Object") {
-        typeName = void 0;
-      }
-      if (typeName === "Function") {
-        typeName = context.name || typeName;
-      }
-      return typeName && callSite.getMethodName() ? typeName + "." + funcName : funcName;
-    }
-    function formatPlain(msg, caller, stack2) {
-      var timestamp = (/* @__PURE__ */ new Date()).toUTCString();
-      var formatted = timestamp + " " + this._namespace + " deprecated " + msg;
-      if (this._traced) {
-        for (var i = 0; i < stack2.length; i++) {
-          formatted += "\n    at " + callSiteToString(stack2[i]);
-        }
-        return formatted;
-      }
-      if (caller) {
-        formatted += " at " + formatLocation(caller);
-      }
-      return formatted;
-    }
-    function formatColor(msg, caller, stack2) {
-      var formatted = "\x1B[36;1m" + this._namespace + "\x1B[22;39m \x1B[33;1mdeprecated\x1B[22;39m \x1B[0m" + msg + "\x1B[39m";
-      if (this._traced) {
-        for (var i = 0; i < stack2.length; i++) {
-          formatted += "\n    \x1B[36mat " + callSiteToString(stack2[i]) + "\x1B[39m";
-        }
-        return formatted;
-      }
-      if (caller) {
-        formatted += " \x1B[36m" + formatLocation(caller) + "\x1B[39m";
-      }
-      return formatted;
-    }
-    function formatLocation(callSite) {
-      return relative(basePath, callSite[0]) + ":" + callSite[1] + ":" + callSite[2];
-    }
-    function getStack() {
-      var limit = Error.stackTraceLimit;
-      var obj = {};
-      var prep = Error.prepareStackTrace;
-      Error.prepareStackTrace = prepareObjectStackTrace;
-      Error.stackTraceLimit = Math.max(10, limit);
-      Error.captureStackTrace(obj);
-      var stack2 = obj.stack.slice(1);
-      Error.prepareStackTrace = prep;
-      Error.stackTraceLimit = limit;
-      return stack2;
-    }
-    function prepareObjectStackTrace(obj, stack2) {
-      return stack2;
-    }
-    function wrapfunction(fn, message) {
-      if (typeof fn !== "function") {
-        throw new TypeError("argument fn must be a function");
-      }
-      var args = createArgumentsString(fn.length);
-      var deprecate = this;
-      var stack = getStack();
-      var site = callSiteLocation(stack[1]);
-      site.name = fn.name;
-      var deprecatedfn = eval("(function (" + args + ') {\n"use strict"\nlog.call(deprecate, message, site)\nreturn fn.apply(this, arguments)\n})');
-      return deprecatedfn;
-    }
-    function wrapproperty(obj, prop, message2) {
-      if (!obj || typeof obj !== "object" && typeof obj !== "function") {
-        throw new TypeError("argument obj must be object");
-      }
-      var descriptor = Object.getOwnPropertyDescriptor(obj, prop);
-      if (!descriptor) {
-        throw new TypeError("must call property on owner object");
-      }
-      if (!descriptor.configurable) {
-        throw new TypeError("property must be configurable");
-      }
-      var deprecate2 = this;
-      var stack2 = getStack();
-      var site2 = callSiteLocation(stack2[1]);
-      site2.name = prop;
-      if ("value" in descriptor) {
-        descriptor = convertDataDescriptorToAccessor(obj, prop, message2);
-      }
-      var get = descriptor.get;
-      var set = descriptor.set;
-      if (typeof get === "function") {
-        descriptor.get = function getter() {
-          log.call(deprecate2, message2, site2);
-          return get.apply(this, arguments);
-        };
-      }
-      if (typeof set === "function") {
-        descriptor.set = function setter() {
-          log.call(deprecate2, message2, site2);
-          return set.apply(this, arguments);
-        };
-      }
-      Object.defineProperty(obj, prop, descriptor);
-    }
-    function DeprecationError(namespace, message2, stack2) {
-      var error = new Error();
-      var stackString;
-      Object.defineProperty(error, "constructor", {
-        value: DeprecationError
-      });
-      Object.defineProperty(error, "message", {
-        configurable: true,
-        enumerable: false,
-        value: message2,
-        writable: true
-      });
-      Object.defineProperty(error, "name", {
-        enumerable: false,
-        configurable: true,
-        value: "DeprecationError",
-        writable: true
-      });
-      Object.defineProperty(error, "namespace", {
-        configurable: true,
-        enumerable: false,
-        value: namespace,
-        writable: true
-      });
-      Object.defineProperty(error, "stack", {
-        configurable: true,
-        enumerable: false,
-        get: function() {
-          if (stackString !== void 0) {
-            return stackString;
-          }
-          return stackString = createStackString.call(this, stack2);
-        },
-        set: function setter(val) {
-          stackString = val;
-        }
-      });
-      return error;
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/setprototypeof/index.js
-var require_setprototypeof2 = __commonJS({
-  "node_modules/serve-index/node_modules/setprototypeof/index.js"(exports2, module2) {
-    module2.exports = Object.setPrototypeOf || ({ __proto__: [] } instanceof Array ? setProtoOf : mixinProperties);
-    function setProtoOf(obj, proto) {
-      obj.__proto__ = proto;
-      return obj;
-    }
-    function mixinProperties(obj, proto) {
-      for (var prop in proto) {
-        if (!obj.hasOwnProperty(prop)) {
-          obj[prop] = proto[prop];
-        }
-      }
-      return obj;
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/statuses/codes.json
-var require_codes2 = __commonJS({
-  "node_modules/serve-index/node_modules/statuses/codes.json"(exports2, module2) {
-    module2.exports = {
-      "100": "Continue",
-      "101": "Switching Protocols",
-      "102": "Processing",
-      "103": "Early Hints",
-      "200": "OK",
-      "201": "Created",
-      "202": "Accepted",
-      "203": "Non-Authoritative Information",
-      "204": "No Content",
-      "205": "Reset Content",
-      "206": "Partial Content",
-      "207": "Multi-Status",
-      "208": "Already Reported",
-      "226": "IM Used",
-      "300": "Multiple Choices",
-      "301": "Moved Permanently",
-      "302": "Found",
-      "303": "See Other",
-      "304": "Not Modified",
-      "305": "Use Proxy",
-      "306": "(Unused)",
-      "307": "Temporary Redirect",
-      "308": "Permanent Redirect",
-      "400": "Bad Request",
-      "401": "Unauthorized",
-      "402": "Payment Required",
-      "403": "Forbidden",
-      "404": "Not Found",
-      "405": "Method Not Allowed",
-      "406": "Not Acceptable",
-      "407": "Proxy Authentication Required",
-      "408": "Request Timeout",
-      "409": "Conflict",
-      "410": "Gone",
-      "411": "Length Required",
-      "412": "Precondition Failed",
-      "413": "Payload Too Large",
-      "414": "URI Too Long",
-      "415": "Unsupported Media Type",
-      "416": "Range Not Satisfiable",
-      "417": "Expectation Failed",
-      "418": "I'm a teapot",
-      "421": "Misdirected Request",
-      "422": "Unprocessable Entity",
-      "423": "Locked",
-      "424": "Failed Dependency",
-      "425": "Unordered Collection",
-      "426": "Upgrade Required",
-      "428": "Precondition Required",
-      "429": "Too Many Requests",
-      "431": "Request Header Fields Too Large",
-      "451": "Unavailable For Legal Reasons",
-      "500": "Internal Server Error",
-      "501": "Not Implemented",
-      "502": "Bad Gateway",
-      "503": "Service Unavailable",
-      "504": "Gateway Timeout",
-      "505": "HTTP Version Not Supported",
-      "506": "Variant Also Negotiates",
-      "507": "Insufficient Storage",
-      "508": "Loop Detected",
-      "509": "Bandwidth Limit Exceeded",
-      "510": "Not Extended",
-      "511": "Network Authentication Required"
-    };
-  }
-});
-
-// node_modules/serve-index/node_modules/statuses/index.js
-var require_statuses2 = __commonJS({
-  "node_modules/serve-index/node_modules/statuses/index.js"(exports2, module2) {
-    "use strict";
-    var codes = require_codes2();
-    module2.exports = status;
-    status.STATUS_CODES = codes;
-    status.codes = populateStatusesMap(status, codes);
-    status.redirect = {
-      300: true,
-      301: true,
-      302: true,
-      303: true,
-      305: true,
-      307: true,
-      308: true
-    };
-    status.empty = {
-      204: true,
-      205: true,
-      304: true
-    };
-    status.retry = {
-      502: true,
-      503: true,
-      504: true
-    };
-    function populateStatusesMap(statuses, codes2) {
-      var arr = [];
-      Object.keys(codes2).forEach(function forEachCode(code) {
-        var message2 = codes2[code];
-        var status2 = Number(code);
-        statuses[status2] = message2;
-        statuses[message2] = status2;
-        statuses[message2.toLowerCase()] = status2;
-        arr.push(status2);
-      });
-      return arr;
-    }
-    function status(code) {
-      if (typeof code === "number") {
-        if (!status[code]) throw new Error("invalid status code: " + code);
-        return code;
-      }
-      if (typeof code !== "string") {
-        throw new TypeError("code must be a number or string");
-      }
-      var n = parseInt(code, 10);
-      if (!isNaN(n)) {
-        if (!status[n]) throw new Error("invalid status code: " + n);
-        return n;
-      }
-      n = status[code.toLowerCase()];
-      if (!n) throw new Error('invalid status message: "' + code + '"');
-      return n;
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/inherits/inherits_browser.js
-var require_inherits_browser2 = __commonJS({
-  "node_modules/serve-index/node_modules/inherits/inherits_browser.js"(exports2, module2) {
-    if (typeof Object.create === "function") {
-      module2.exports = function inherits(ctor, superCtor) {
-        ctor.super_ = superCtor;
-        ctor.prototype = Object.create(superCtor.prototype, {
-          constructor: {
-            value: ctor,
-            enumerable: false,
-            writable: true,
-            configurable: true
-          }
-        });
-      };
-    } else {
-      module2.exports = function inherits(ctor, superCtor) {
-        ctor.super_ = superCtor;
-        var TempCtor = function() {
-        };
-        TempCtor.prototype = superCtor.prototype;
-        ctor.prototype = new TempCtor();
-        ctor.prototype.constructor = ctor;
-      };
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/inherits/inherits.js
-var require_inherits2 = __commonJS({
-  "node_modules/serve-index/node_modules/inherits/inherits.js"(exports2, module2) {
-    try {
-      util = require("util");
-      if (typeof util.inherits !== "function") throw "";
-      module2.exports = util.inherits;
-    } catch (e) {
-      module2.exports = require_inherits_browser2();
-    }
-    var util;
-  }
-});
-
-// node_modules/serve-index/node_modules/http-errors/index.js
-var require_http_errors2 = __commonJS({
-  "node_modules/serve-index/node_modules/http-errors/index.js"(exports2, module2) {
-    "use strict";
-    var deprecate2 = require_depd2()("http-errors");
-    var setPrototypeOf = require_setprototypeof2();
-    var statuses = require_statuses2();
-    var inherits = require_inherits2();
-    module2.exports = createError;
-    module2.exports.HttpError = createHttpErrorConstructor();
-    populateConstructorExports(module2.exports, statuses.codes, module2.exports.HttpError);
-    function codeClass(status) {
-      return Number(String(status).charAt(0) + "00");
-    }
-    function createError() {
-      var err;
-      var msg;
-      var status = 500;
-      var props = {};
-      for (var i = 0; i < arguments.length; i++) {
-        var arg = arguments[i];
-        if (arg instanceof Error) {
-          err = arg;
-          status = err.status || err.statusCode || status;
-          continue;
-        }
-        switch (typeof arg) {
-          case "string":
-            msg = arg;
-            break;
-          case "number":
-            status = arg;
-            if (i !== 0) {
-              deprecate2("non-first-argument status code; replace with createError(" + arg + ", ...)");
-            }
-            break;
-          case "object":
-            props = arg;
-            break;
-        }
-      }
-      if (typeof status === "number" && (status < 400 || status >= 600)) {
-        deprecate2("non-error status code; use only 4xx or 5xx status codes");
-      }
-      if (typeof status !== "number" || !statuses[status] && (status < 400 || status >= 600)) {
-        status = 500;
-      }
-      var HttpError = createError[status] || createError[codeClass(status)];
-      if (!err) {
-        err = HttpError ? new HttpError(msg) : new Error(msg || statuses[status]);
-        Error.captureStackTrace(err, createError);
-      }
-      if (!HttpError || !(err instanceof HttpError) || err.status !== status) {
-        err.expose = status < 500;
-        err.status = err.statusCode = status;
-      }
-      for (var key in props) {
-        if (key !== "status" && key !== "statusCode") {
-          err[key] = props[key];
-        }
-      }
-      return err;
-    }
-    function createHttpErrorConstructor() {
-      function HttpError() {
-        throw new TypeError("cannot construct abstract class");
-      }
-      inherits(HttpError, Error);
-      return HttpError;
-    }
-    function createClientErrorConstructor(HttpError, name, code) {
-      var className = name.match(/Error$/) ? name : name + "Error";
-      function ClientError(message2) {
-        var msg = message2 != null ? message2 : statuses[code];
-        var err = new Error(msg);
-        Error.captureStackTrace(err, ClientError);
-        setPrototypeOf(err, ClientError.prototype);
-        Object.defineProperty(err, "message", {
-          enumerable: true,
-          configurable: true,
-          value: msg,
-          writable: true
-        });
-        Object.defineProperty(err, "name", {
-          enumerable: false,
-          configurable: true,
-          value: className,
-          writable: true
-        });
-        return err;
-      }
-      inherits(ClientError, HttpError);
-      ClientError.prototype.status = code;
-      ClientError.prototype.statusCode = code;
-      ClientError.prototype.expose = true;
-      return ClientError;
-    }
-    function createServerErrorConstructor(HttpError, name, code) {
-      var className = name.match(/Error$/) ? name : name + "Error";
-      function ServerError(message2) {
-        var msg = message2 != null ? message2 : statuses[code];
-        var err = new Error(msg);
-        Error.captureStackTrace(err, ServerError);
-        setPrototypeOf(err, ServerError.prototype);
-        Object.defineProperty(err, "message", {
-          enumerable: true,
-          configurable: true,
-          value: msg,
-          writable: true
-        });
-        Object.defineProperty(err, "name", {
-          enumerable: false,
-          configurable: true,
-          value: className,
-          writable: true
-        });
-        return err;
-      }
-      inherits(ServerError, HttpError);
-      ServerError.prototype.status = code;
-      ServerError.prototype.statusCode = code;
-      ServerError.prototype.expose = false;
-      return ServerError;
-    }
-    function populateConstructorExports(exports3, codes, HttpError) {
-      codes.forEach(function forEachCode(code) {
-        var CodeError;
-        var name = toIdentifier(statuses[code]);
-        switch (codeClass(code)) {
-          case 400:
-            CodeError = createClientErrorConstructor(HttpError, name, code);
-            break;
-          case 500:
-            CodeError = createServerErrorConstructor(HttpError, name, code);
-            break;
-        }
-        if (CodeError) {
-          exports3[code] = CodeError;
-          exports3[name] = CodeError;
-        }
-      });
-      exports3["I'mateapot"] = deprecate2.function(
-        exports3.ImATeapot,
-        `"I'mateapot"; use "ImATeapot" instead`
-      );
-    }
-    function toIdentifier(str) {
-      return str.split(" ").map(function(token) {
-        return token.slice(0, 1).toUpperCase() + token.slice(1);
-      }).join("").replace(/[^ _0-9a-z]/gi, "");
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/ms/index.js
-var require_ms2 = __commonJS({
-  "node_modules/serve-index/node_modules/ms/index.js"(exports2, module2) {
-    var s = 1e3;
-    var m = s * 60;
-    var h = m * 60;
-    var d = h * 24;
-    var y = d * 365.25;
-    module2.exports = function(val, options) {
-      options = options || {};
-      var type = typeof val;
-      if (type === "string" && val.length > 0) {
-        return parse(val);
-      } else if (type === "number" && isNaN(val) === false) {
-        return options.long ? fmtLong(val) : fmtShort(val);
-      }
-      throw new Error(
-        "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
-      );
-    };
-    function parse(str) {
-      str = String(str);
-      if (str.length > 100) {
-        return;
-      }
-      var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
-        str
-      );
-      if (!match) {
-        return;
-      }
-      var n = parseFloat(match[1]);
-      var type = (match[2] || "ms").toLowerCase();
-      switch (type) {
-        case "years":
-        case "year":
-        case "yrs":
-        case "yr":
-        case "y":
-          return n * y;
-        case "days":
-        case "day":
-        case "d":
-          return n * d;
-        case "hours":
-        case "hour":
-        case "hrs":
-        case "hr":
-        case "h":
-          return n * h;
-        case "minutes":
-        case "minute":
-        case "mins":
-        case "min":
-        case "m":
-          return n * m;
-        case "seconds":
-        case "second":
-        case "secs":
-        case "sec":
-        case "s":
-          return n * s;
-        case "milliseconds":
-        case "millisecond":
-        case "msecs":
-        case "msec":
-        case "ms":
-          return n;
-        default:
-          return void 0;
-      }
-    }
-    function fmtShort(ms) {
-      if (ms >= d) {
-        return Math.round(ms / d) + "d";
-      }
-      if (ms >= h) {
-        return Math.round(ms / h) + "h";
-      }
-      if (ms >= m) {
-        return Math.round(ms / m) + "m";
-      }
-      if (ms >= s) {
-        return Math.round(ms / s) + "s";
-      }
-      return ms + "ms";
-    }
-    function fmtLong(ms) {
-      return plural(ms, d, "day") || plural(ms, h, "hour") || plural(ms, m, "minute") || plural(ms, s, "second") || ms + " ms";
-    }
-    function plural(ms, n, name) {
-      if (ms < n) {
-        return;
-      }
-      if (ms < n * 1.5) {
-        return Math.floor(ms / n) + " " + name;
-      }
-      return Math.ceil(ms / n) + " " + name + "s";
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/debug/src/debug.js
-var require_debug = __commonJS({
-  "node_modules/serve-index/node_modules/debug/src/debug.js"(exports2, module2) {
-    exports2 = module2.exports = createDebug.debug = createDebug["default"] = createDebug;
-    exports2.coerce = coerce;
-    exports2.disable = disable;
-    exports2.enable = enable;
-    exports2.enabled = enabled;
-    exports2.humanize = require_ms2();
-    exports2.names = [];
-    exports2.skips = [];
-    exports2.formatters = {};
-    var prevTime;
-    function selectColor(namespace) {
-      var hash = 0, i;
-      for (i in namespace) {
-        hash = (hash << 5) - hash + namespace.charCodeAt(i);
-        hash |= 0;
-      }
-      return exports2.colors[Math.abs(hash) % exports2.colors.length];
-    }
-    function createDebug(namespace) {
-      function debug() {
-        if (!debug.enabled) return;
-        var self = debug;
-        var curr = +/* @__PURE__ */ new Date();
-        var ms = curr - (prevTime || curr);
-        self.diff = ms;
-        self.prev = prevTime;
-        self.curr = curr;
-        prevTime = curr;
-        var args2 = new Array(arguments.length);
-        for (var i = 0; i < args2.length; i++) {
-          args2[i] = arguments[i];
-        }
-        args2[0] = exports2.coerce(args2[0]);
-        if ("string" !== typeof args2[0]) {
-          args2.unshift("%O");
-        }
-        var index = 0;
-        args2[0] = args2[0].replace(/%([a-zA-Z%])/g, function(match, format) {
-          if (match === "%%") return match;
-          index++;
-          var formatter = exports2.formatters[format];
-          if ("function" === typeof formatter) {
-            var val = args2[index];
-            match = formatter.call(self, val);
-            args2.splice(index, 1);
-            index--;
-          }
-          return match;
-        });
-        exports2.formatArgs.call(self, args2);
-        var logFn = debug.log || exports2.log || console.log.bind(console);
-        logFn.apply(self, args2);
-      }
-      debug.namespace = namespace;
-      debug.enabled = exports2.enabled(namespace);
-      debug.useColors = exports2.useColors();
-      debug.color = selectColor(namespace);
-      if ("function" === typeof exports2.init) {
-        exports2.init(debug);
-      }
-      return debug;
-    }
-    function enable(namespaces) {
-      exports2.save(namespaces);
-      exports2.names = [];
-      exports2.skips = [];
-      var split = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
-      var len = split.length;
-      for (var i = 0; i < len; i++) {
-        if (!split[i]) continue;
-        namespaces = split[i].replace(/\*/g, ".*?");
-        if (namespaces[0] === "-") {
-          exports2.skips.push(new RegExp("^" + namespaces.substr(1) + "$"));
-        } else {
-          exports2.names.push(new RegExp("^" + namespaces + "$"));
-        }
-      }
-    }
-    function disable() {
-      exports2.enable("");
-    }
-    function enabled(name) {
-      var i, len;
-      for (i = 0, len = exports2.skips.length; i < len; i++) {
-        if (exports2.skips[i].test(name)) {
-          return false;
-        }
-      }
-      for (i = 0, len = exports2.names.length; i < len; i++) {
-        if (exports2.names[i].test(name)) {
-          return true;
-        }
-      }
-      return false;
-    }
-    function coerce(val) {
-      if (val instanceof Error) return val.stack || val.message;
-      return val;
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/debug/src/browser.js
-var require_browser2 = __commonJS({
-  "node_modules/serve-index/node_modules/debug/src/browser.js"(exports2, module2) {
-    exports2 = module2.exports = require_debug();
-    exports2.log = log2;
-    exports2.formatArgs = formatArgs;
-    exports2.save = save;
-    exports2.load = load;
-    exports2.useColors = useColors;
-    exports2.storage = "undefined" != typeof chrome && "undefined" != typeof chrome.storage ? chrome.storage.local : localstorage();
-    exports2.colors = [
-      "lightseagreen",
-      "forestgreen",
-      "goldenrod",
-      "dodgerblue",
-      "darkorchid",
-      "crimson"
-    ];
-    function useColors() {
-      if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
-        return true;
-      }
-      return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // is firebug? http://stackoverflow.com/a/398120/376773
-      typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // is firefox >= v31?
-      // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31 || // double check webkit in userAgent just in case we are in a worker
-      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
-    }
-    exports2.formatters.j = function(v) {
-      try {
-        return JSON.stringify(v);
-      } catch (err) {
-        return "[UnexpectedJSONParseError]: " + err.message;
-      }
-    };
-    function formatArgs(args2) {
-      var useColors2 = this.useColors;
-      args2[0] = (useColors2 ? "%c" : "") + this.namespace + (useColors2 ? " %c" : " ") + args2[0] + (useColors2 ? "%c " : " ") + "+" + exports2.humanize(this.diff);
-      if (!useColors2) return;
-      var c = "color: " + this.color;
-      args2.splice(1, 0, c, "color: inherit");
-      var index = 0;
-      var lastC = 0;
-      args2[0].replace(/%[a-zA-Z%]/g, function(match) {
-        if ("%%" === match) return;
-        index++;
-        if ("%c" === match) {
-          lastC = index;
-        }
-      });
-      args2.splice(lastC, 0, c);
-    }
-    function log2() {
-      return "object" === typeof console && console.log && Function.prototype.apply.call(console.log, console, arguments);
-    }
-    function save(namespaces) {
-      try {
-        if (null == namespaces) {
-          exports2.storage.removeItem("debug");
-        } else {
-          exports2.storage.debug = namespaces;
-        }
-      } catch (e) {
-      }
-    }
-    function load() {
-      var r;
-      try {
-        r = exports2.storage.debug;
-      } catch (e) {
-      }
-      if (!r && typeof process !== "undefined" && "env" in process) {
-        r = process.env.DEBUG;
-      }
-      return r;
-    }
-    exports2.enable(load());
-    function localstorage() {
-      try {
-        return window.localStorage;
-      } catch (e) {
-      }
-    }
-  }
-});
-
-// node_modules/serve-index/node_modules/debug/src/node.js
-var require_node2 = __commonJS({
-  "node_modules/serve-index/node_modules/debug/src/node.js"(exports2, module2) {
-    var tty = require("tty");
-    var util = require("util");
-    exports2 = module2.exports = require_debug();
-    exports2.init = init;
-    exports2.log = log2;
-    exports2.formatArgs = formatArgs;
-    exports2.save = save;
-    exports2.load = load;
-    exports2.useColors = useColors;
-    exports2.colors = [6, 2, 3, 4, 5, 1];
-    exports2.inspectOpts = Object.keys(process.env).filter(function(key) {
-      return /^debug_/i.test(key);
-    }).reduce(function(obj, key) {
-      var prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, function(_, k) {
-        return k.toUpperCase();
-      });
-      var val = process.env[key];
-      if (/^(yes|on|true|enabled)$/i.test(val)) val = true;
-      else if (/^(no|off|false|disabled)$/i.test(val)) val = false;
-      else if (val === "null") val = null;
-      else val = Number(val);
-      obj[prop] = val;
-      return obj;
-    }, {});
-    var fd = parseInt(process.env.DEBUG_FD, 10) || 2;
-    if (1 !== fd && 2 !== fd) {
-      util.deprecate(function() {
-      }, "except for stderr(2) and stdout(1), any other usage of DEBUG_FD is deprecated. Override debug.log if you want to use a different log function (https://git.io/debug_fd)")();
-    }
-    var stream = 1 === fd ? process.stdout : 2 === fd ? process.stderr : createWritableStdioStream(fd);
-    function useColors() {
-      return "colors" in exports2.inspectOpts ? Boolean(exports2.inspectOpts.colors) : tty.isatty(fd);
-    }
-    exports2.formatters.o = function(v) {
-      this.inspectOpts.colors = this.useColors;
-      return util.inspect(v, this.inspectOpts).split("\n").map(function(str) {
-        return str.trim();
-      }).join(" ");
-    };
-    exports2.formatters.O = function(v) {
-      this.inspectOpts.colors = this.useColors;
-      return util.inspect(v, this.inspectOpts);
-    };
-    function formatArgs(args2) {
-      var name = this.namespace;
-      var useColors2 = this.useColors;
-      if (useColors2) {
-        var c = this.color;
-        var prefix = "  \x1B[3" + c + ";1m" + name + " \x1B[0m";
-        args2[0] = prefix + args2[0].split("\n").join("\n" + prefix);
-        args2.push("\x1B[3" + c + "m+" + exports2.humanize(this.diff) + "\x1B[0m");
-      } else {
-        args2[0] = (/* @__PURE__ */ new Date()).toUTCString() + " " + name + " " + args2[0];
-      }
-    }
-    function log2() {
-      return stream.write(util.format.apply(util, arguments) + "\n");
-    }
-    function save(namespaces) {
-      if (null == namespaces) {
-        delete process.env.DEBUG;
-      } else {
-        process.env.DEBUG = namespaces;
-      }
-    }
-    function load() {
-      return process.env.DEBUG;
-    }
-    function createWritableStdioStream(fd2) {
-      var stream2;
-      var tty_wrap = process.binding("tty_wrap");
-      switch (tty_wrap.guessHandleType(fd2)) {
-        case "TTY":
-          stream2 = new tty.WriteStream(fd2);
-          stream2._type = "tty";
-          if (stream2._handle && stream2._handle.unref) {
-            stream2._handle.unref();
-          }
-          break;
-        case "FILE":
-          var fs = require("fs");
-          stream2 = new fs.SyncWriteStream(fd2, { autoClose: false });
-          stream2._type = "fs";
-          break;
-        case "PIPE":
-        case "TCP":
-          var net = require("net");
-          stream2 = new net.Socket({
-            fd: fd2,
-            readable: false,
-            writable: true
-          });
-          stream2.readable = false;
-          stream2.read = null;
-          stream2._type = "pipe";
-          if (stream2._handle && stream2._handle.unref) {
-            stream2._handle.unref();
-          }
-          break;
-        default:
-          throw new Error("Implement me. Unknown stream file type!");
-      }
-      stream2.fd = fd2;
-      stream2._isStdio = true;
-      return stream2;
-    }
-    function init(debug) {
-      debug.inspectOpts = {};
-      var keys = Object.keys(exports2.inspectOpts);
-      for (var i = 0; i < keys.length; i++) {
-        debug.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
-      }
-    }
-    exports2.enable(load());
-  }
-});
-
-// node_modules/serve-index/node_modules/debug/src/index.js
-var require_src2 = __commonJS({
-  "node_modules/serve-index/node_modules/debug/src/index.js"(exports2, module2) {
-    if (typeof process !== "undefined" && process.type === "renderer") {
-      module2.exports = require_browser2();
-    } else {
-      module2.exports = require_node2();
-    }
-  }
-});
-
-// node_modules/batch/index.js
-var require_batch = __commonJS({
-  "node_modules/batch/index.js"(exports2, module2) {
-    try {
-      EventEmitter = require("events").EventEmitter;
-      if (!EventEmitter) throw new Error();
-    } catch (err) {
-      Emitter = require("emitter");
-    }
-    var EventEmitter;
-    var Emitter;
-    var defer = typeof process !== "undefined" && process && typeof process.nextTick === "function" ? process.nextTick : function(fn2) {
-      setTimeout(fn2);
-    };
-    function noop() {
-    }
-    module2.exports = Batch;
-    function Batch() {
-      if (!(this instanceof Batch)) return new Batch();
-      this.fns = [];
-      this.concurrency(Infinity);
-      this.throws(true);
-      for (var i = 0, len = arguments.length; i < len; ++i) {
-        this.push(arguments[i]);
-      }
-    }
-    if (EventEmitter) {
-      Batch.prototype.__proto__ = EventEmitter.prototype;
-    } else {
-      Emitter(Batch.prototype);
-    }
-    Batch.prototype.concurrency = function(n) {
-      this.n = n;
-      return this;
-    };
-    Batch.prototype.push = function(fn2) {
-      this.fns.push(fn2);
-      return this;
-    };
-    Batch.prototype.throws = function(throws) {
-      this.e = !!throws;
-      return this;
-    };
-    Batch.prototype.end = function(cb) {
-      var self = this, total = this.fns.length, pending = total, results = [], errors = [], cb = cb || noop, fns = this.fns, max = this.n, throws = this.e, index = 0, done;
-      if (!fns.length) return defer(function() {
-        cb(null, results);
-      });
-      function next() {
-        var i2 = index++;
-        var fn2 = fns[i2];
-        if (!fn2) return;
-        var start = /* @__PURE__ */ new Date();
-        try {
-          fn2(callback);
-        } catch (err) {
-          callback(err);
-        }
-        function callback(err, res) {
-          if (done) return;
-          if (err && throws) return done = true, defer(function() {
-            cb(err);
-          });
-          var complete = total - pending + 1;
-          var end = /* @__PURE__ */ new Date();
-          results[i2] = res;
-          errors[i2] = err;
-          self.emit("progress", {
-            index: i2,
-            value: res,
-            error: err,
-            pending,
-            total,
-            complete,
-            percent: complete / total * 100 | 0,
-            start,
-            end,
-            duration: end - start
-          });
-          if (--pending) next();
-          else defer(function() {
-            if (!throws) cb(errors, results);
-            else cb(null, results);
-          });
-        }
-      }
-      for (var i = 0; i < fns.length; i++) {
-        if (i == max) break;
-        next();
-      }
-      return this;
-    };
-  }
-});
-
-// node_modules/parseurl/index.js
-var require_parseurl = __commonJS({
-  "node_modules/parseurl/index.js"(exports2, module2) {
-    "use strict";
-    var url = require("url");
-    var parse = url.parse;
-    var Url = url.Url;
-    module2.exports = parseurl;
-    module2.exports.original = originalurl;
-    function parseurl(req) {
-      var url2 = req.url;
-      if (url2 === void 0) {
-        return void 0;
-      }
-      var parsed = req._parsedUrl;
-      if (fresh(url2, parsed)) {
-        return parsed;
-      }
-      parsed = fastparse(url2);
-      parsed._raw = url2;
-      return req._parsedUrl = parsed;
-    }
-    function originalurl(req) {
-      var url2 = req.originalUrl;
-      if (typeof url2 !== "string") {
-        return parseurl(req);
-      }
-      var parsed = req._parsedOriginalUrl;
-      if (fresh(url2, parsed)) {
-        return parsed;
-      }
-      parsed = fastparse(url2);
-      parsed._raw = url2;
-      return req._parsedOriginalUrl = parsed;
-    }
-    function fastparse(str) {
-      if (typeof str !== "string" || str.charCodeAt(0) !== 47) {
-        return parse(str);
-      }
-      var pathname = str;
-      var query = null;
-      var search = null;
-      for (var i = 1; i < str.length; i++) {
-        switch (str.charCodeAt(i)) {
-          case 63:
-            if (search === null) {
-              pathname = str.substring(0, i);
-              query = str.substring(i + 1);
-              search = str.substring(i);
-            }
-            break;
-          case 9:
-          /* \t */
-          case 10:
-          /* \n */
-          case 12:
-          /* \f */
-          case 13:
-          /* \r */
-          case 32:
-          /*    */
-          case 35:
-          /* #  */
-          case 160:
-          case 65279:
-            return parse(str);
-        }
-      }
-      var url2 = Url !== void 0 ? new Url() : {};
-      url2.path = str;
-      url2.href = str;
-      url2.pathname = pathname;
-      if (search !== null) {
-        url2.query = query;
-        url2.search = search;
-      }
-      return url2;
-    }
-    function fresh(url2, parsedUrl) {
-      return typeof parsedUrl === "object" && parsedUrl !== null && (Url === void 0 || parsedUrl instanceof Url) && parsedUrl._raw === url2;
-    }
-  }
-});
-
-// node_modules/serve-index/index.js
-var require_serve_index = __commonJS({
-  "node_modules/serve-index/index.js"(exports2, module2) {
-    "use strict";
-    var accepts = require_accepts();
-    var createError = require_http_errors2();
-    var debug = require_src2()("serve-index");
-    var escapeHtml = require_escape_html();
-    var fs = require("fs");
-    var path = require("path");
-    var normalize = path.normalize;
-    var sep = path.sep;
-    var extname = path.extname;
-    var join = path.join;
-    var Batch = require_batch();
-    var mime = require_mime_types();
-    var parseUrl = require_parseurl();
-    var resolve = require("path").resolve;
-    module2.exports = serveIndex;
-    var cache = {};
-    var defaultTemplate = join(__dirname, "public", "directory.html");
-    var defaultStylesheet = join(__dirname, "public", "style.css");
-    var mediaTypes = [
-      "text/html",
-      "text/plain",
-      "application/json"
-    ];
-    var mediaType = {
-      "text/html": "html",
-      "text/plain": "plain",
-      "application/json": "json"
-    };
-    function serveIndex(root, options) {
-      var opts = options || {};
-      if (!root) {
-        throw new TypeError("serveIndex() root path required");
-      }
-      var rootPath = normalize(resolve(root) + sep);
-      var filter = opts.filter;
-      var hidden = opts.hidden;
-      var icons2 = opts.icons;
-      var stylesheet = opts.stylesheet || defaultStylesheet;
-      var template = opts.template || defaultTemplate;
-      var view = opts.view || "tiles";
-      return function(req, res, next) {
-        if (req.method !== "GET" && req.method !== "HEAD") {
-          res.statusCode = "OPTIONS" === req.method ? 200 : 405;
-          res.setHeader("Allow", "GET, HEAD, OPTIONS");
-          res.setHeader("Content-Length", "0");
-          res.end();
-          return;
-        }
-        var url = parseUrl(req);
-        var originalUrl = parseUrl.original(req);
-        var dir = decodeURIComponent(url.pathname);
-        var originalDir = decodeURIComponent(originalUrl.pathname);
-        var path2 = normalize(join(rootPath, dir));
-        if (~path2.indexOf("\0")) return next(createError(400));
-        if ((path2 + sep).substr(0, rootPath.length) !== rootPath) {
-          debug('malicious path "%s"', path2);
-          return next(createError(403));
-        }
-        var showUp = normalize(resolve(path2) + sep) !== rootPath;
-        debug('stat "%s"', path2);
-        fs.stat(path2, function(err, stat2) {
-          if (err && err.code === "ENOENT") {
-            return next();
-          }
-          if (err) {
-            err.status = err.code === "ENAMETOOLONG" ? 414 : 500;
-            return next(err);
-          }
-          if (!stat2.isDirectory()) return next();
-          debug('readdir "%s"', path2);
-          fs.readdir(path2, function(err2, files) {
-            if (err2) return next(err2);
-            if (!hidden) files = removeHidden(files);
-            if (filter) files = files.filter(function(filename, index, list) {
-              return filter(filename, index, list, path2);
-            });
-            files.sort();
-            var accept = accepts(req);
-            var type = accept.type(mediaTypes);
-            if (!type) return next(createError(406));
-            serveIndex[mediaType[type]](req, res, files, next, originalDir, showUp, icons2, path2, view, template, stylesheet);
-          });
-        });
-      };
-    }
-    serveIndex.html = function _html(req, res, files, next, dir, showUp, icons2, path2, view, template, stylesheet) {
-      var render = typeof template !== "function" ? createHtmlRender(template) : template;
-      if (showUp) {
-        files.unshift("..");
-      }
-      stat(path2, files, function(err, stats) {
-        if (err) return next(err);
-        var fileList = files.map(function(file, i) {
-          return { name: file, stat: stats[i] };
-        });
-        fileList.sort(fileSort);
-        fs.readFile(stylesheet, "utf8", function(err2, style) {
-          if (err2) return next(err2);
-          var locals = {
-            directory: dir,
-            displayIcons: Boolean(icons2),
-            fileList,
-            path: path2,
-            style,
-            viewName: view
-          };
-          render(locals, function(err3, body) {
-            if (err3) return next(err3);
-            send(res, "text/html", body);
-          });
-        });
-      });
-    };
-    serveIndex.json = function _json(req, res, files) {
-      send(res, "application/json", JSON.stringify(files));
-    };
-    serveIndex.plain = function _plain(req, res, files) {
-      send(res, "text/plain", files.join("\n") + "\n");
-    };
-    function createHtmlFileList(files, dir, useIcons, view) {
-      var html = '<ul id="files" class="view-' + escapeHtml(view) + '">' + (view == "details" ? '<li class="header"><span class="name">Name</span><span class="size">Size</span><span class="date">Modified</span></li>' : "");
-      html += files.map(function(file) {
-        var classes = [];
-        var isDir = file.stat && file.stat.isDirectory();
-        var path2 = dir.split("/").map(function(c) {
-          return encodeURIComponent(c);
-        });
-        if (useIcons) {
-          classes.push("icon");
-          if (isDir) {
-            classes.push("icon-directory");
-          } else {
-            var ext = extname(file.name);
-            var icon = iconLookup(file.name);
-            classes.push("icon");
-            classes.push("icon-" + ext.substring(1));
-            if (classes.indexOf(icon.className) === -1) {
-              classes.push(icon.className);
-            }
-          }
-        }
-        path2.push(encodeURIComponent(file.name));
-        var date = file.stat && file.name !== ".." ? file.stat.mtime.toLocaleDateString() + " " + file.stat.mtime.toLocaleTimeString() : "";
-        var size = file.stat && !isDir ? file.stat.size : "";
-        return '<li><a href="' + escapeHtml(normalizeSlashes(normalize(path2.join("/")))) + '" class="' + escapeHtml(classes.join(" ")) + '" title="' + escapeHtml(file.name) + '"><span class="name">' + escapeHtml(file.name) + '</span><span class="size">' + escapeHtml(size) + '</span><span class="date">' + escapeHtml(date) + "</span></a></li>";
-      }).join("\n");
-      html += "</ul>";
-      return html;
-    }
-    function createHtmlRender(template) {
-      return function render(locals, callback) {
-        fs.readFile(template, "utf8", function(err, str) {
-          if (err) return callback(err);
-          var body = str.replace(/\{style\}/g, locals.style.concat(iconStyle(locals.fileList, locals.displayIcons))).replace(/\{files\}/g, createHtmlFileList(locals.fileList, locals.directory, locals.displayIcons, locals.viewName)).replace(/\{directory\}/g, escapeHtml(locals.directory)).replace(/\{linked-path\}/g, htmlPath(locals.directory));
-          callback(null, body);
-        });
-      };
-    }
-    function fileSort(a, b) {
-      if (a.name === ".." || b.name === "..") {
-        return a.name === b.name ? 0 : a.name === ".." ? -1 : 1;
-      }
-      return Number(b.stat && b.stat.isDirectory()) - Number(a.stat && a.stat.isDirectory()) || String(a.name).toLocaleLowerCase().localeCompare(String(b.name).toLocaleLowerCase());
-    }
-    function htmlPath(dir) {
-      var parts = dir.split("/");
-      var crumb = new Array(parts.length);
-      for (var i = 0; i < parts.length; i++) {
-        var part = parts[i];
-        if (part) {
-          parts[i] = encodeURIComponent(part);
-          crumb[i] = '<a href="' + escapeHtml(parts.slice(0, i + 1).join("/")) + '">' + escapeHtml(part) + "</a>";
-        }
-      }
-      return crumb.join(" / ");
-    }
-    function iconLookup(filename) {
-      var ext = extname(filename);
-      if (icons[ext]) {
-        return {
-          className: "icon-" + ext.substring(1),
-          fileName: icons[ext]
-        };
-      }
-      var mimetype = mime.lookup(ext);
-      if (mimetype === false) {
-        return {
-          className: "icon-default",
-          fileName: icons.default
-        };
-      }
-      if (icons[mimetype]) {
-        return {
-          className: "icon-" + mimetype.replace("/", "-"),
-          fileName: icons[mimetype]
-        };
-      }
-      var suffix = mimetype.split("+")[1];
-      if (suffix && icons["+" + suffix]) {
-        return {
-          className: "icon-" + suffix,
-          fileName: icons["+" + suffix]
-        };
-      }
-      var type = mimetype.split("/")[0];
-      if (icons[type]) {
-        return {
-          className: "icon-" + type,
-          fileName: icons[type]
-        };
-      }
-      return {
-        className: "icon-default",
-        fileName: icons.default
-      };
-    }
-    function iconStyle(files, useIcons) {
-      if (!useIcons) return "";
-      var i;
-      var list = [];
-      var rules = {};
-      var selector;
-      var selectors = {};
-      var style = "";
-      for (i = 0; i < files.length; i++) {
-        var file = files[i];
-        var isDir = file.stat && file.stat.isDirectory();
-        var icon = isDir ? { className: "icon-directory", fileName: icons.folder } : iconLookup(file.name);
-        var iconName = icon.fileName;
-        selector = "#files ." + icon.className + " .name";
-        if (!rules[iconName]) {
-          rules[iconName] = "background-image: url(data:image/png;base64," + load(iconName) + ");";
-          selectors[iconName] = [];
-          list.push(iconName);
-        }
-        if (selectors[iconName].indexOf(selector) === -1) {
-          selectors[iconName].push(selector);
-        }
-      }
-      for (i = 0; i < list.length; i++) {
-        iconName = list[i];
-        style += selectors[iconName].join(",\n") + " {\n  " + rules[iconName] + "\n}\n";
-      }
-      return style;
-    }
-    function load(icon) {
-      if (cache[icon]) return cache[icon];
-      return cache[icon] = fs.readFileSync(__dirname + "/public/icons/" + icon, "base64");
-    }
-    function normalizeSlashes(path2) {
-      return path2.split(sep).join("/");
-    }
-    function removeHidden(files) {
-      return files.filter(function(file) {
-        return "." != file[0];
-      });
-    }
-    function send(res, type, body) {
-      res.setHeader("X-Content-Type-Options", "nosniff");
-      res.setHeader("Content-Type", type + "; charset=utf-8");
-      res.setHeader("Content-Length", Buffer.byteLength(body, "utf8"));
-      res.end(body, "utf8");
-    }
-    function stat(dir, files, cb) {
-      var batch = new Batch();
-      batch.concurrency(10);
-      files.forEach(function(file) {
-        batch.push(function(done) {
-          fs.stat(join(dir, file), function(err, stat2) {
-            if (err && err.code !== "ENOENT") return done(err);
-            done(null, stat2 || null);
-          });
-        });
-      });
-      batch.end(cb);
-    }
-    var icons = {
-      // base icons
-      "default": "page_white.png",
-      "folder": "folder.png",
-      // generic mime type icons
-      "image": "image.png",
-      "text": "page_white_text.png",
-      "video": "film.png",
-      // generic mime suffix icons
-      "+json": "page_white_code.png",
-      "+xml": "page_white_code.png",
-      "+zip": "box.png",
-      // specific mime type icons
-      "application/font-woff": "font.png",
-      "application/javascript": "page_white_code_red.png",
-      "application/json": "page_white_code.png",
-      "application/msword": "page_white_word.png",
-      "application/pdf": "page_white_acrobat.png",
-      "application/postscript": "page_white_vector.png",
-      "application/rtf": "page_white_word.png",
-      "application/vnd.ms-excel": "page_white_excel.png",
-      "application/vnd.ms-powerpoint": "page_white_powerpoint.png",
-      "application/vnd.oasis.opendocument.presentation": "page_white_powerpoint.png",
-      "application/vnd.oasis.opendocument.spreadsheet": "page_white_excel.png",
-      "application/vnd.oasis.opendocument.text": "page_white_word.png",
-      "application/x-7z-compressed": "box.png",
-      "application/x-sh": "application_xp_terminal.png",
-      "application/x-font-ttf": "font.png",
-      "application/x-msaccess": "page_white_database.png",
-      "application/x-shockwave-flash": "page_white_flash.png",
-      "application/x-sql": "page_white_database.png",
-      "application/x-tar": "box.png",
-      "application/x-xz": "box.png",
-      "application/xml": "page_white_code.png",
-      "application/zip": "box.png",
-      "image/svg+xml": "page_white_vector.png",
-      "text/css": "page_white_code.png",
-      "text/html": "page_white_code.png",
-      "text/less": "page_white_code.png",
-      // other, extension-specific icons
-      ".accdb": "page_white_database.png",
-      ".apk": "box.png",
-      ".app": "application_xp.png",
-      ".as": "page_white_actionscript.png",
-      ".asp": "page_white_code.png",
-      ".aspx": "page_white_code.png",
-      ".bat": "application_xp_terminal.png",
-      ".bz2": "box.png",
-      ".c": "page_white_c.png",
-      ".cab": "box.png",
-      ".cfm": "page_white_coldfusion.png",
-      ".clj": "page_white_code.png",
-      ".cc": "page_white_cplusplus.png",
-      ".cgi": "application_xp_terminal.png",
-      ".cpp": "page_white_cplusplus.png",
-      ".cs": "page_white_csharp.png",
-      ".db": "page_white_database.png",
-      ".dbf": "page_white_database.png",
-      ".deb": "box.png",
-      ".dll": "page_white_gear.png",
-      ".dmg": "drive.png",
-      ".docx": "page_white_word.png",
-      ".erb": "page_white_ruby.png",
-      ".exe": "application_xp.png",
-      ".fnt": "font.png",
-      ".gam": "controller.png",
-      ".gz": "box.png",
-      ".h": "page_white_h.png",
-      ".ini": "page_white_gear.png",
-      ".iso": "cd.png",
-      ".jar": "box.png",
-      ".java": "page_white_cup.png",
-      ".jsp": "page_white_cup.png",
-      ".lua": "page_white_code.png",
-      ".lz": "box.png",
-      ".lzma": "box.png",
-      ".m": "page_white_code.png",
-      ".map": "map.png",
-      ".msi": "box.png",
-      ".mv4": "film.png",
-      ".otf": "font.png",
-      ".pdb": "page_white_database.png",
-      ".php": "page_white_php.png",
-      ".pl": "page_white_code.png",
-      ".pkg": "box.png",
-      ".pptx": "page_white_powerpoint.png",
-      ".psd": "page_white_picture.png",
-      ".py": "page_white_code.png",
-      ".rar": "box.png",
-      ".rb": "page_white_ruby.png",
-      ".rm": "film.png",
-      ".rom": "controller.png",
-      ".rpm": "box.png",
-      ".sass": "page_white_code.png",
-      ".sav": "controller.png",
-      ".scss": "page_white_code.png",
-      ".srt": "page_white_text.png",
-      ".tbz2": "box.png",
-      ".tgz": "box.png",
-      ".tlz": "box.png",
-      ".vb": "page_white_code.png",
-      ".vbs": "page_white_code.png",
-      ".xcf": "page_white_picture.png",
-      ".xlsx": "page_white_excel.png",
-      ".yaws": "page_white_code.png"
-    };
-  }
-});
-
 // node_modules/pacproxy-https-server/server.js
 var require_server = __commonJS({
   "node_modules/pacproxy-https-server/server.js"(exports2) {
@@ -38985,17 +26061,13 @@ var require_server = __commonJS({
     var greenlock = require_greenlock_express2();
     var fs = require("fs");
     var pacProxy = require_pacproxy();
+    var app = require_app();
     var path = require("path");
     var dns = require("dns");
     var CacheableLookup = require_source();
     var https = require("https");
     var NatAPI = require_nat_api();
     var client = new NatAPI({ enablePMP: true, enableUPNP: true });
-    var send = require_send2();
-    var serveIndex = require_serve_index();
-    var rootDir = path.resolve(process.cwd(), "website");
-    var index = serveIndex(rootDir, { "icons": true });
-    var html404 = '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Error</title>\n</head>\n<body>\n<pre>Not Found</pre>\n</body>\n</html>';
     var currentConfig = false;
     var accountEmail = false;
     var glx = false;
@@ -39004,43 +26076,20 @@ var require_server = __commonJS({
     var clChallenge = false;
     var dnsModuleName = false;
     exports2.runServer = runServer;
+    exports2.app = app;
     async function runServer(vConfig) {
       if (!vConfig) {
         if (!loadConfig()) return;
       } else {
         currentConfig = vConfig;
       }
-      dns.setServers(["1.1.1.1", "8.8.8.8", "208.67.222.222", "8.8.4.4", "208.67.220.220"]);
-      if (!fs.existsSync(rootDir)) var msg = "Please create website folder: " + rootDir;
-      if (currentConfig.website === true) {
-        currentConfig.onrequest = onWebsiteRequest;
-        currentConfig.website = "";
-      } else if (currentConfig.website === false) {
-        currentConfig.onrequest = onFolderRequest;
-        currentConfig.website = "";
-      } else {
-        msg = "";
-      }
-      if (msg) console.warn(msg);
-      if (!("https" in currentConfig)) currentConfig.https = true;
-      if (!currentConfig.httpport) currentConfig.httpport = 80;
-      if (!currentConfig.port) currentConfig.port = 443;
-      if (!currentConfig.proxyport) currentConfig.proxyport = 443;
-      if (!("pacpass" in currentConfig)) currentConfig.pacpass = [];
-      if (!("websocket" in currentConfig)) currentConfig.websocket = true;
-      if (!("behindTunnel" in currentConfig)) currentConfig.behindTunnel = false;
-      if (currentConfig.certdir || currentConfig.cert && currentConfig.key) return startProxy();
-      const keydir1 = "./greenlock.d/live/" + currentConfig.domain + "/privkey.pem";
-      const certdir1 = "./greenlock.d/live/" + currentConfig.domain + "/fullchain.pem";
-      currentConfig.key = path.resolve(process.cwd(), keydir1);
-      currentConfig.cert = path.resolve(process.cwd(), certdir1);
-      if (!currentConfig.cloudflare_token && currentConfig.upnp) {
+      if (currentConfig.upnp) {
         await client.unmap(80);
         client.map(80, currentConfig.httpport).then((err) => {
           console.warn("upnp Port 80 mapped!");
           startServer();
         }).catch((err) => {
-          console.warn("upnp port 80 mapping failed!", err);
+          return console.warn("upnp port 80 mapping failed!", err);
         });
       } else startServer();
     }
@@ -39056,45 +26105,15 @@ var require_server = __commonJS({
       if (!currentConfig) return false;
       return true;
     }
-    async function onFolderRequest(req, res) {
-      const onNotFound = () => {
-        res.statusCode = 404;
-        res.end(html404);
-      };
-      const pathName = req.url.indexOf("?") > 0 ? req.url.substring(0, req.url.indexOf("?")) : req.url;
-      if (pathName.endsWith("/")) return index(req, res, onNotFound);
-      const sent = await send(req, pathName, { root: rootDir });
-      if (sent.type === "directory") return index(req, res, onNotFound);
-      res.writeHead(sent.statusCode, sent.headers);
-      sent.stream.pipe(res);
-    }
-    async function onWebsiteRequest(req, res) {
-      const pathName = req.url.indexOf("?") > 0 ? req.url.substring(0, req.url.indexOf("?")) : req.url;
-      const sent = await send(req, pathName, { root: rootDir });
-      res.writeHead(sent.statusCode, sent.headers);
-      sent.stream.pipe(res);
-    }
-    function startProxy() {
-      pacProxy.proxy(currentConfig);
-      if (currentConfig.upnp) {
-        client.unmap(currentConfig.proxyport).then(
-          () => client.map(currentConfig.proxyport, currentConfig.port).then(
-            () => console.warn("upnp Port " + currentConfig.proxyport + " mapped!")
-          ).catch((err) => console.warn("upnp port mapping failed!", err))
-        );
-      }
-      const vlookup = dns.lookup;
-      const cacheable = new CacheableLookup({ lookup: vlookup });
-      dns.lookup = cacheable.lookup;
-    }
     function startServer() {
       try {
-        const rawdata = fs.readFileSync(process.cwd() + "/greenlock.d/config.json");
+        let rawdata = fs.readFileSync(process.cwd() + "/greenlock.d/config.json");
         var config = JSON.parse(rawdata);
         accountEmail = config.defaults.subscriberEmail;
         console.log("maintainer: " + accountEmail + "\r\n");
       } catch (e) {
       }
+      dns.setServers(["1.1.1.1", "8.8.8.8", "208.67.222.222", "8.8.4.4", "208.67.220.220"]);
       if (currentConfig.cloudflare_token) {
         dnsModuleName = "acme-dns-01-cloudflare";
         clChallenge = {
@@ -39108,14 +26127,26 @@ var require_server = __commonJS({
         if (!checkEmail(currentConfig.email)) return console.warn("\r\ninvalid email format!");
         if (!checkDomain(currentConfig.domain)) return console.warn("\r\ninvalid domain format!");
         var config = getConfig(currentConfig.email);
-        var site2 = getSite(config, currentConfig.domain, clChallenge);
+        var site = getSite(currentConfig.domain, clChallenge);
         accountEmail = currentConfig.email;
-        addsite(config, site2);
+        addsite(config, site);
       } else if (!hassite(config, currentConfig.domain, dnsModuleName)) {
         if (!checkDomain(currentConfig.domain)) return console.warn("\r\ninvalid domain format!");
-        var site2 = getSite(config, currentConfig.domain, clChallenge);
-        addsite(config, site2);
+        var site = getSite(currentConfig.domain, clChallenge);
+        addsite(config, site);
       }
+      if (!("https" in currentConfig)) currentConfig.https = true;
+      if (!currentConfig.httpport) currentConfig.httpport = 80;
+      if (!currentConfig.port) currentConfig.port = 443;
+      if (!currentConfig.proxyport) currentConfig.proxyport = 443;
+      if (!("websocket" in currentConfig)) currentConfig.websocket = true;
+      if (!("behindTunnel" in currentConfig)) currentConfig.behindTunnel = false;
+      if (app.onrequest) currentConfig.onrequest = app.onrequest;
+      if (app.onconnection) currentConfig.onconnection = app.onconnection;
+      let keydir1 = "./greenlock.d/live/" + currentConfig.domain + "/privkey.pem";
+      let certdir1 = "./greenlock.d/live/" + currentConfig.domain + "/fullchain.pem";
+      currentConfig.key = path.resolve(process.cwd(), keydir1);
+      currentConfig.cert = path.resolve(process.cwd(), certdir1);
       greenlock.init({
         packageRoot: process.cwd(),
         configDir: "./greenlock.d",
@@ -39147,20 +26178,30 @@ var require_server = __commonJS({
       }
     }
     function endCertRequest() {
-      if (!fs.existsSync(currentConfig.key)) return console.warn("\r\nFailed to obtain SSL certificate!");
-      startProxy();
+      if (!fs.existsSync(currentConfig.key))
+        return console.warn("\r\nFailed to obtain SSL certificate!");
+      else pacProxy.proxy(currentConfig);
+      if (currentConfig.upnp) {
+        client.unmap(currentConfig.proxyport).then(
+          () => client.map(currentConfig.proxyport, currentConfig.port).then(
+            () => console.warn("upnp Port " + currentConfig.proxyport + " mapped!")
+          ).catch((err) => console.warn("upnp port mapping failed!", err))
+        );
+      }
+      const vlookup = dns.lookup;
+      const cacheable = new CacheableLookup({ lookup: vlookup });
+      dns.lookup = cacheable.lookup;
       setTimeout(() => {
         httpServer.close();
         httpsServer.close();
         if (currentConfig.upnp) {
-          if (!currentConfig.cloudflare_token) client.unmap(80).then(() => client.destroy());
-          else client.destroy();
+          client.unmap(80);
         }
         console.log("\r\nFinished Obtain SSL certificate ");
       }, 3e4);
     }
     function requestSSLCert() {
-      const clookup = (hostname, opts, cb) => {
+      let clookup = (hostname, opts, cb) => {
         if (opts && opts.all) cb(null, [{ "address": "127.0.0.1", "family": 4 }]);
         else cb(null, "127.0.0.1", 4);
       };
@@ -39200,23 +26241,17 @@ var require_server = __commonJS({
         "sites": []
       };
     }
-    function getSite(config, domain, dnsChallenge) {
-      const site2 = {
+    function getSite(domain, dnsChallenge) {
+      const site = {
         "subject": domain,
         "renewAt": 1
       };
-      config.sites.forEach((element) => {
-        if (element.subject == domain) {
-          site2.renewAt = element.renewAt;
-          site2.altnames = element.altnames;
-        }
-      });
-      if (dnsChallenge) site2.challenges = { "dns-01": dnsChallenge };
-      return site2;
+      if (dnsChallenge) site.challenges = { "dns-01": dnsChallenge };
+      return site;
     }
-    function addsite(config, site2) {
+    function addsite(config, site) {
       config.sites = [];
-      config.sites.push(site2);
+      config.sites.push(site);
       try {
         if (fs.existsSync(process.cwd() + "/greenlock.d/config.json")) fs.renameSync(process.cwd() + "/greenlock.d/config.json", process.cwd() + "/greenlock.d/config.json.bak");
         var content = JSON.stringify(config);
@@ -39229,7 +26264,7 @@ var require_server = __commonJS({
       }
     }
     function hassite(config, domain, dnsModuleName2) {
-      let _hassite = false;
+      var _hassite = false;
       config.sites.forEach((element) => {
         if (element.subject == domain) {
           console.warn("domain already exists \u57DF\u540D\u5DF2\u7ECF\u5B58\u5728");
@@ -39242,8 +26277,10 @@ var require_server = __commonJS({
     }
     function checkEmail(email) {
       if (!email) return false;
-      const [account, address] = email.split("@");
-      if (!address) return false;
+      var emailParts = email.split("@");
+      if (emailParts.length !== 2) return false;
+      var account = emailParts[0];
+      var address = emailParts[1];
       if (account.length > 64) return false;
       if (!checkDomain(address)) return false;
       return true;
@@ -39278,143 +26315,4 @@ escape-html/index.js:
 
 sax/lib/sax.js:
   (*! http://mths.be/fromcodepoint v0.1.0 by @mathias *)
-
-@fastify/send/lib/containsDotFile.js:
-@fastify/send/lib/contentRange.js:
-@fastify/send/lib/createHtmlDocument.js:
-@fastify/send/index.js:
-  (*!
-   * send
-   * Copyright(c) 2012 TJ Holowaychuk
-   * Copyright(c) 2014-2022 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-@fastify/send/lib/parseBytesRange.js:
-  (*!
-   * Based on range-parser
-   *
-   * Copyright(c) 2012-2014 TJ Holowaychuk
-   * Copyright(c) 2015-2016 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-depd/index.js:
-  (*!
-   * depd
-   * Copyright(c) 2014-2018 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-statuses/index.js:
-statuses/index.js:
-  (*!
-   * statuses
-   * Copyright(c) 2014 Jonathan Ong
-   * Copyright(c) 2016 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-toidentifier/index.js:
-  (*!
-   * toidentifier
-   * Copyright(c) 2016 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-http-errors/index.js:
-http-errors/index.js:
-  (*!
-   * http-errors
-   * Copyright(c) 2014 Jonathan Ong
-   * Copyright(c) 2016 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-negotiator/index.js:
-  (*!
-   * negotiator
-   * Copyright(c) 2012 Federico Romero
-   * Copyright(c) 2012-2014 Isaac Z. Schlueter
-   * Copyright(c) 2015 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-mime-db/index.js:
-  (*!
-   * mime-db
-   * Copyright(c) 2014 Jonathan Ong
-   * Copyright(c) 2015-2022 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-mime-types/index.js:
-  (*!
-   * mime-types
-   * Copyright(c) 2014 Jonathan Ong
-   * Copyright(c) 2015 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-accepts/index.js:
-  (*!
-   * accepts
-   * Copyright(c) 2014 Jonathan Ong
-   * Copyright(c) 2015 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-depd/lib/compat/callsite-tostring.js:
-  (*!
-   * depd
-   * Copyright(c) 2014 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-depd/lib/compat/event-listener-count.js:
-  (*!
-   * depd
-   * Copyright(c) 2015 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-depd/lib/compat/index.js:
-  (*!
-   * depd
-   * Copyright(c) 2014-2015 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-depd/index.js:
-  (*!
-   * depd
-   * Copyright(c) 2014-2017 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-parseurl/index.js:
-  (*!
-   * parseurl
-   * Copyright(c) 2014 Jonathan Ong
-   * Copyright(c) 2014-2017 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-
-serve-index/index.js:
-  (*!
-   * serve-index
-   * Copyright(c) 2011 Sencha Inc.
-   * Copyright(c) 2011 TJ Holowaychuk
-   * Copyright(c) 2014-2015 Douglas Christopher Wilson
-   * MIT Licensed
-   *)
-  (*!
-   * Icon cache.
-   *)
-  (*!
-   * Default template.
-   *)
-  (*!
-   * Stylesheet.
-   *)
 */

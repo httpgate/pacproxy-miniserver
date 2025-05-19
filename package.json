@@ -24,7 +24,7 @@
   },
   "homepage": "https://github.com/httpgate/pacproxy-miniserver#readme",
   "dependencies": {
-    "pacproxy-https-server": "^1.4.0"
+    "pacproxy-https-server": "1.5.0"
   },
   "devDependencies": {
     "esbuild": "0.25.4"

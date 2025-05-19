@@ -23,9 +23,6 @@ var configs =
 	//可选，伪装成海外站点url, 默认为空'', 格式为: https://blog.ddns.com/homepage.htm, 请不要用国内网站伪装
 	//值可以为true或false，显示当前目录下的website文件夹。为true时显示为静态网站, 首页为index.html。为false时显示为文件夹
 	website :  '',
-
-	//可选，伪装网站需输入用户密码, 避免转发黑客DDOS攻击导致服务器IP被主要CDN封锁. 格式为:['account_name', 'username', 'password'], 浏览器会提示输入用户密码, 并保存为'account_name'账号
-	website_auth :  '',  //['Protected', 'webuser', 'webpass'],
 	
 	//代理服务器监听端口, 如果是内网服务器，设置端口转发时，此端口为内部端口，此时建议改为8443
 	port : 8443,
